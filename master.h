@@ -1,10 +1,11 @@
 
 
-Service* ServicesCreation(int n_services, int seed){
+
+Master* ServicesCreation(int n_services, int seed){
 /**
 	n_services = numero totale di servizi
 */	
-	Service* arrayOfServices = new Service[n_services];
+	Master* arrayOfServices = new Service[n_services];
     srand(seed);            
     float possible_power_cost[] = {0.1,0.1,0.1,0.2,0.2,0.2,0.3,0.3};
     int possible_cpu_req[] 		= {6,6,6,10,10,10,14,14};
@@ -36,6 +37,4 @@ Service* ServicesCreation(int n_services, int seed){
 	
 	return arrayOfServices;
 }
-
-
 

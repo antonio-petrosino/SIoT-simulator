@@ -1,6 +1,7 @@
 using namespace std;
 #include <iostream>
-#include "service.h"
+#include <random>
+#include "SystemBehaviour.h"
 
 int main() {	  
 	cout << "Progetto SSIoT";
@@ -20,10 +21,12 @@ int main() {
 	gamma 			= 0.2;		
 	resource_ctrl 	= true;
 	qos_ctrl 		= true;
+		
+	cout <<"Start..."<< endl;
 	
-	Service new_serv;
-	new_serv = initialization_services();
-	
+	Service* list_of_services;
+	list_of_services = ServicesCreation(n_services, seed);
+
     return 0;
 }
 
