@@ -25,6 +25,12 @@ class Service
 	
 };
 
+struct Friend_Record{	
+	string type_rel;
+	int friend_device;
+	float sociality_factor;	
+};
+
 class Device{
 	int id_device, id_owner, id_manufacturer, location, device_class, clock_speed;
 	Friend_Record* friend_list; 
@@ -44,9 +50,22 @@ class Device{
 			this->clock_speed 		= 0;
 		};
 		
+		GenerateDevice(int id_d, float tot_p, int id_o, int id_man, int loc, int dev_c, int clock_s){
+			this->id_device 		= id_d;
+			this->total_power 		= tot_p; 
+			this->remaining_power	= tot_p;
+			this->id_owner			= id_o;
+			this->id_manufacturer	= id_man;
+			this->location			= loc;
+			this->device_class		= dev_c;
+			this->clock_speed 		= clock_s;		
+
+		};
+		
+		
 		SetFriendRecord(Friend_Record* new_friend_records){
 			int length = sizeof(new_friend_records)/ sizeof(Friend_Record);
-			this->friend_list = new int[length];			
+			this->friend_list = new Friend_Record[length];			
 			for(int i=0;i<length;i++){
 				this->friend_list[i] = new_friend_records[i];				
 			}			
@@ -68,14 +87,12 @@ class Device{
 			}
 		};
 		
+		
+		
+		
 	
 };
 
-struct Friend_Record{	
-	string type_rel;
-	int friend_device;
-	float sociality_factor;	
-};
 
 /*class Master
 {

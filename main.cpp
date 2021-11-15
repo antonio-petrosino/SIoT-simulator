@@ -23,9 +23,13 @@ int main() {
 	qos_ctrl 		= true;
 		
 	cout <<"Start..."<< endl;
+	srand(seed);  
 	
 	Service* list_of_services;
-	list_of_services = ServicesCreation(n_services, seed);
+	list_of_services = ServicesCreation(n_services);
+	
+	Device* list_of_devices;
+	list_of_devices = DeviceCreation(n_devices);
 
     return 0;
 }
