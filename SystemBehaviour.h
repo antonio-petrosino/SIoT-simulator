@@ -86,7 +86,7 @@ Device* DeviceCreation(int n_devices){
 		loc = possible_location[choosenIndex];
 		
 		arrayOfDevice[i].GenerateDevice(i+1,total_power, id_owner, id_man, loc, d_class, clock_s);
-		
+	
 		// SetFriendRecord
 		// SetServicesList
 		// SetMasterNodeList
@@ -98,6 +98,7 @@ Device* DeviceCreation(int n_devices){
 
     
 }
+
 
 /*
 

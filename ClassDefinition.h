@@ -51,8 +51,15 @@ class Device{
 			this->location			= 0;
 			this->device_class		= 0;
 			this->clock_speed 		= 0;
-			//this->services_list 	= {0};
-			//this->master_node_list 	= {0};
+			
+			vector<Friend_Record> empty_friend_list;
+			this->friend_list = empty_friend_list;
+			
+			vector<int> empty_services_list;
+			this->services_list = empty_services_list;	
+			
+			vector<int> empty_master_node_list;
+			this->master_node_list = empty_master_node_list;
 		};
 		
 		GenerateDevice(int id_d, float tot_p, int id_o, int id_man, int loc, int dev_c, int clock_s){
@@ -68,8 +75,8 @@ class Device{
 		};
 		
 		
-		SetFriendRecord(Friend_Record* new_friend_records){
-			int length = sizeof(new_friend_records)/ sizeof(Friend_Record);
+		SetFriendRecord(vector<Friend_Record> new_friend_records){
+			int length = new_friend_records.size();
 			vector<Friend_Record> empty_friend_list;
 			this->friend_list = empty_friend_list;			
 			for(int i=0;i<length;i++){
@@ -77,8 +84,8 @@ class Device{
 			}			
 		};
 		
-		SetServicesList(int* new_service_list){			
-			int length = sizeof(new_service_list)/ sizeof(int);
+		SetServicesList(vector<int> new_service_list){			
+			int length = new_service_list.size();
 			vector<int> empty_services_list;
 			this->services_list = empty_services_list;			
 			for(int i=0;i<length;i++){
@@ -86,8 +93,8 @@ class Device{
 			}
 		};
 		
-		SetMasterNodeList(int* new_master_list){
-			int length = sizeof(new_master_list)/ sizeof(int);
+		SetMasterNodeList(vector<int> new_master_list){			
+			int length = new_master_list.size();
 			vector<int> empty_master_node_list;
 			this->master_node_list = empty_master_node_list;
 			
