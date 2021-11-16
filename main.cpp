@@ -23,6 +23,7 @@ int main() {
 	qos_ctrl 		= true;
 		
 	cout <<"Start..."<< endl;
+	
 	srand(seed);  
 	
 	Service* list_of_services;

@@ -32,15 +32,18 @@ struct Friend_Record{
 };
 
 class Device{
-	int id_device, id_owner, id_manufacturer, location, device_class, clock_speed;
-	Friend_Record* friend_list; 
+	int device_id, id_owner, id_manufacturer, location, device_class, clock_speed;
+	vector<Friend_Record> friend_list;
+	//Friend_Record* friend_list; 
 	float total_power, remaining_power;
-	int* services_list;	// vettore di id -> elenco di servizi che può fare
-	int* master_node_list; // vettore di id -> lista dei master node a cui è registrato
+	vector<int> services_list;
+	vector<int> master_node_list;
+	//int* services_list;	// vettore di id -> elenco di servizi che può fare
+	//int* master_node_list; // vettore di id -> lista dei master node a cui è registrato
 	
 	public: 
 		Devices(){
-			this->id_device 		= 0;
+			this->device_id 		= 0;
 			this->total_power 		= 0.0; 
 			this->remaining_power	= 0.0;
 			this->id_owner			= 0;
@@ -48,10 +51,12 @@ class Device{
 			this->location			= 0;
 			this->device_class		= 0;
 			this->clock_speed 		= 0;
+			//this->services_list 	= {0};
+			//this->master_node_list 	= {0};
 		};
 		
 		GenerateDevice(int id_d, float tot_p, int id_o, int id_man, int loc, int dev_c, int clock_s){
-			this->id_device 		= id_d;
+			this->device_id 		= id_d;
 			this->total_power 		= tot_p; 
 			this->remaining_power	= tot_p;
 			this->id_owner			= id_o;
@@ -65,29 +70,65 @@ class Device{
 		
 		SetFriendRecord(Friend_Record* new_friend_records){
 			int length = sizeof(new_friend_records)/ sizeof(Friend_Record);
-			this->friend_list = new Friend_Record[length];			
+			vector<Friend_Record> empty_friend_list;
+			this->friend_list = empty_friend_list;			
 			for(int i=0;i<length;i++){
-				this->friend_list[i] = new_friend_records[i];				
+				this->friend_list.push_back(new_friend_records[i]);
 			}			
 		};
 		
 		SetServicesList(int* new_service_list){			
 			int length = sizeof(new_service_list)/ sizeof(int);
-			this->services_list = new int[length];			
+			vector<int> empty_services_list;
+			this->services_list = empty_services_list;			
 			for(int i=0;i<length;i++){
-				this->services_list[i] = new_service_list[i];				
+				this->services_list.push_back(new_service_list[i]);
 			}
 		};
 		
 		SetMasterNodeList(int* new_master_list){
 			int length = sizeof(new_master_list)/ sizeof(int);
-			this->master_node_list = new int[length];			
-			for(int i=0;i<length;i++){
-				this->master_node_list[i] = new_master_list[i];				
+			vector<int> empty_master_node_list;
+			this->master_node_list = empty_master_node_list;
+			
+			for(int i=0;i<length;i++){		
+				this->master_node_list.push_back(new_master_list[i]);
 			}
 		};
 		
-		
+				
+		PrintDevice(){	
+			cout << endl;
+			cout << "## ID Device:" 			<< this->device_id;
+			cout << " - ID owner: " 		<< this->id_owner;
+			cout << " - ID manufacturer: " 	<< this->id_manufacturer;
+			cout << " - Location: "			<< this->location;
+			cout << " - Device class: "		<< this->device_class;
+			cout << " - Clock speed: "		<< this->clock_speed;
+			cout << " - Total power: "		<< this->total_power;
+			cout << " - Remain. power: "	<< this->remaining_power;			
+			
+			// print friend
+			cout << " - Friends list:";
+			for (Friend_Record i:this->friend_list){
+				cout <<" [" << i.type_rel<<":"<<i.friend_device<<":"<<i.sociality_factor<< "] -";
+			}
+			
+			// print Services
+			cout << " - Services list:";
+			for (int i:this->services_list){
+				cout <<" [" << i<< "] -";
+			}
+			
+			// print MasterNode				
+			cout << " - Master node list:";
+			for (int i:this->master_node_list){
+				cout <<" [" << i<< "] -";
+			}
+			
+			cout << " ##"<<endl;
+		};
+	
 		
 		
 	
