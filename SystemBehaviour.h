@@ -1,6 +1,6 @@
 #include "ClassDefinition.h"
 
-Service* ServicesCreation(int n_services){
+Service *ServicesCreation(int n_services){
 
     const float possible_power_cost[] = {0.1,0.1,0.1,0.2,0.2,0.2,0.3,0.3};
     const int possible_cpu_req[]      = {6  ,6  ,  6, 10, 10, 10, 14, 14};
@@ -34,7 +34,7 @@ Service* ServicesCreation(int n_services){
 }
 
 
-Device* DeviceCreation(int n_devices){
+Device* DeviceCreation(int n_devices, int n_services, Service *defined_services){
 	
 	Device* arrayOfDevice = new Device[n_devices];
 	
@@ -87,8 +87,37 @@ Device* DeviceCreation(int n_devices){
 		
 		arrayOfDevice[i].GenerateDevice(i+1,total_power, id_owner, id_man, loc, d_class, clock_s);
 	
-		// SetFriendRecord
 		// SetServicesList
+		const int possible_num_service_class[] = {1,1,1,1,1,1,1,1,1,2};	// 90% - 1 -- 10% - 2
+		int length_possible_num_service_class = sizeof(possible_num_service_class)/ sizeof(int);	
+		choosenIndex = rand() % length_possible_num_service_class;
+					
+		vector<int> suitable_services; // elenco di id
+		
+		for(int j=0;j<n_services;j++){
+			if(arrayOfDevice[i].total_power >= (defined_services[j].GetPowerCost() *2))
+			{ 
+				suitable_services.push_back(defined_services[j].GetServiceId());
+			}
+		}
+					
+		vector<int> choosen_services;
+		int choosenSuitableService;
+				
+		for(int j=0;j<possible_num_service_class[choosenIndex];j++){			
+		
+		    if(suitable_services.size() > 0){			
+		    choosenSuitableService = rand() % suitable_services.size();
+			choosen_services.push_back(suitable_services[choosenSuitableService]);			
+			//suitable_services.esase(suitable_services.begin(), suitable_services.end(), suitable_services[choosenSuitableService], suitable_services.end());
+			suitable_services.erase(suitable_services.begin() + choosenSuitableService);
+		    }
+		}
+				
+		arrayOfDevice[i].SetServicesList(choosen_services);
+		
+		// SetFriendRecord
+
 		// SetMasterNodeList
 	}
 	

@@ -26,11 +26,12 @@ int main() {
 	
 	srand(seed);  
 	
-	Service* list_of_services;
+	Service *list_of_services;
+	//Service* list_of_services;
 	list_of_services = ServicesCreation(n_services);
 	
-	Device* list_of_devices;
-	list_of_devices = DeviceCreation(n_devices);
+	Device *list_of_devices;
+	list_of_devices = DeviceCreation(n_devices, n_services, list_of_services);
 
     return 0;
 }

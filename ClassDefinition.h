@@ -17,6 +17,14 @@ class Service
 			this->cpu_req 		= cpu_r; 
 		};
 		
+		int GetServiceId(){
+			return this->service_id;
+		}
+		
+		float GetPowerCost(){
+			return this->power_cost;
+		}
+		
 		PrintService(){			
 			cout << "ID Servizio:" << this->service_id;
 			cout << " - Power cost: " << this->power_cost;
@@ -32,16 +40,18 @@ struct Friend_Record{
 };
 
 class Device{
-	int device_id, id_owner, id_manufacturer, location, device_class, clock_speed;
-	vector<Friend_Record> friend_list;
-	//Friend_Record* friend_list; 
-	float total_power, remaining_power;
-	vector<int> services_list;
-	vector<int> master_node_list;
-	//int* services_list;	// vettore di id -> elenco di servizi che può fare
-	//int* master_node_list; // vettore di id -> lista dei master node a cui è registrato
+	
 	
 	public: 
+		int device_id, id_owner, id_manufacturer, location, device_class, clock_speed;
+		vector<Friend_Record> friend_list;
+		//Friend_Record* friend_list; 
+		float total_power, remaining_power;
+		vector<int> services_list;
+		vector<int> master_node_list;
+		//int* services_list;	// vettore di id -> elenco di servizi che può fare
+		//int* master_node_list; // vettore di id -> lista dei master node a cui è registrato
+	
 		Devices(){
 			this->device_id 		= 0;
 			this->total_power 		= 0.0; 
@@ -73,7 +83,6 @@ class Device{
 			this->clock_speed 		= clock_s;		
 
 		};
-		
 		
 		SetFriendRecord(vector<Friend_Record> new_friend_records){
 			int length = new_friend_records.size();
