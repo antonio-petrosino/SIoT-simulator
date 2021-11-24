@@ -25,6 +25,10 @@ class Service
 			return this->power_cost;
 		}
 		
+		int GetCpuReq(){
+			return this->cpu_req;
+		}
+		
 		PrintService(){			
 			cout << "ID Servizio:" << this->service_id;
 			cout << " - Power cost: " << this->power_cost;
@@ -34,8 +38,8 @@ class Service
 };
 
 struct Friend_Record{	
-	string type_rel;
-	int friend_device;
+	int friend_device_id; // id_dispositivo_amico
+	string type_rel;	
 	float sociality_factor;	
 };
 
@@ -47,11 +51,9 @@ class Device{
 		vector<Friend_Record> friend_list;
 		//Friend_Record* friend_list; 
 		float total_power, remaining_power;
-		vector<int> services_list;
-		vector<int> master_node_list;
-		//int* services_list;	// vettore di id -> elenco di servizi che può fare
-		//int* master_node_list; // vettore di id -> lista dei master node a cui è registrato
-	
+		vector<int> services_id_list;  // vettore di id -> elenco di servizi che può fare
+		vector<int> master_node_id_list;
+				
 		Devices(){
 			this->device_id 		= 0;
 			this->total_power 		= 0.0; 
@@ -65,11 +67,11 @@ class Device{
 			vector<Friend_Record> empty_friend_list;
 			this->friend_list = empty_friend_list;
 			
-			vector<int> empty_services_list;
-			this->services_list = empty_services_list;	
+			vector<int> empty_services_id_list;
+			this->services_id_list = empty_services_id_list;	
 			
 			vector<int> empty_master_node_list;
-			this->master_node_list = empty_master_node_list;
+			this->master_node_id_list = empty_master_node_list;
 		};
 		
 		GenerateDevice(int id_d, float tot_p, int id_o, int id_man, int loc, int dev_c, int clock_s){
@@ -84,31 +86,42 @@ class Device{
 
 		};
 		
-		SetFriendRecord(vector<Friend_Record> new_friend_records){
-			int length = new_friend_records.size();
-			vector<Friend_Record> empty_friend_list;
-			this->friend_list = empty_friend_list;			
-			for(int i=0;i<length;i++){
-				this->friend_list.push_back(new_friend_records[i]);
-			}			
-		};
+		int GetID(){
+			return this->device_id;
+		}
 		
-		SetServicesList(vector<int> new_service_list){			
+//		SetFriendRecord(vector<Friend_Record> new_friend_records){
+//			
+//			int length = new_friend_records.size();
+//			vector<Friend_Record> empty_friend_list;
+//			this->friend_list = empty_friend_list;			
+//			for(int i=0;i<length;i++){
+//				this->friend_list.push_back(new_friend_records[i]);
+//			}			
+//			
+//		};
+		
+		AddFriendRecord(Friend_Record new_friend_records){
+			this->friend_list.push_back(new_friend_records);
+		}
+		
+		SetServicesList(vector<int> new_service_list){		
+			
 			int length = new_service_list.size();
-			vector<int> empty_services_list;
-			this->services_list = empty_services_list;			
+			vector<int> empty_services_id_list;
+			this->services_id_list = empty_services_id_list;			
 			for(int i=0;i<length;i++){
-				this->services_list.push_back(new_service_list[i]);
+				this->services_id_list.push_back(new_service_list[i]);
 			}
-		};
+					};
 		
 		SetMasterNodeList(vector<int> new_master_list){			
 			int length = new_master_list.size();
 			vector<int> empty_master_node_list;
-			this->master_node_list = empty_master_node_list;
+			this->master_node_id_list = empty_master_node_list;
 			
 			for(int i=0;i<length;i++){		
-				this->master_node_list.push_back(new_master_list[i]);
+				this->master_node_id_list.push_back(new_master_list[i]);
 			}
 		};
 		
@@ -124,61 +137,117 @@ class Device{
 			cout << " - Total power: "		<< this->total_power;
 			cout << " - Remain. power: "	<< this->remaining_power;			
 			
-			// print friend
-			cout << " - Friends list:";
-			for (Friend_Record i:this->friend_list){
-				cout <<" [" << i.type_rel<<":"<<i.friend_device<<":"<<i.sociality_factor<< "] -";
-			}
+//			// print friend
+//			cout << " - Friends list:";
+//			for (Friend_Record i:this->friend_list){
+//				cout <<" [" << i.type_rel<<":"<<i.friend_device_id<<":"<<i.sociality_factor<< "] -";
+//			}
 			
 			// print Services
 			cout << " - Services list:";
-			for (int i:this->services_list){
+			for (int i:this->services_id_list){
 				cout <<" [" << i<< "] -";
 			}
 			
 			// print MasterNode				
 			cout << " - Master node list:";
-			for (int i:this->master_node_list){
+			for (int i:this->master_node_id_list){
 				cout <<" [" << i<< "] -";
 			}
 			
 			cout << " ##"<<endl;
 		};
 	
-		
-		
-	
 };
 
+//struct Registered_Device{	
+//	int device_id;
+//	vector<Friend_Record> friend_info;
+//};		
+//	
 
-/*class Master
+
+class Master
 {
 	int master_id;	
 	int location;
+	vector<int> assigned_services;
+	//vector<Registered_Device> registered_devices;
+	vector<int> registered_devices;
 	
-	//Service[];
-	//Devices[];
 	//Reputation[];
-	
 	
 	
 	public:
 		Master(){
-			this->service_id = 0;
-			this->power_cost = 0.0;
-			this->cpu_req 	= 0;
+			vector<int> empty_list;
+			vector<int> empty_dev_list;
+			
+			this->master_id = 0;
+			this->location = 0;						
+			this->assigned_services = empty_list;				
+			this->registered_devices = empty_dev_list;			
 		};
 		
-		SetMaster(int s_id, float power_c, int cpu_r){
-			this->service_id 	= s_id;
-			this->power_cost 	= power_c;
-			this->cpu_req 		= cpu_r; 
+		SetMaster(int m_id){
+			this->master_id = m_id;
+			this->location = m_id; // location == id SEMPRE			
 		};
 		
-		PrintMaster(){			
-			cout << "ID Servizio:" << this->service_id;
-			cout << " - Power cost: " << this->power_cost;
-			cout << " - CPU Requirement: " << this->cpu_req << endl;
+		
+//		SetAssignedServices(vector<int> new_assigned_services){			
+//			int length = new_assigned_services.size();
+//			vector<int> empty_services_list;
+//			this->assigned_services = empty_services_list;			
+//			for(int i=0;i<length;i++){
+//				this->assigned_services.push_back(new_assigned_services[i]);
+//			}		
+//		};
+
+		AddNewService(int id_new_service){
+			this->assigned_services.push_back(id_new_service);
+		}
+		
+		int GetID(){
+			return this->master_id;
+		}
+		
+		vector<int> GetAllServices(){
+			return this->assigned_services;
+		}
+		
+		AddDevice(int new_devices){	
+			this->registered_devices.push_back(new_devices);		
+		}
+		
+		RemoveDevice(int devices_to_delete){
+				
+			vector<int> temp_vect;	
+			int index_to_delete = -1;
+			
+			for(int i=0;i<this->registered_devices.size();i++){
+				if(this->registered_devices[i] == devices_to_delete){
+					index_to_delete = i;
+					break;
+				}
+			}
+			this->registered_devices.erase(this->registered_devices.begin()+index_to_delete);		
+		}
+		
+		
+		
+		PrintMaster(){	
+			cout << endl;
+			cout << "ID Master node:" << this->master_id;
+			cout << " - location: " << this->location << endl;
+			//cout << " - CPU Requirement: " << this->cpu_req << endl;
+			
+			// print Registered devices				
+			cout << " - Registered devices:";
+			for (int i:this->registered_devices){
+				cout <<" [" << i<< "] -";
+			}
+			cout << endl;
 		}
 	
-};*/
+};

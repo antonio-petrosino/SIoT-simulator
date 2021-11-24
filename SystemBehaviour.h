@@ -34,7 +34,7 @@ Service *ServicesCreation(int n_services){
 }
 
 
-Device* DeviceCreation(int n_devices, int n_services, Service *defined_services){
+Device* DeviceCreation(int n_devices, int n_services, int n_master, Service *defined_services, Master *defined_master){
 	
 	Device* arrayOfDevice = new Device[n_devices];
 	
@@ -47,9 +47,13 @@ Device* DeviceCreation(int n_devices, int n_services, Service *defined_services)
 	const int possible_owner[] = {1,2,3,4,5,6,7,8,9,10};
 	int length_pos_owner = sizeof(possible_owner)/ sizeof(int);
 	
-	const int possible_location[] = {1,2,3,4,5};
-	int length_pos_loc = sizeof(possible_location)/ sizeof(int);
+	const int length_pos_loc = n_master;
+	vector<int> possible_location(length_pos_loc);
 	
+	for(int i=0;i<length_pos_loc; i++){
+		possible_location[i] = i+1;
+	}
+				
 	int choosenIndex, id_owner, id_man, loc, d_class, clock_s;
 	float total_power;
 	
@@ -97,7 +101,7 @@ Device* DeviceCreation(int n_devices, int n_services, Service *defined_services)
 		for(int j=0;j<n_services;j++){
 			if(arrayOfDevice[i].total_power >= (defined_services[j].GetPowerCost() *2))
 			{ 
-				suitable_services.push_back(defined_services[j].GetServiceId());
+				suitable_services.push_back(defined_services[j].GetServiceId());											
 			}
 		}
 					
@@ -114,12 +118,31 @@ Device* DeviceCreation(int n_devices, int n_services, Service *defined_services)
 		    }
 		}
 				
-		arrayOfDevice[i].SetServicesList(choosen_services);
-		
-		// SetFriendRecord
+		arrayOfDevice[i].SetServicesList(choosen_services); // assegno finalmente i servizi definiti
 
+		
+		for(int j=0;j<choosen_services.size();j++){		
+				for(int k=0;k<n_master;k++){
+					vector<int> service_to_find = defined_master[k].GetAllServices();					
+					for(int s=0;s<service_to_find.size();s++){						
+						if(service_to_find[s] == choosen_services[j]){	
+												
+//							Registered_Device new_device_to_add; 
+//							new_device_to_add.device_id = arrayOfDevice[i].device_id;					
+//							vector<Friend_Record> empty_friend_list;
+//							new_device_to_add.friend_info = empty_friend_list;
+							
+							defined_master[k].AddDevice(arrayOfDevice[i].device_id);
+							arrayOfDevice[i].master_node_id_list.push_back(defined_master[k].GetID());
+						}
+					}					
+				}	
+		}
 		// SetMasterNodeList
+
 	}
+	
+	// SetFriendRecord // va fatta alla fine del processo di creazione
 	
 	for(int i=0; i<n_devices; i++){
 		arrayOfDevice[i].PrintDevice();
@@ -129,42 +152,59 @@ Device* DeviceCreation(int n_devices, int n_services, Service *defined_services)
 }
 
 
-/*
-
-Master* ServicesCreation(int n_services, int seed){
-
-	n_services = numero totale di servizi
+void GenerateSocialRel(int n_devices, Device *defined_devices){
 	
-	Master* arrayOfServices = new Service[n_services];
-    srand(seed);            
-    float possible_power_cost[] = {0.1,0.1,0.1,0.2,0.2,0.2,0.3,0.3};
-    int possible_cpu_req[] 		= {6,6,6,10,10,10,14,14};
-    int length = sizeof(possible_power_cost)/ sizeof(float);
-    
+	for(int i=0;i<n_devices;i++){
+		
+		Friend_Record new_social_rel;
+		int check_social = 0;
+		
+		for(int j=0;j<n_devices;j++){
+			if(defined_devices[i].GetID() != defined_devices[j].GetID()){
+				new_social_rel.friend_device_id = defined_devices[j].GetID();
+				
+				if(defined_devices[i].id_manufacturer == defined_devices[j].id_manufacturer){					
+					new_social_rel.sociality_factor = 0.9;
+					new_social_rel.type_rel = "POR";
+					check_social = 1;
+				}
+				else if(defined_devices[i].id_owner == defined_devices[j].id_owner){
+					new_social_rel.sociality_factor = 0.8;
+					new_social_rel.type_rel = "OOR";
+					check_social = 1;
+				}
+				else if(defined_devices[i].location == defined_devices[j].location) {
+					new_social_rel.sociality_factor = 0.5;
+					new_social_rel.type_rel = "C-LOR";
+					check_social = 1;			 	
+				}
+			}
+			
+			if(check_social>0){
+				defined_devices[i].AddFriendRecord(new_social_rel);
+			}
+			
+		}
+	}
+}
 
-	int choosenIndex = 0;
-	float randomNumber = 0;
-	int randomCpuReq = 0;
-	int temp_power_cost = 0;
-	int temp_cpu_req = 0;
-		
-	for(int i=0; i<n_services; i++){	
-		choosenIndex = rand() % length;
-		
-		randomNumber = possible_power_cost[choosenIndex];
-		randomCpuReq = possible_cpu_req[choosenIndex];
-		
-		arrayOfServices[i].SetService(i+1,randomNumber,randomCpuReq);
-	}	
+Master* MasterCreation(int n_master, int n_services, Service *defined_services){
+	Master* arrayOfMaster = new Master[n_master];
 	
-	cout << endl;
-	cout << "List of generated services:" <<endl;
-	for(int i=0; i<n_services; i++){
-		arrayOfServices[i].PrintService();
+	for(int i=0;i<n_master;i++){ 
+		arrayOfMaster[i].SetMaster(i+1); // anche location				
 	}
 	
-	cout << "#########################################" <<endl;
-	
-	return arrayOfServices;
+	int given_master_id = 0;	
+	for(int i=0;i<n_services;i++){							
+		arrayOfMaster[i % n_master].AddNewService(defined_services[i].GetServiceId());
+		
+	}
+		
+//	for(int i=0; i<n_master; i++){
+//		arrayOfMaster[i].PrintMaster();
+//	}
+
+	return arrayOfMaster;
 }
-*/
+
