@@ -1,7 +1,7 @@
 class Service
 {
 	int service_id;
-	float power_cost;
+	double power_cost;
 	int cpu_req; //tolto power_cost -> [cycles/sec]
 	
 	public:
@@ -11,7 +11,7 @@ class Service
 			this->cpu_req 	= 0;
 		};
 		
-		SetService(int s_id, float power_c, int cpu_r){
+		void SetService(int s_id, double power_c, int cpu_r){
 			this->service_id 	= s_id;
 			this->power_cost 	= power_c;
 			this->cpu_req 		= cpu_r; 
@@ -21,7 +21,7 @@ class Service
 			return this->service_id;
 		}
 		
-		float GetPowerCost(){
+		double GetPowerCost(){
 			return this->power_cost;
 		}
 		
@@ -29,7 +29,7 @@ class Service
 			return this->cpu_req;
 		}
 		
-		PrintService(){			
+		void PrintService(){			
 			cout << "ID Servizio:" << this->service_id;
 			cout << " - Power cost: " << this->power_cost;
 			cout << " - CPU Requirement: " << this->cpu_req << endl;
@@ -40,7 +40,7 @@ class Service
 struct Friend_Record{	
 	int friend_device_id; // id_dispositivo_amico
 	string type_rel;	
-	float sociality_factor;	
+	double sociality_factor;	
 };
 
 class Device{
@@ -48,14 +48,15 @@ class Device{
 	
 	public: 
 		int device_id, id_owner, id_manufacturer, location, device_class, clock_speed;
-		vector<Friend_Record> friend_list;
+		vector<Friend_Record> friend_list{};
 		//Friend_Record* friend_list; 
-		float total_power, remaining_power;
+		double total_power, remaining_power;
 		vector<int> services_id_list;  // vettore di id -> elenco di servizi che può fare
 		vector<int> master_node_id_list;
 				
-		Devices(){
+		Device(){
 			this->device_id 		= 0;
+			
 			this->total_power 		= 0.0; 
 			this->remaining_power	= 0.0;
 			this->id_owner			= 0;
@@ -74,7 +75,7 @@ class Device{
 			this->master_node_id_list = empty_master_node_list;
 		};
 		
-		GenerateDevice(int id_d, float tot_p, int id_o, int id_man, int loc, int dev_c, int clock_s){
+		void GenerateDevice(int id_d, double tot_p, int id_o, int id_man, int loc, int dev_c, int clock_s){
 			this->device_id 		= id_d;
 			this->total_power 		= tot_p; 
 			this->remaining_power	= tot_p;
@@ -101,11 +102,11 @@ class Device{
 //			
 //		};
 		
-		AddFriendRecord(Friend_Record new_friend_records){
+		void AddFriendRecord(Friend_Record new_friend_records){
 			this->friend_list.push_back(new_friend_records);
 		}
 		
-		SetServicesList(vector<int> new_service_list){		
+		void SetServicesList(vector<int> new_service_list){		
 			
 			int length = new_service_list.size();
 			vector<int> empty_services_id_list;
@@ -115,7 +116,7 @@ class Device{
 			}
 					};
 		
-		SetMasterNodeList(vector<int> new_master_list){			
+		void SetMasterNodeList(vector<int> new_master_list){			
 			int length = new_master_list.size();
 			vector<int> empty_master_node_list;
 			this->master_node_id_list = empty_master_node_list;
@@ -126,7 +127,7 @@ class Device{
 		};
 		
 				
-		PrintDevice(){	
+		void PrintDevice(){	
 			cout << endl;
 			cout << "## ID Device:" 			<< this->device_id;
 			cout << " - ID owner: " 		<< this->id_owner;
@@ -167,6 +168,14 @@ class Device{
 //	
 
 
+struct Reputation {
+	int id_service_provider;
+	int id_service_requester;
+	int feedback;
+	int num_feedback;
+	double reputation_value;
+};
+
 class Master
 {
 	int master_id;	
@@ -174,6 +183,7 @@ class Master
 	vector<int> assigned_services;
 	//vector<Registered_Device> registered_devices;
 	vector<int> registered_devices;
+	vector<int> list_of_reputation;
 	
 	//Reputation[];
 	
@@ -189,7 +199,7 @@ class Master
 			this->registered_devices = empty_dev_list;			
 		};
 		
-		SetMaster(int m_id){
+		void SetMaster(int m_id){
 			this->master_id = m_id;
 			this->location = m_id; // location == id SEMPRE			
 		};
@@ -204,7 +214,7 @@ class Master
 //			}		
 //		};
 
-		AddNewService(int id_new_service){
+		void AddNewService(int id_new_service){
 			this->assigned_services.push_back(id_new_service);
 		}
 		
@@ -216,11 +226,11 @@ class Master
 			return this->assigned_services;
 		}
 		
-		AddDevice(int new_devices){	
+		void AddDevice(int new_devices){	
 			this->registered_devices.push_back(new_devices);		
 		}
 		
-		RemoveDevice(int devices_to_delete){
+		void RemoveDevice(int devices_to_delete){
 				
 			vector<int> temp_vect;	
 			int index_to_delete = -1;
@@ -236,7 +246,7 @@ class Master
 		
 		
 		
-		PrintMaster(){	
+		void PrintMaster(){	
 			cout << endl;
 			cout << "ID Master node:" << this->master_id;
 			cout << " - location: " << this->location << endl;

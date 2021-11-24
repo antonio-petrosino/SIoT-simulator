@@ -37,15 +37,13 @@ int main() {
 	Device *list_of_devices;
 	list_of_devices = DeviceCreation(n_devices, n_services, n_master, list_of_services, list_of_master);
 	
-	GenerateSocialRel(n_devices, list_of_devices);
-	
-	int a;
-	
+	GenerateSocialRel(n_devices, list_of_devices);	
 
 	for(int i=0; i<n_master; i++){
 		list_of_master[i].PrintMaster();
 	}
 	
+	system("pause");
     return 0;
 }
 

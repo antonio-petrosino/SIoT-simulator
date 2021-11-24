@@ -148,21 +148,21 @@ Device* DeviceCreation(int n_devices, int n_services, int n_master, Service *def
 		arrayOfDevice[i].PrintDevice();
 	}
 
-    
+	return arrayOfDevice;
 }
 
 
 void GenerateSocialRel(int n_devices, Device *defined_devices){
 	
+	Friend_Record new_social_rel{};
+	int check_social = 0;
+			
+			
 	for(int i=0;i<n_devices;i++){
-		
-		Friend_Record new_social_rel;
-		int check_social = 0;
-		
 		for(int j=0;j<n_devices;j++){
+			check_social = 0;
+			
 			if(defined_devices[i].GetID() != defined_devices[j].GetID()){
-				new_social_rel.friend_device_id = defined_devices[j].GetID();
-				
 				if(defined_devices[i].id_manufacturer == defined_devices[j].id_manufacturer){					
 					new_social_rel.sociality_factor = 0.9;
 					new_social_rel.type_rel = "POR";
@@ -181,6 +181,7 @@ void GenerateSocialRel(int n_devices, Device *defined_devices){
 			}
 			
 			if(check_social>0){
+				new_social_rel.friend_device_id = defined_devices[j].GetID();
 				defined_devices[i].AddFriendRecord(new_social_rel);
 			}
 			
