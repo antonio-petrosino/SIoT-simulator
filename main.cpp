@@ -13,10 +13,10 @@ int main() {
     float alfa, beta, gamma;
     
 	n_services		= 10;	
-	n_devices 		= 200;	
+	n_devices 		= 150;	
 	n_master 		= 5;
-	lambda			= 2;
-	tot_sim			= 600;	
+	lambda			= 5;
+	tot_sim			= 1000;	 // secondi
 	seed			= 10;
 	alfa 			= 0.5;
 	beta 			= 0.3;
@@ -39,11 +39,18 @@ int main() {
 	
 	GenerateSocialRel(n_devices, list_of_devices);	
 
-	for(int i=0; i<n_master; i++){
-		list_of_master[i].PrintMaster();
-	}
-	
+	GenerateEventsArray(seed, lambda, tot_sim);
+
+//	for(int i=0; i<n_master; i++){
+//		list_of_master[i].PrintMaster();
+//	}	
 	system("pause");
+
+	// possibilità di calcolare quanto tempo effettivo impiega il master a calcolare tutto (poi vediamo)
+	// si può fare
+
+	// facciamo un oggetto "calendario" che itera 
+
     return 0;
 }
 

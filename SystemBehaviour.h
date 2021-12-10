@@ -24,6 +24,7 @@ Service *ServicesCreation(int n_services){
 	
 	cout << endl;
 	cout << "List of generated services:" <<endl;
+
 	for(int i=0; i<n_services; i++){
 		arrayOfServices[i].PrintService();
 	}
@@ -176,7 +177,7 @@ void GenerateSocialRel(int n_devices, Device *defined_devices){
 				else if(defined_devices[i].location == defined_devices[j].location) {
 					new_social_rel.sociality_factor = 0.5;
 					new_social_rel.type_rel = "C-LOR";
-					check_social = 1;			 	
+					check_social = 1;			 						
 				}
 			}
 			
@@ -208,4 +209,34 @@ Master* MasterCreation(int n_master, int n_services, Service *defined_services){
 
 	return arrayOfMaster;
 }
+
+
+int GenerateEventsArray(int seed, int averageArrival, int sim_duration) {
+	// seed the RNG	
+	std::mt19937 rng(seed); // mt19937: Pseudo-random number generation
+		
+	//double lambda = static_cast<double>(1)/ averageArrival;
+	double lambda = averageArrival;
+	std::exponential_distribution<double> exp(lambda);
+
+   double sumArrivalTimes = 0;
+   double newArrivalTime;
+
+
+	//for (int i = 0; i < sim_duration; ++i)
+   int i = 0;
+   while(sumArrivalTimes<= sim_duration)
+	 {
+	  newArrivalTime = exp.operator() (rng);// generates the next random number in the distribution 
+	  sumArrivalTimes = sumArrivalTimes + newArrivalTime;
+	  std::cout << "newArrivalTime:  " << newArrivalTime << "    ,sumArrivalTimes:  " << sumArrivalTimes << std::endl;
+	  i++;
+	  
+	 }
+   cout << "Eventi totali: " << i << endl;
+
+	return 0;
+}
+
+
 

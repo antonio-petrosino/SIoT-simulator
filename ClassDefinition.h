@@ -55,8 +55,7 @@ class Device{
 		vector<int> master_node_id_list;
 				
 		Device(){
-			this->device_id 		= 0;
-			
+			this->device_id 		= 0;			
 			this->total_power 		= 0.0; 
 			this->remaining_power	= 0.0;
 			this->id_owner			= 0;
