@@ -260,3 +260,97 @@ class Master
 		}
 	
 };
+
+
+class Scheduler
+{
+	int id_action;
+	float time_of_arrival;
+	int service_requester;
+	int requested_service;
+	vector<int> service_providers_array;
+	int handling_master_node;
+
+public:
+	Scheduler() {
+		id_action = -1;
+		time_of_arrival = -1;
+		service_requester = -1;
+		requested_service = -1;
+		handling_master_node = -1;
+	};
+
+	void SetId(int new_id)
+	{
+		this->id_action = new_id;
+
+	};
+
+	int GetID()
+	{
+		return this->id_action;
+	};
+
+	void SetTOA(float new_toa)
+	{
+		this->time_of_arrival = new_toa;
+
+	};
+
+	float GetTOA()
+	{
+		return this->time_of_arrival;
+	};
+
+	void SetSR(int new_sr)
+	{
+		this->service_requester = new_sr;
+
+	};
+
+	int GetSR()
+	{
+		return this->service_requester;
+	};
+
+	void SetReqServ(int new_req_serv)
+	{
+		this->requested_service = new_req_serv;
+
+	};
+
+	int GetReqServ()
+	{
+		return this->requested_service;
+	};
+
+	void SetMaster(int new_master)
+	{
+		this->handling_master_node = new_master;
+
+	};
+
+	int GetMaster()
+	{
+		return this->handling_master_node;
+	};
+
+	void AddServiceProvider(float new_service_provider) {
+		this->service_providers_array.push_back(new_service_provider);
+	}
+
+	void RemoveServiceProvider(int sp_to_delete) {
+
+		vector<int> temp_vect;
+		int index_to_delete = -1;
+
+		for (int i = 0; i < this->service_providers_array.size(); i++) {
+			if (this->service_providers_array[i] == sp_to_delete) {
+				index_to_delete = i;
+				break;
+			}
+		}
+		this->service_providers_array.erase(this->service_providers_array.begin() + index_to_delete);
+	}
+
+};

@@ -1,3 +1,4 @@
+#include <vector>
 #include "ClassDefinition.h"
 
 Service *ServicesCreation(int n_services){
@@ -211,7 +212,7 @@ Master* MasterCreation(int n_master, int n_services, Service *defined_services){
 }
 
 
-int GenerateEventsArray(int seed, int averageArrival, int sim_duration) {
+vector<Scheduler> GenerateEventsArray(int seed, int averageArrival, int sim_duration,  Service* list_of_services, int n_services , Device* list_of_devices, int n_devices, Master* list_of_master, int n_master) {
 	// seed the RNG	
 	std::mt19937 rng(seed); // mt19937: Pseudo-random number generation
 		
@@ -219,9 +220,12 @@ int GenerateEventsArray(int seed, int averageArrival, int sim_duration) {
 	double lambda = averageArrival;
 	std::exponential_distribution<double> exp(lambda);
 
-   double sumArrivalTimes = 0;
-   double newArrivalTime;
+   float sumArrivalTimes = 0;
+   float newArrivalTime;
 
+   //vector<float> eventArray;
+
+   vector<Scheduler> scheduler_records;
 
 	//for (int i = 0; i < sim_duration; ++i)
    int i = 0;
@@ -229,13 +233,25 @@ int GenerateEventsArray(int seed, int averageArrival, int sim_duration) {
 	 {
 	  newArrivalTime = exp.operator() (rng);// generates the next random number in the distribution 
 	  sumArrivalTimes = sumArrivalTimes + newArrivalTime;
-	  std::cout << "newArrivalTime:  " << newArrivalTime << "    ,sumArrivalTimes:  " << sumArrivalTimes << std::endl;
+	  //eventArray.push_back(sumArrivalTimes);
+	  Scheduler record_to_push = Scheduler();
+	  record_to_push.SetId(i);
+	  record_to_push.SetTOA(sumArrivalTimes);
+	  int selected_req_service = rand()% n_services;
+	  record_to_push.SetReqServ(list_of_services[selected_req_service].GetServiceId()); // random su tutti i servizi
+	  int selected_service_requester = rand() % n_devices;
+	  record_to_push.SetSR(list_of_devices[selected_service_requester].GetID()); // random su tutti gli utenti
+	  
+	  //assign master node
+
+	  //std::cout << "newArrivalTime:  " << newArrivalTime << "    ,sumArrivalTimes:  " << sumArrivalTimes << std::endl;
+	  scheduler_records.push_back(record_to_push);
 	  i++;
 	  
 	 }
    cout << "Eventi totali: " << i << endl;
 
-	return 0;
+	return scheduler_records;
 }
 
 

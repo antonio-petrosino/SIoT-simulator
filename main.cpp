@@ -12,12 +12,12 @@ int main() {
     bool resource_ctrl, qos_ctrl;
     float alfa, beta, gamma;
     
-	n_services		= 10;	
+	n_services		= 1;	
 	n_devices 		= 150;	
-	n_master 		= 5;
+	n_master 		= 1;
 	lambda			= 5;
 	tot_sim			= 1000;	 // secondi
-	seed			= 10;
+	seed			= 19;
 	alfa 			= 0.5;
 	beta 			= 0.3;
 	gamma 			= 0.2;		
@@ -39,12 +39,12 @@ int main() {
 	
 	GenerateSocialRel(n_devices, list_of_devices);	
 
-	GenerateEventsArray(seed, lambda, tot_sim);
+	vector<Scheduler>  scheduler_records = GenerateEventsArray(seed, lambda, tot_sim, list_of_services, n_services, list_of_devices, n_devices, list_of_master, n_master);
 
 //	for(int i=0; i<n_master; i++){
 //		list_of_master[i].PrintMaster();
 //	}	
-	system("pause");
+  	system("pause");
 
 	// possibilità di calcolare quanto tempo effettivo impiega il master a calcolare tutto (poi vediamo)
 	// si può fare
