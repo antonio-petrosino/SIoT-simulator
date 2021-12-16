@@ -1,3 +1,5 @@
+extern bool vDEBUG;
+
 class Service
 {
 	int service_id;
@@ -55,7 +57,7 @@ class Device{
 		vector<int> master_node_id_list;
 				
 		Device(){
-			this->device_id 		= 0;			
+			this->device_id 		= -1;			
 			this->total_power 		= 0.0; 
 			this->remaining_power	= 0.0;
 			this->id_owner			= 0;
@@ -182,12 +184,13 @@ class Master
 	vector<int> assigned_services;
 	//vector<Registered_Device> registered_devices;
 	vector<int> registered_devices;
-	vector<int> list_of_reputation;
+	vector<Reputation> list_of_reputation;
 	
-	//Reputation[];
+	//https://en.cppreference.com/w/cpp/container/map
 	
 	
 	public:
+		
 		Master(){
 			vector<int> empty_list;
 			vector<int> empty_dev_list;
@@ -242,9 +245,31 @@ class Master
 			}
 			this->registered_devices.erase(this->registered_devices.begin()+index_to_delete);		
 		}
-		
-		
-		
+
+		vector<int> GetAllDevices() {
+			return this->registered_devices;
+		}
+						
+		Reputation GetReputation(int id_service_provider) {
+
+			for (int i = 0;i<list_of_reputation.size();i++) {
+				if (list_of_reputation[i].id_service_requester == id_service_provider) {
+					return this->list_of_reputation[i];					
+				}
+			}
+
+		}
+
+		void SetReputation(int id_service_provider, Reputation reputation_swap) {
+
+			for (int i = 0; i < list_of_reputation.size(); i++) {
+				if (list_of_reputation[i].id_service_requester == id_service_provider) {
+					this->list_of_reputation[i] = reputation_swap;
+				}
+			}
+
+		}
+				
 		void PrintMaster(){	
 			cout << endl;
 			cout << "ID Master node:" << this->master_id;

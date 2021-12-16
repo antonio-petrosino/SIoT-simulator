@@ -23,13 +23,15 @@ Service *ServicesCreation(int n_services){
 		arrayOfServices[i].SetService(i+1,randomNumber,randomCpuReq);
 	}	
 	
-	cout << endl;
-	cout << "List of generated services:" <<endl;
-
-	for(int i=0; i<n_services; i++){
-		arrayOfServices[i].PrintService();
-	}
 	
+
+	if (vDEBUG) {
+		cout << endl;
+		cout << "List of generated services:" << endl;
+		for (int i = 0; i < n_services; i++) {
+			arrayOfServices[i].PrintService();
+		}
+	}
 	cout << "#########################################" <<endl;
 	
 	return arrayOfServices;
@@ -145,9 +147,10 @@ Device* DeviceCreation(int n_devices, int n_services, int n_master, Service *def
 	}
 	
 	// SetFriendRecord // va fatta alla fine del processo di creazione
-	
-	for(int i=0; i<n_devices; i++){
-		arrayOfDevice[i].PrintDevice();
+	if (vDEBUG) {
+		for (int i = 0; i < n_devices; i++) {
+			arrayOfDevice[i].PrintDevice();
+		}
 	}
 
 	return arrayOfDevice;
@@ -242,7 +245,14 @@ vector<Scheduler> GenerateEventsArray(int seed, int averageArrival, int sim_dura
 	  int selected_service_requester = rand() % n_devices;
 	  record_to_push.SetSR(list_of_devices[selected_service_requester].GetID()); // random su tutti gli utenti
 	  
-	  //assign master node
+	  //assign master node having record_to_push.GetReqServ()
+	  for (int j = 0; j < n_master; j++) {		  
+		  vector<int> master_services = list_of_master[j].GetAllServices();
+		  if(std::find(master_services.begin(), master_services.end(), record_to_push.GetReqServ()) != master_services.end()){
+			  record_to_push.SetMaster(list_of_master[j].GetID());
+		  }
+		  
+	  }
 
 	  //std::cout << "newArrivalTime:  " << newArrivalTime << "    ,sumArrivalTimes:  " << sumArrivalTimes << std::endl;
 	  scheduler_records.push_back(record_to_push);
@@ -255,4 +265,55 @@ vector<Scheduler> GenerateEventsArray(int seed, int averageArrival, int sim_dura
 }
 
 
+Scheduler ServiceProviderFiltering(Scheduler scheduler_record, Service* list_of_services, int n_services, Device* list_of_devices, int n_devices, Master* list_of_master, int n_master, int seed) {
+		
+		int id_handling_master = scheduler_record.GetMaster();
 
+		Master selected_master;
+		Device selected_provider;
+		for (int j = 0; j < n_master; j++) {
+
+			if (list_of_master[j].GetID() == id_handling_master) {
+				selected_master = list_of_master[j];
+				break;
+			}
+
+		}
+
+		int id_service_requester = scheduler_record.GetSR();
+		int id_requested_service = scheduler_record.GetReqServ();
+
+		vector<int> master_registered_devices_ids = selected_master.GetAllDevices();
+		
+
+		for (int j = 0; j < master_registered_devices_ids.size(); j++) {
+			for (int k = 0; k < n_devices; k++) {				
+				if (list_of_devices[k].GetID() == master_registered_devices_ids[j]) {
+					selected_provider = list_of_devices[k];
+					break;
+				}
+			}
+
+			if (selected_provider.GetID() != -1) {
+				vector<int> selected_services = selected_provider.services_id_list;
+
+				for (int k = 0; k < selected_services.size(); k++) {
+					if (selected_services[k] == id_requested_service) {						
+						scheduler_record.AddServiceProvider(selected_provider.GetID());
+						break;
+					}
+				}
+
+				
+			}
+			
+		}
+		
+		return scheduler_record;
+		
+}
+
+Scheduler ThresholdProviderFiltering() {
+
+
+}

@@ -3,24 +3,39 @@ using namespace std;
 #include <random>
 #include <array>
 #include <vector>
+#include <ctime>
+
 #include "SystemBehaviour.h"
+
+#define INIT_FEED = 0.5;
+
+bool vDEBUG = false;
+time_t tstart, tend;
+
+
+
 
 int main() {	  
 	cout << "Progetto SSIoT"<<endl;
 	
 	int n_services, n_devices, n_master, lambda, tot_sim, seed;
-    bool resource_ctrl, qos_ctrl;
+	bool resource_ctrl, qos_ctrl;
     float alfa, beta, gamma;
-    
-	n_services		= 1;	
-	n_devices 		= 150;	
-	n_master 		= 1;
-	lambda			= 5;
+
+	tstart = time(0);
+
+	n_services		= 6;	
+	n_devices 		= 500;	
+	n_master 		= 5;
+
+	lambda			= 2;
 	tot_sim			= 1000;	 // secondi
 	seed			= 19;
+
 	alfa 			= 0.5;
 	beta 			= 0.3;
-	gamma 			= 0.2;		
+	gamma 			= 0.2;	
+
 	resource_ctrl 	= true;
 	qos_ctrl 		= true;
 		
@@ -41,9 +56,21 @@ int main() {
 
 	vector<Scheduler>  scheduler_records = GenerateEventsArray(seed, lambda, tot_sim, list_of_services, n_services, list_of_devices, n_devices, list_of_master, n_master);
 
-//	for(int i=0; i<n_master; i++){
-//		list_of_master[i].PrintMaster();
-//	}	
+	tend = time(0);
+	cout << "Until scheduler lasts: " << difftime(tend, tstart) << " second(s)." << endl;
+
+
+	for (int i = 0; i < scheduler_records.size(); i++) {
+		scheduler_records[i] = ServiceProviderFiltering(scheduler_records[i], list_of_services, n_services, list_of_devices, n_devices, list_of_master, n_master, seed);
+		scheduler_records[i] = ThresholdProviderFiltering();
+	}
+	//	for(int i=0; i<n_master; i++){
+	//		list_of_master[i].PrintMaster();
+	//	}	
+	// 
+	tend = time(0);
+	cout << "Until provider threshold: " << difftime(tend, tstart) << " second(s)." << endl;
+
   	system("pause");
 
 	// possibilità di calcolare quanto tempo effettivo impiega il master a calcolare tutto (poi vediamo)
