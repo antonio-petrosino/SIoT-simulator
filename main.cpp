@@ -61,8 +61,7 @@ int main() {
 
 
 	for (int i = 0; i < scheduler_records.size(); i++) {
-		scheduler_records[i] = ServiceProviderFiltering(scheduler_records[i], list_of_services, n_services, list_of_devices, n_devices, list_of_master, n_master, seed);
-		scheduler_records[i] = ThresholdProviderFiltering();
+		scheduler_records[i] = ServiceProviderFiltering(scheduler_records[i], list_of_services, n_services, list_of_devices, n_devices, list_of_master, n_master, seed);		
 	}
 	//	for(int i=0; i<n_master; i++){
 	//		list_of_master[i].PrintMaster();

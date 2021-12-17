@@ -1,5 +1,7 @@
 #include <vector>
 #include "ClassDefinition.h"
+#include <algorithm>
+
 
 Service *ServicesCreation(int n_services){
 
@@ -264,13 +266,22 @@ vector<Scheduler> GenerateEventsArray(int seed, int averageArrival, int sim_dura
 	return scheduler_records;
 }
 
+bool contains(int src, vector<Friend_Record> subjects)
+{
+	auto iter = std::find_if(subjects.begin(), subjects.end(),
+		[&](const Friend_Record& ts) {return ts.friend_device_id == src; });
+	return iter != subjects.end();
+}
 
 Scheduler ServiceProviderFiltering(Scheduler scheduler_record, Service* list_of_services, int n_services, Device* list_of_devices, int n_devices, Master* list_of_master, int n_master, int seed) {
-		
+// Filtra in base al servizio scelto -> Master node -> provider registrati -> filtro solo su un servizio
 		int id_handling_master = scheduler_record.GetMaster();
 
 		Master selected_master;
 		Device selected_provider;
+		Device selected_service_requester; 
+		vector<Trust_record> Trust_list; // {id_provider, valore} 
+
 		for (int j = 0; j < n_master; j++) {
 
 			if (list_of_master[j].GetID() == id_handling_master) {
@@ -284,8 +295,16 @@ Scheduler ServiceProviderFiltering(Scheduler scheduler_record, Service* list_of_
 		int id_requested_service = scheduler_record.GetReqServ();
 
 		vector<int> master_registered_devices_ids = selected_master.GetAllDevices();
-		
 
+		// riempio service_requester
+		for (int j = 0; j < n_devices; j++) {
+			if (list_of_devices[j].GetID() == id_service_requester) {
+				selected_service_requester = list_of_devices[j];
+				break;
+			}
+		}
+		vector<Friend_Record> friend_of_requester = selected_service_requester.GetAllFriends();
+		
 		for (int j = 0; j < master_registered_devices_ids.size(); j++) {
 			for (int k = 0; k < n_devices; k++) {				
 				if (list_of_devices[k].GetID() == master_registered_devices_ids[j]) {
@@ -299,6 +318,28 @@ Scheduler ServiceProviderFiltering(Scheduler scheduler_record, Service* list_of_
 
 				for (int k = 0; k < selected_services.size(); k++) {
 					if (selected_services[k] == id_requested_service) {						
+						
+						// aggiungerò solo se la soglia va bene 
+						if (contains(selected_provider.GetID(), friend_of_requester)) {							
+							Trust_record value_to_add;
+							Friend_Record friend_to_analyze;
+							int index_to_delete = -1;
+
+							for (int i = 0; i < friend_of_requester.size(); i++) {
+								if (friend_of_requester[i] == selected_provider.GetID()) {
+									index_to_delete = i;
+									break;
+								}
+							}
+
+							value_to_add.id_service_provider = selected_provider.GetID();
+							value_to_add.trust_value = 10;
+							Trust_list.push_back(value_to_add);
+						}
+						else {
+							int a = 20;
+						}
+						
 						scheduler_record.AddServiceProvider(selected_provider.GetID());
 						break;
 					}
@@ -311,9 +352,4 @@ Scheduler ServiceProviderFiltering(Scheduler scheduler_record, Service* list_of_
 		
 		return scheduler_record;
 		
-}
-
-Scheduler ThresholdProviderFiltering() {
-
-
 }

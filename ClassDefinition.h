@@ -106,6 +106,10 @@ class Device{
 		void AddFriendRecord(Friend_Record new_friend_records){
 			this->friend_list.push_back(new_friend_records);
 		}
+
+		vector<Friend_Record> GetAllFriends() {
+			return this->friend_list;
+		}
 		
 		void SetServicesList(vector<int> new_service_list){		
 			
@@ -378,4 +382,9 @@ public:
 		this->service_providers_array.erase(this->service_providers_array.begin() + index_to_delete);
 	}
 
+};
+
+struct Trust_record {
+	int id_service_provider;
+	double trust_value;
 };
