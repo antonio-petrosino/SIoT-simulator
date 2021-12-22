@@ -1,5 +1,53 @@
 extern bool vDEBUG;
+#include <algorithm>
 
+
+// Struct SECTION
+struct Friend_Record {
+	int friend_device_id; // id_dispositivo_amico
+	string type_rel;
+	double sociality_factor;
+};
+
+
+struct Reputation {
+	int id_service_provider;
+	int id_service_requester;
+
+	int id_requested_service;
+
+	int feedback; //TODO: vettore con timestamp per importanza nel tempo?
+	int num_feedback;
+	double reputation_value;
+};
+
+
+struct Trust_record {
+	int id_service_provider;	
+	double social_value;
+	double rep_value;
+	double trust_value;// potrebbe non servire 
+};
+
+struct RelationshipInformationNumber{
+	int friends;
+	int non_friends;
+};
+
+
+
+/*
+Device GetDeviceByID(int id_device, Device* list_of_devices, int n_devices) {
+	for (int j = 0; j < n_devices; j++) {
+		if (list_of_devices[j].GetID() == id_device) {
+			return list_of_devices[j];
+
+		}
+	}
+};
+*/
+
+// Class SECTION
 class Service
 {
 	int service_id;
@@ -39,15 +87,8 @@ class Service
 	
 };
 
-struct Friend_Record{	
-	int friend_device_id; // id_dispositivo_amico
-	string type_rel;	
-	double sociality_factor;	
-};
-
 class Device{
-	
-	
+		
 	public: 
 		int device_id, id_owner, id_manufacturer, location, device_class, clock_speed;
 		vector<Friend_Record> friend_list{};
@@ -172,15 +213,6 @@ class Device{
 //};		
 //	
 
-
-struct Reputation {
-	int id_service_provider;
-	int id_service_requester;
-	int feedback;
-	int num_feedback;
-	double reputation_value;
-};
-
 class Master
 {
 	int master_id;	
@@ -287,6 +319,49 @@ class Master
 			}
 			cout << endl;
 		}
+
+		
+		Device GetDeviceByID(int id_device, Device* list_of_devices, int n_devices) {
+			Device device_to_return = Device();
+			for (int v = 0; v < n_devices; v++) {
+				if (list_of_devices[v].GetID() == id_device) {
+					device_to_return =  list_of_devices[v];
+				}
+			}
+			return device_to_return;
+		};
+
+
+
+		RelationshipInformationNumber GetRelationshipInformationNumber(int id_requester, Device* list_of_devices, int n_devices) {
+			RelationshipInformationNumber infos{};
+			// filtrato per servizio
+			infos.friends= 0;
+			infos.non_friends = 0;
+			Device device_to_analyze = GetDeviceByID(id_requester, list_of_devices, n_devices);
+			vector<Friend_Record> friends = device_to_analyze.friend_list;
+						
+			for (int i = 0; i < this->registered_devices.size(); i++) {
+
+				bool isFriend = false;
+				for (int j = 0; j < friends.size(); j++) {
+					if (friends[j].friend_device_id == this->registered_devices[i]) {
+						isFriend = true;
+						break;
+					}
+				}
+				
+
+				if (isFriend) {
+					infos.friends++;
+
+				}
+				else {
+					infos.non_friends++;
+				}				
+			}				
+			return infos;
+		};
 	
 };
 
@@ -382,9 +457,4 @@ public:
 		this->service_providers_array.erase(this->service_providers_array.begin() + index_to_delete);
 	}
 
-};
-
-struct Trust_record {
-	int id_service_provider;
-	double trust_value;
 };

@@ -282,6 +282,10 @@ Scheduler ServiceProviderFiltering(Scheduler scheduler_record, Service* list_of_
 		Device selected_service_requester; 
 		vector<Trust_record> Trust_list; // {id_provider, valore} 
 
+		int id_service_requester = scheduler_record.GetSR();
+		int id_requested_service = scheduler_record.GetReqServ();
+
+
 		for (int j = 0; j < n_master; j++) {
 
 			if (list_of_master[j].GetID() == id_handling_master) {
@@ -290,9 +294,6 @@ Scheduler ServiceProviderFiltering(Scheduler scheduler_record, Service* list_of_
 			}
 
 		}
-
-		int id_service_requester = scheduler_record.GetSR();
-		int id_requested_service = scheduler_record.GetReqServ();
 
 		vector<int> master_registered_devices_ids = selected_master.GetAllDevices();
 
@@ -303,8 +304,11 @@ Scheduler ServiceProviderFiltering(Scheduler scheduler_record, Service* list_of_
 				break;
 			}
 		}
+
 		vector<Friend_Record> friend_of_requester = selected_service_requester.GetAllFriends();
-		
+
+		RelationshipInformationNumber rel_info = selected_master.GetRelationshipInformationNumber(selected_service_requester.GetID(), list_of_devices, n_devices);
+				
 		for (int j = 0; j < master_registered_devices_ids.size(); j++) {
 			for (int k = 0; k < n_devices; k++) {				
 				if (list_of_devices[k].GetID() == master_registered_devices_ids[j]) {
@@ -313,33 +317,28 @@ Scheduler ServiceProviderFiltering(Scheduler scheduler_record, Service* list_of_
 				}
 			}
 
+			
+
 			if (selected_provider.GetID() != -1) {
+
 				vector<int> selected_services = selected_provider.services_id_list;
 
 				for (int k = 0; k < selected_services.size(); k++) {
 					if (selected_services[k] == id_requested_service) {						
 						
 						// aggiungerò solo se la soglia va bene 
-						if (contains(selected_provider.GetID(), friend_of_requester)) {							
-							Trust_record value_to_add;
-							Friend_Record friend_to_analyze;
-							int index_to_delete = -1;
+						// TODO: manca calcolo punteggio amici di amici					
 
-							for (int i = 0; i < friend_of_requester.size(); i++) {
-								if (friend_of_requester[i] == selected_provider.GetID()) {
-									index_to_delete = i;
-									break;
-								}
+						for (int i = 0; i < friend_of_requester.size(); i++) {
+							if (friend_of_requester[i].friend_device_id == selected_provider.GetID()) {								
+								Trust_record value_to_add{};
+								value_to_add.id_service_provider = friend_of_requester[i].friend_device_id;
+								value_to_add.social_value = friend_of_requester[i].sociality_factor;
+								Trust_list.push_back(value_to_add);
+								break;
 							}
+						}
 
-							value_to_add.id_service_provider = selected_provider.GetID();
-							value_to_add.trust_value = 10;
-							Trust_list.push_back(value_to_add);
-						}
-						else {
-							int a = 20;
-						}
-						
 						scheduler_record.AddServiceProvider(selected_provider.GetID());
 						break;
 					}
