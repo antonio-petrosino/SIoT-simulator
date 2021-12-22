@@ -316,9 +316,7 @@ Scheduler ServiceProviderFiltering(Scheduler scheduler_record, Service* list_of_
 					break;
 				}
 			}
-
 			
-
 			if (selected_provider.GetID() != -1) {
 
 				vector<int> selected_services = selected_provider.services_id_list;
