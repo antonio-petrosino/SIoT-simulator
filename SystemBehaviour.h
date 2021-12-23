@@ -105,7 +105,7 @@ Device* DeviceCreation(int n_devices, int n_services, int n_master, Service *def
 		vector<int> suitable_services; // elenco di id
 		
 		for(int j=0;j<n_services;j++){
-			if(arrayOfDevice[i].total_power >= (defined_services[j].GetPowerCost() *2))
+			if(arrayOfDevice[i].GetTotalPower() >= (defined_services[j].GetPowerCost() * 2))
 			{ 
 				suitable_services.push_back(defined_services[j].GetServiceId());											
 			}
@@ -138,7 +138,7 @@ Device* DeviceCreation(int n_devices, int n_services, int n_master, Service *def
 //							vector<Friend_Record> empty_friend_list;
 //							new_device_to_add.friend_info = empty_friend_list;
 							
-							defined_master[k].AddDevice(arrayOfDevice[i].device_id);
+							defined_master[k].AddDevice(arrayOfDevice[i].GetID());
 							arrayOfDevice[i].master_node_id_list.push_back(defined_master[k].GetID());
 						}
 					}					
@@ -170,17 +170,17 @@ void GenerateSocialRel(int n_devices, Device *defined_devices){
 			check_social = 0;
 			
 			if(defined_devices[i].GetID() != defined_devices[j].GetID()){
-				if(defined_devices[i].id_manufacturer == defined_devices[j].id_manufacturer){					
+				if(defined_devices[i].GetIDManufacturer() == defined_devices[j].GetIDManufacturer()) {
 					new_social_rel.sociality_factor = 0.9;
 					new_social_rel.type_rel = "POR";
 					check_social = 1;
 				}
-				else if(defined_devices[i].id_owner == defined_devices[j].id_owner){
+				else if(defined_devices[i].GetIDOwner() == defined_devices[j].GetIDOwner()) {
 					new_social_rel.sociality_factor = 0.8;
 					new_social_rel.type_rel = "OOR";
 					check_social = 1;
 				}
-				else if(defined_devices[i].location == defined_devices[j].location) {
+				else if(defined_devices[i].GetLocation() == defined_devices[j].GetLocation()) {
 					new_social_rel.sociality_factor = 0.5;
 					new_social_rel.type_rel = "C-LOR";
 					check_social = 1;			 						
@@ -307,7 +307,7 @@ Scheduler ServiceProviderFiltering(Scheduler scheduler_record, Service* list_of_
 
 		vector<Friend_Record> friend_of_requester = selected_service_requester.GetAllFriends();
 
-		RelationshipInformationNumber rel_info = selected_master.GetRelationshipInformationNumber(selected_service_requester.GetID(), list_of_devices, n_devices);
+		RelationshipInformationNumber rel_info = selected_master.GetRelationshipInformationNumber(selected_service_requester.GetID(), id_requested_service, list_of_devices, n_devices);
 				
 		for (int j = 0; j < master_registered_devices_ids.size(); j++) {
 			for (int k = 0; k < n_devices; k++) {				
@@ -319,7 +319,7 @@ Scheduler ServiceProviderFiltering(Scheduler scheduler_record, Service* list_of_
 			
 			if (selected_provider.GetID() != -1) {
 
-				vector<int> selected_services = selected_provider.services_id_list;
+				vector<int> selected_services = selected_provider.GetServiceIDList();
 
 				for (int k = 0; k < selected_services.size(); k++) {
 					if (selected_services[k] == id_requested_service) {						
@@ -329,10 +329,34 @@ Scheduler ServiceProviderFiltering(Scheduler scheduler_record, Service* list_of_
 
 						for (int i = 0; i < friend_of_requester.size(); i++) {
 							if (friend_of_requester[i].friend_device_id == selected_provider.GetID()) {								
-								Trust_record value_to_add{};
-								value_to_add.id_service_provider = friend_of_requester[i].friend_device_id;
-								value_to_add.social_value = friend_of_requester[i].sociality_factor;
-								Trust_list.push_back(value_to_add);
+								Trust_record trust_value_to_add{};
+								trust_value_to_add.id_service_provider = friend_of_requester[i].friend_device_id;
+								trust_value_to_add.social_value = friend_of_requester[i].sociality_factor;
+
+								Reputation rep_inspection{};								
+								rep_inspection = selected_master.GetReputation(selected_service_requester.GetID(), selected_provider.GetID(), id_requested_service);
+								trust_value_to_add.rep_value = rep_inspection.reputation_value; // ottengo la rep_value diretta
+
+								
+								// rep_value dagli amici 
+								double sum_of_friend = 0; 
+								for (int k = 0; k < rel_info.list_of_friend_indexes.size(); k++) {
+									Reputation friend_rep_inspection{};
+									friend_rep_inspection = selected_master.GetReputation(rel_info.list_of_friend_indexes[k], selected_provider.GetID(), id_requested_service);
+
+									sum_of_friend = sum_of_friend + friend_rep_inspection.reputation_value;
+								}
+
+								// rep_value dei non amici
+								double sum_of_friend = 0;
+								for (int k = 0; k < rel_info.list_of_friend_indexes.size(); k++) {
+									Reputation friend_rep_inspection{};
+									friend_rep_inspection = selected_master.GetReputation(rel_info.list_of_friend_indexes[k], selected_provider.GetID(), id_requested_service);
+
+									sum_of_friend = sum_of_friend + friend_rep_inspection.reputation_value;
+								}
+
+								Trust_list.push_back(trust_value_to_add);
 								break;
 							}
 						}

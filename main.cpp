@@ -28,7 +28,7 @@ int main() {
 	tstart = time(0);
 
 	n_services		= 6;	
-	n_devices 		= 500;	
+	n_devices 		= 150;	
 	n_master 		= 5;
 
 	lambda			= 2;
@@ -64,7 +64,9 @@ int main() {
 
 
 	for (int i = 0; i < scheduler_records.size(); i++) {
+		cout << "Sched[" << i << "]..." << endl;
 		scheduler_records[i] = ServiceProviderFiltering(scheduler_records[i], list_of_services, n_services, list_of_devices, n_devices, list_of_master, n_master, seed);		
+		cout << "..." << endl;
 	}
 	//	for(int i=0; i<n_master; i++){
 	//		list_of_master[i].PrintMaster();

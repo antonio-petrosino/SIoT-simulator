@@ -32,6 +32,8 @@ struct Trust_record {
 struct RelationshipInformationNumber{
 	int friends;
 	int non_friends;
+	vector<int> list_of_friend_indexes;
+	vector<int> list_of_non_friend_indexes;
 };
 
 
@@ -88,13 +90,15 @@ class Service
 };
 
 class Device{
-		
+	
+	int device_id, id_owner, id_manufacturer, location, device_class, clock_speed;
+	vector<Friend_Record> friend_list{};
+	//Friend_Record* friend_list; 
+	double total_power, remaining_power;
+	vector<int> services_id_list;  // vettore di id -> elenco di servizi che può fare
+	
+
 	public: 
-		int device_id, id_owner, id_manufacturer, location, device_class, clock_speed;
-		vector<Friend_Record> friend_list{};
-		//Friend_Record* friend_list; 
-		double total_power, remaining_power;
-		vector<int> services_id_list;  // vettore di id -> elenco di servizi che può fare
 		vector<int> master_node_id_list;
 				
 		Device(){
@@ -132,6 +136,79 @@ class Device{
 		int GetID(){
 			return this->device_id;
 		}
+
+		void SetID(int id_new) {
+			this->device_id = id_new;
+		}
+
+		// new get
+		int GetIDOwner() {
+			return this->id_owner;
+		}
+
+		void SetIDOwner(int id_new) {
+			this->id_owner = id_new;
+		}
+
+		int GetIDManufacturer() {
+			return this->id_manufacturer;
+		}
+		void SetIDManufacturer(int id_new) {
+			this->id_manufacturer = id_new;
+		}
+
+		int GetLocation() {
+			return this->location;
+		}
+
+		void SetLocation(int new_location) {
+			this->location = new_location;
+		}
+
+
+		int GetDeviceClass() {
+			return this->device_class;
+		}
+		void SetDeviceClass(int new_class) {
+			this->device_class = new_class;
+		}
+
+		int GetClockSpeed() {
+			return this->clock_speed;
+		}
+		void SetClockSpeed(int new_clock) {
+			this->clock_speed = new_clock;
+		}
+
+		double GetTotalPower() {
+			return this->total_power;
+		}
+
+		void SetTotalPower(double new_tot_power) {
+			this->total_power = new_tot_power;
+		}
+
+		double GetRemainingPower() {
+			return this->remaining_power;
+		}
+
+		void SetRemainingPower(double new_rem_power) {
+			this->remaining_power = new_rem_power;
+		}
+			
+		void RemovePower(double power_to_remove) {
+			this->remaining_power = this->remaining_power - power_to_remove;
+		}
+
+		vector<int> GetServiceIDList() {
+			return this->services_id_list;
+		}
+			
+		vector<int> GetMasterNodeIDList(){
+			return this->master_node_id_list;
+		}
+			
+
 		
 //		SetFriendRecord(vector<Friend_Record> new_friend_records){
 //			
@@ -305,6 +382,40 @@ class Master
 			}
 
 		}
+
+		Reputation GetReputation(int id_service_requester, int id_service_provider, int id_requested_service) {
+			Reputation rep_output{};
+			bool rep_found = false;
+
+			rep_output.reputation_value = -1;
+			if (this->list_of_reputation.size() > 0) {
+				for (int i=0; i < list_of_reputation.size(); i++) {
+					if (this->list_of_reputation[i].id_service_requester == id_service_requester) {
+						if (this->list_of_reputation[i].id_service_provider == id_service_provider) {
+							if (this->list_of_reputation[i].id_requested_service = id_requested_service) {
+								rep_output = this->list_of_reputation[i];
+								rep_found = true;
+							}
+
+						}
+					}
+				}
+
+			}
+			if (!rep_found)
+			{
+				// inizializzare a zero la reputazione e poi restituirla
+				rep_output.id_service_provider = id_service_provider;
+				rep_output.id_service_requester = id_service_requester;
+				rep_output.id_requested_service = id_requested_service; 
+				rep_output.feedback = 90;
+				rep_output.num_feedback = 100;
+				rep_output.reputation_value = double(rep_output.feedback)/double(rep_output.num_feedback);
+				this->list_of_reputation.push_back(rep_output);				
+			}
+
+			return rep_output;
+		}
 				
 		void PrintMaster(){	
 			cout << endl;
@@ -333,33 +444,48 @@ class Master
 
 
 
-		RelationshipInformationNumber GetRelationshipInformationNumber(int id_requester, Device* list_of_devices, int n_devices) {
-			RelationshipInformationNumber infos{};
-			// filtrato per servizio
+		RelationshipInformationNumber GetRelationshipInformationNumber(int id_requester, int id_requested_service, Device* list_of_devices, int n_devices) {
+			// Query master node to count how many friends a given device has
+			// filtrato per servizio??? No, da fare
+			RelationshipInformationNumber infos{};			
 			infos.friends= 0;
 			infos.non_friends = 0;
+
+			//infos.list_of_friend_indexes
+
 			Device device_to_analyze = GetDeviceByID(id_requester, list_of_devices, n_devices);
-			vector<Friend_Record> friends = device_to_analyze.friend_list;
+			vector<Friend_Record> friends = device_to_analyze.GetAllFriends();
 						
 			for (int i = 0; i < this->registered_devices.size(); i++) {
 
 				bool isFriend = false;
+				
 				for (int j = 0; j < friends.size(); j++) {
 					if (friends[j].friend_device_id == this->registered_devices[i]) {
-						isFriend = true;
-						break;
+						Device friend_to_analyze = GetDeviceByID(friends[j].friend_device_id, list_of_devices, n_devices);
+						vector<int> services_list = friend_to_analyze.GetServiceIDList();
+						if (std::find(services_list.begin(), services_list.end(), id_requested_service) != services_list.end()) {
+							isFriend = true;
+							infos.list_of_friend_indexes.push_back(friends[j].friend_device_id);
+							break;
+						}
 					}
-				}
-				
+				}				
 
 				if (isFriend) {
 					infos.friends++;
 
 				}
 				else {
+
 					infos.non_friends++;
 				}				
 			}				
+
+			for (int i = 0; i < this->registered_devices.size(); i++) {
+				if(this->registered_devices[i]) // se non è contenuto in vettore amico, aggiungo al vettore non amici
+			}
+
 			return infos;
 		};
 	
