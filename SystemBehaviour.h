@@ -158,6 +158,22 @@ Device* DeviceCreation(int n_devices, int n_services, int n_master, Service *def
 	return arrayOfDevice;
 }
 
+bool CompareByTrustDesc(const Trust_record& a, const Trust_record& b)
+{
+	if (qos_ctrl) {
+		if (a.provider_class != b.provider_class) {
+			return a.provider_class > b.provider_class;
+		}
+		else {
+			return a.trust_value > b.trust_value;
+		}
+	}
+	else {
+		return a.trust_value > b.trust_value;
+	}
+
+}
+
 
 void GenerateSocialRel(int n_devices, Device *defined_devices){
 	
@@ -181,7 +197,7 @@ void GenerateSocialRel(int n_devices, Device *defined_devices){
 					check_social = 1;
 				}
 				else if(defined_devices[i].GetLocation() == defined_devices[j].GetLocation()) {
-					new_social_rel.sociality_factor = 0.5;
+					new_social_rel.sociality_factor = 0.6;
 					new_social_rel.type_rel = "C-LOR";
 					check_social = 1;			 						
 				}
@@ -332,36 +348,54 @@ Scheduler ServiceProviderFiltering(Scheduler scheduler_record, Service* list_of_
 								Trust_record trust_value_to_add{};
 								trust_value_to_add.id_service_provider = friend_of_requester[i].friend_device_id;
 								trust_value_to_add.social_value = friend_of_requester[i].sociality_factor;
-
+								trust_value_to_add.provider_class = selected_provider.GetDeviceClass();
 								Reputation rep_inspection{};								
 								rep_inspection = selected_master.GetReputation(selected_service_requester.GetID(), selected_provider.GetID(), id_requested_service);
-								trust_value_to_add.rep_value = rep_inspection.reputation_value; // ottengo la rep_value diretta
-
 								
+								double direct_reputation = rep_inspection.reputation_value;	  // ottengo la rep_value diretta
+																
 								// rep_value dagli amici 
-								double sum_of_friend = 0; 
+								double sum_of_friend_rep = 0; 
+								int number_of_friend_updated = 0;
 								for (int k = 0; k < rel_info.list_of_friend_indexes.size(); k++) {
 									Reputation friend_rep_inspection{};
 									friend_rep_inspection = selected_master.GetReputation(rel_info.list_of_friend_indexes[k], selected_provider.GetID(), id_requested_service);
-
-									sum_of_friend = sum_of_friend + friend_rep_inspection.reputation_value;
+									if (friend_rep_inspection.feedback > 100) {
+										sum_of_friend_rep = sum_of_friend_rep + friend_rep_inspection.reputation_value;
+										number_of_friend_updated++;
+									}
+									
 								}
 
 								// rep_value dei non amici
-								double sum_of_friend = 0;
-								for (int k = 0; k < rel_info.list_of_friend_indexes.size(); k++) {
+								double sum_of_non_friend_rep = 0;
+								int number_of_non_friend_updated = 0;
+								for (int k = 0; k < rel_info.list_of_non_friend_indexes.size(); k++) {
 									Reputation friend_rep_inspection{};
-									friend_rep_inspection = selected_master.GetReputation(rel_info.list_of_friend_indexes[k], selected_provider.GetID(), id_requested_service);
+									friend_rep_inspection = selected_master.GetReputation(rel_info.list_of_non_friend_indexes[k], selected_provider.GetID(), id_requested_service);
+									if(friend_rep_inspection.num_feedback > 100) {
+										sum_of_non_friend_rep = sum_of_non_friend_rep + friend_rep_inspection.reputation_value;
+										number_of_non_friend_updated++;
+									}
+								}
+								
+								double rep_results = alpha * direct_reputation;
 
-									sum_of_friend = sum_of_friend + friend_rep_inspection.reputation_value;
+								if (number_of_friend_updated > 0) {
+									rep_results = rep_results + ((beta / double(number_of_friend_updated)) * sum_of_friend_rep);
+								}
+								if (number_of_non_friend_updated > 0) {
+									rep_results = rep_results + ((gamma / double(number_of_non_friend_updated)) * sum_of_non_friend_rep);
 								}
 
+								trust_value_to_add.rep_value = rep_results;
+								trust_value_to_add.trust_value = trust_value_to_add.social_value*trust_value_to_add.rep_value;
 								Trust_list.push_back(trust_value_to_add);
 								break;
 							}
 						}
 
-						scheduler_record.AddServiceProvider(selected_provider.GetID());
+						scheduler_record.AddServiceProvider(selected_provider.GetID());												
 						break;
 					}
 				}
@@ -370,7 +404,12 @@ Scheduler ServiceProviderFiltering(Scheduler scheduler_record, Service* list_of_
 			}
 			
 		}
-		
+		//TODO: eventuale taglio sotto  una certa soglia (per reputation)
+		std::sort(Trust_list.begin(), Trust_list.end(), CompareByTrustDesc);
+
+		//QuS ordino solo dopo il cut
+		scheduler_record.SetTrustList(Trust_list);
 		return scheduler_record;
 		
 }
+

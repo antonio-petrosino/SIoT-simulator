@@ -1,4 +1,9 @@
 extern bool vDEBUG;
+extern bool qos_ctrl;
+extern bool resource_ctrl;
+
+extern double alpha, beta, gamma;
+
 #include <algorithm>
 
 
@@ -11,11 +16,9 @@ struct Friend_Record {
 
 
 struct Reputation {
-	int id_service_provider;
+	int id_service_provider;	 
 	int id_service_requester;
-
 	int id_requested_service;
-
 	int feedback; //TODO: vettore con timestamp per importanza nel tempo?
 	int num_feedback;
 	double reputation_value;
@@ -24,6 +27,7 @@ struct Reputation {
 
 struct Trust_record {
 	int id_service_provider;	
+	int provider_class;
 	double social_value;
 	double rep_value;
 	double trust_value;// potrebbe non servire 
@@ -319,7 +323,6 @@ class Master
 			this->location = m_id; // location == id SEMPRE			
 		};
 		
-		
 //		SetAssignedServices(vector<int> new_assigned_services){			
 //			int length = new_assigned_services.size();
 //			vector<int> empty_services_list;
@@ -450,6 +453,7 @@ class Master
 			RelationshipInformationNumber infos{};			
 			infos.friends= 0;
 			infos.non_friends = 0;
+			
 
 			//infos.list_of_friend_indexes
 
@@ -483,7 +487,11 @@ class Master
 			}				
 
 			for (int i = 0; i < this->registered_devices.size(); i++) {
-				if(this->registered_devices[i]) // se non è contenuto in vettore amico, aggiungo al vettore non amici
+				// se non è contenuto in vettore amico, aggiungo al vettore non amici				
+				if (!(std::find(infos.list_of_friend_indexes.begin(), infos.list_of_friend_indexes.end(), this->registered_devices[i]) != infos.list_of_friend_indexes.end())) {
+					infos.list_of_non_friend_indexes.push_back(this->registered_devices[i]);
+				}
+
 			}
 
 			return infos;
@@ -500,6 +508,7 @@ class Scheduler
 	int requested_service;
 	vector<int> service_providers_array;
 	int handling_master_node;
+	vector<Trust_record> Trust_list;
 
 public:
 	Scheduler() {
@@ -582,5 +591,10 @@ public:
 		}
 		this->service_providers_array.erase(this->service_providers_array.begin() + index_to_delete);
 	}
+
+	void SetTrustList(vector<Trust_record> new_list) {
+		this->Trust_list = new_list;
+	}
+
 
 };

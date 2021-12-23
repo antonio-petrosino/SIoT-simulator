@@ -10,18 +10,20 @@ using namespace std;
 #define INIT_FEED = 0.5;
 
 bool vDEBUG = false;
-time_t tstart, tend;
-double alfa = 0.5;
+double alpha = 0.5;
 double beta = 0.3;
 double gamma = 0.2;
 
+bool resource_ctrl = true;
+bool qos_ctrl = true;
 
+time_t tstart, tend;
 
 int main() {	  
 	cout << "Progetto SSIoT"<<endl;
 
 	int n_services, n_devices, n_master, lambda, tot_sim, seed;
-	bool resource_ctrl, qos_ctrl;
+	
 
     //float alfa, beta, gamma;
 
@@ -35,12 +37,7 @@ int main() {
 	tot_sim			= 1000;	 // secondi
 	seed			= 19;
 
-	//alfa 			= 0.5;
-	//beta 			= 0.3;
-	//gamma 			= 0.2;	
 
-	resource_ctrl 	= true;
-	qos_ctrl 		= true;
 		
 	cout <<"Start..."<< endl;
 	
