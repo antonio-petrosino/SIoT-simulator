@@ -4,20 +4,17 @@ using namespace std;
 #include <array>
 #include <vector>
 #include <ctime>
-
 #include "SystemBehaviour.h"
 
-#define INIT_FEED = 0.5;
 
 bool vDEBUG = false;
 double alpha = 0.5;
 double beta = 0.3;
 double gamma = 0.2;
-
 bool resource_ctrl = true;
 bool qos_ctrl = true;
-
 time_t tstart, tend;
+
 
 int main() {	  
 	cout << "Progetto SSIoT"<<endl;
@@ -63,6 +60,8 @@ int main() {
 	for (int i = 0; i < scheduler_records.size(); i++) {
 		cout << "Sched[" << i << "]..." << endl;
 		scheduler_records[i] = ServiceProviderFiltering(scheduler_records[i], list_of_services, n_services, list_of_devices, n_devices, list_of_master, n_master, seed);		
+
+		AssignFeedback(list_of_master, n_master, scheduler_records[i].GetMaster(), /*provider*/scheduler_records[i].GetSR(), scheduler_records[i].GetSR(), scheduler_records[i].GetReqServ(), true/*dal provider*/);
 		cout << "..." << endl;
 	}
 	//	for(int i=0; i<n_master; i++){

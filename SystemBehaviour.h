@@ -2,6 +2,7 @@
 #include "ClassDefinition.h"
 #include <algorithm>
 
+#define INIT_FEED = 0.5;
 
 Service *ServicesCreation(int n_services){
 
@@ -305,7 +306,7 @@ Scheduler ServiceProviderFiltering(Scheduler scheduler_record, Service* list_of_
 		for (int j = 0; j < n_master; j++) {
 
 			if (list_of_master[j].GetID() == id_handling_master) {
-				selected_master = list_of_master[j];
+				selected_master = list_of_master[j];				
 				break;
 			}
 
@@ -411,5 +412,33 @@ Scheduler ServiceProviderFiltering(Scheduler scheduler_record, Service* list_of_
 		scheduler_record.SetTrustList(Trust_list);
 		return scheduler_record;
 		
+}
+
+void AssignFeedback(Master* list_of_master, int n_master, int id_master, int id_service_provider, int id_service_requester, int id_requested_service, bool mal_behaviour){
+	
+	const int possible_mal_feedback[]	= { 0,0,0,0,0,1,1,1,1,1 }; // mal 50%
+	const int possible_feedback[]		= { 1,1,1,1,1,1,1,1,1,0 }; // ben 90%
+	int len_possible_feedback			= sizeof(possible_feedback) / sizeof(int);
+	int choosenFeedback					= rand() % len_possible_feedback;
+	int selected_master_id;
+	int new_feed;
+
+	if (mal_behaviour) {
+		new_feed = possible_mal_feedback[choosenFeedback];
+	}
+	else {
+		new_feed = possible_feedback[choosenFeedback];
+	}
+
+
+	for (int i = 0; i < n_master; i++) {
+		if (list_of_master[i].GetID() == id_master) {
+			selected_master_id = i;
+		}
+
+	}
+
+	list_of_master[selected_master_id].SetReputation(id_service_provider, id_service_requester, id_requested_service, new_feed);
+
 }
 

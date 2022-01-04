@@ -93,15 +93,14 @@ class Service
 	
 };
 
-class Device{
-	
+class Device{	
 	int device_id, id_owner, id_manufacturer, location, device_class, clock_speed;
 	vector<Friend_Record> friend_list{};
 	//Friend_Record* friend_list; 
 	double total_power, remaining_power;
 	vector<int> services_id_list;  // vettore di id -> elenco di servizi che può fare
+	bool malicious_node;
 	
-
 	public: 
 		vector<int> master_node_id_list;
 				
@@ -114,6 +113,7 @@ class Device{
 			this->location			= 0;
 			this->device_class		= 0;
 			this->clock_speed 		= 0;
+			this->malicious_node	= false;
 			
 			vector<Friend_Record> empty_friend_list;
 			this->friend_list = empty_friend_list;
@@ -212,17 +212,21 @@ class Device{
 			return this->master_node_id_list;
 		}
 			
+		bool GetMalicious() {
+			return this->malicious_node;
+		}
 
-		
-//		SetFriendRecord(vector<Friend_Record> new_friend_records){
-//			
+		void SetMalicious(bool mal_node) {
+			this->malicious_node = mal_node;
+		}
+	
+//		SetFriendRecord(vector<Friend_Record> new_friend_records){//			
 //			int length = new_friend_records.size();
 //			vector<Friend_Record> empty_friend_list;
 //			this->friend_list = empty_friend_list;			
 //			for(int i=0;i<length;i++){
 //				this->friend_list.push_back(new_friend_records[i]);
-//			}			
-//			
+//			}		
 //		};
 		
 		void AddFriendRecord(Friend_Record new_friend_records){
@@ -252,11 +256,27 @@ class Device{
 				this->master_node_id_list.push_back(new_master_list[i]);
 			}
 		};
-		
+
+
+		bool AllocateDeviceResources(double service_power) {
+			if (this->remaining_power - service_power > 0) {
+				this->remaining_power = this->remaining_power - service_power;
+				return true;
+			}
+			else {
+				return false;
+			}
+			
+		}
+
+		void ReleaseDeviceResources(double service_power) {
+			this->remaining_power = this->remaining_power + service_power;			
+		}
+
 				
 		void PrintDevice(){	
 			cout << endl;
-			cout << "## ID Device:" 			<< this->device_id;
+			cout << "## ID Device:" 		<< this->device_id;
 			cout << " - ID owner: " 		<< this->id_owner;
 			cout << " - ID manufacturer: " 	<< this->id_manufacturer;
 			cout << " - Location: "			<< this->location;
@@ -366,24 +386,51 @@ class Master
 			return this->registered_devices;
 		}
 						
-		Reputation GetReputation(int id_service_provider) {
+		/*Reputation GetReputation(int id_service_provider) {
 
+			
 			for (int i = 0;i<list_of_reputation.size();i++) {
 				if (list_of_reputation[i].id_service_requester == id_service_provider) {
 					return this->list_of_reputation[i];					
 				}
 			}
+			
 
-		}
+		}*/
 
-		void SetReputation(int id_service_provider, Reputation reputation_swap) {
+		void SetReputation(int id_service_provider, int id_service_requester, int id_requested_service, int new_feed) {
 
-			for (int i = 0; i < list_of_reputation.size(); i++) {
+			/*for (int i = 0; i < list_of_reputation.size(); i++) {
 				if (list_of_reputation[i].id_service_requester == id_service_provider) {
 					this->list_of_reputation[i] = reputation_swap;
 				}
 			}
+			*/
+			bool rep_found = false;
 
+			for (int i = 0; i < list_of_reputation.size(); i++) {
+				if(list_of_reputation[i].id_requested_service == id_requested_service){
+					if (list_of_reputation[i].id_service_requester == id_service_requester) {
+						if (list_of_reputation[i].id_service_provider == id_service_provider) {
+							rep_found = true;
+							list_of_reputation[i].num_feedback = list_of_reputation[i].num_feedback + 1;
+							list_of_reputation[i].feedback = list_of_reputation[i].feedback + new_feed;
+							list_of_reputation[i].reputation_value = double(list_of_reputation[i].feedback) / double(list_of_reputation[i].num_feedback);												
+						}
+					}
+				}
+			}
+
+			if (!rep_found) {
+				Reputation new_rep_to_add{};
+				new_rep_to_add.id_requested_service = id_requested_service;
+				new_rep_to_add.id_service_requester = id_service_requester;
+				new_rep_to_add.id_service_provider = id_service_provider;
+				new_rep_to_add.feedback = 90;
+				new_rep_to_add.num_feedback = 100;
+				new_rep_to_add.reputation_value = double(new_rep_to_add.feedback) / double(new_rep_to_add.num_feedback);
+				list_of_reputation.push_back(new_rep_to_add);
+			}
 		}
 
 		Reputation GetReputation(int id_service_requester, int id_service_provider, int id_requested_service) {
@@ -507,7 +554,8 @@ class Scheduler
 	int service_requester;
 	int requested_service;
 	vector<int> service_providers_array;
-	int handling_master_node;
+	int handling_master_node;	
+	//Master obj_master_node;
 	vector<Trust_record> Trust_list;
 
 public:
@@ -596,5 +644,14 @@ public:
 		this->Trust_list = new_list;
 	}
 
+	/*
+		Master GetMasterObj() {
+			return this->obj_master_node;
+		}
+
+		void SetMasterObj(Master obj_mn) {
+			this->obj_master_node = obj_mn;
+		}
+	*/
 
 };
