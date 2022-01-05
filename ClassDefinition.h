@@ -259,6 +259,7 @@ class Device{
 
 
 		bool AllocateDeviceResources(double service_power) {
+			// return true only if the device can handle the service
 			if (this->remaining_power - service_power > 0) {
 				this->remaining_power = this->remaining_power - service_power;
 				return true;
@@ -655,3 +656,178 @@ public:
 	*/
 
 };
+
+/*
+class Simulator {
+	private: 
+
+	public: 
+		void Run() {
+			while (!event_calendar.IsEmpty()) {
+				ProcessOneEvent();
+			}
+		}
+
+		void ProcessOneEvent() {
+			Event my_event = event_calendar.GetEvent();
+			
+			if (!my_event == 0) {
+				my_event.RunEvent();
+			}
+		
+			event_calendar.RemoveEvent();
+		}
+
+
+};
+*/
+
+class Event {
+private:
+	int scheduler_id;	
+	Scheduler scheduler_item;
+	bool deleted;
+	string event_type;
+
+public:
+	double timestamp;
+
+	Event() {
+		this->scheduler_id = -1;
+		this->timestamp = 0.0;
+		this->scheduler_item = {};
+		this->deleted = false;
+	}
+
+	void SetEventType(string e_t) {
+		this->event_type = e_t;
+	}
+
+	string GetEventType() {
+		return this->event_type;
+	}
+
+	void SetSchedulerID(double id) {
+		this->scheduler_id = id;
+	}
+
+	int GetSchedulerID() {
+		return this->scheduler_id;
+	}
+
+	void SetTimeStamp(double ts) {
+		this->timestamp = ts;
+	}
+
+	double GetTimeStamp() {
+		return this->timestamp;
+	}
+
+	void SetSchedulerItem(Scheduler sch_itm) {
+		this->scheduler_item = sch_itm;
+	}
+
+	Scheduler GetSchedulerItem() {
+		return this->scheduler_item;
+	}
+
+	void MarkAsDeleted() {
+		this->deleted = true;
+	}
+
+	void UnMarkAsDeleted() {
+		this->deleted = false;
+	}
+
+	bool IsDeleted() {
+		return this->deleted;
+	}
+
+};
+
+bool AscTimestamp_order(const Event& a, const Event& b)
+{
+	return a.timestamp < b.timestamp;
+};
+
+
+class Calendar {
+private: 
+	vector<Event> list_of_events;
+public:
+	Calendar(vector<Scheduler> list_of_events_to_handle) {
+		//this->list_of_events = {};
+
+		for (int i = 0; i < list_of_events_to_handle.size(); i++) {
+			//list_of_events_to_handle[i]
+			Event new_event_to_add = Event();
+			new_event_to_add.SetEventType("scheduler");
+			new_event_to_add.SetSchedulerID(list_of_events_to_handle[i].GetID());
+			new_event_to_add.SetTimeStamp(list_of_events_to_handle[i].GetTOA());
+			new_event_to_add.SetSchedulerItem(list_of_events_to_handle[i]);
+			this->list_of_events.push_back(new_event_to_add);
+		}
+	}
+
+	void AddEvent(int scheduler_id, double timestamp, Scheduler event_to_handle) {
+		Event new_event_to_add = Event();
+		new_event_to_add.SetEventType("scheduler");
+		new_event_to_add.SetSchedulerID(scheduler_id);
+		new_event_to_add.SetTimeStamp(timestamp);		
+		new_event_to_add.SetSchedulerItem(event_to_handle); //forse non serve, ci basta l'id dello scheduler
+		this->list_of_events.push_back(new_event_to_add);
+	}
+
+	/*void InitializeCalendar(vector<Scheduler> list_of_events_to_handle) {
+		for (int i = 0; i < list_of_events_to_handle.size(); i++) {
+			//list_of_events_to_handle[i]
+			Event new_event_to_add = Event();
+			new_event_to_add.SetSchedulerID(list_of_events_to_handle[i].GetID());
+			new_event_to_add.SetTimeStamp(list_of_events_to_handle[i].GetTOA());
+			new_event_to_add.SetSchedulerItem(list_of_events_to_handle[i]);
+
+			this->list_of_events.push_back(new_event_to_add);
+		}
+	}
+	*/
+	Event GetNextEvent() {		
+		OrderEvents(); // ordinamento e getto il primo ....
+		for (int i = 0; i < this->list_of_events.size(); i++) {
+			if (!list_of_events[i].IsDeleted()) {
+				return this->list_of_events[i];
+			}
+		}	
+	}
+
+	void OrderEvents() {
+		// bisogna ordinare solo i non cancellati.
+		std::sort(this->list_of_events.begin(), this->list_of_events.end(), AscTimestamp_order);		
+	}
+
+	void DeleteEvent() {
+		for (int i = 0; i < this->list_of_events.size(); i++) {
+			if (!list_of_events[i].IsDeleted()) {
+				this->list_of_events[i].MarkAsDeleted();
+				break;
+			}
+		}
+	}
+
+	bool IsEmpty() {
+		int tot_element_deleted = 0;
+
+		for (int i = 0; i < this->list_of_events.size(); i++) {
+			if ((list_of_events[i].IsDeleted())) {
+				tot_element_deleted++;
+			}			
+		}
+
+		if (this->list_of_events.size() != tot_element_deleted) {
+			return false;
+		}
+		else {
+			return true;
+		}
+	}	
+};
+

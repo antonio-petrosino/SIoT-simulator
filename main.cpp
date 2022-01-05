@@ -32,9 +32,7 @@ int main() {
 
 	lambda			= 2;
 	tot_sim			= 1000;	 // secondi
-	seed			= 19;
-
-
+	seed			= 1;
 		
 	cout <<"Start..."<< endl;
 	
@@ -56,15 +54,35 @@ int main() {
 	tend = time(0);
 	cout << "Until scheduler lasts: " << difftime(tend, tstart) << " second(s)." << endl;
 
+	Calendar event_calendar = Calendar(scheduler_records);
 
+	while (!event_calendar.IsEmpty()) {
+		//ProcessOneEvent();
+		Event next_event = event_calendar.GetNextEvent();
+
+		cout << "Sched[" << next_event.GetSchedulerID() << "]..." << endl;
+
+		scheduler_records[next_event.GetSchedulerID()] = ServiceProviderFiltering(scheduler_records[next_event.GetSchedulerID()], list_of_services, n_services, list_of_devices, n_devices, list_of_master, n_master, seed);
+
+		//event_calendar.AddEvent(next_event.GetSchedulerID(), next_event.timestamp + 1, next_event.GetSchedulerItem());
+
+		event_calendar.DeleteEvent();
+		cout << "..." << endl;
+	}
+	
+/*
 	for (int i = 0; i < scheduler_records.size(); i++) {
 		cout << "Sched[" << i << "]..." << endl;
 		scheduler_records[i] = ServiceProviderFiltering(scheduler_records[i], list_of_services, n_services, list_of_devices, n_devices, list_of_master, n_master, seed);		
 
-		AssignFeedback(list_of_master, n_master, scheduler_records[i].GetMaster(), /*provider*/scheduler_records[i].GetSR(), scheduler_records[i].GetSR(), scheduler_records[i].GetReqServ(), true/*dal provider*/);
+		//AssignFeedback(list_of_master, n_master, scheduler_records[i].GetMaster(), scheduler_records[i].GetSR(), scheduler_records[i].GetSR(), scheduler_records[i].GetReqServ(), true);
+
 		cout << "..." << endl;
 	}
-	//	for(int i=0; i<n_master; i++){
+*/
+	
+
+//	for(int i=0; i<n_master; i++){
 	//		list_of_master[i].PrintMaster();
 	//	}	
 	// 
