@@ -14,12 +14,19 @@ double gamma = 0.2;
 bool resource_ctrl = false;
 bool qos_ctrl = false;
 time_t tstart, tend;
+Service* list_of_services;
+Master* list_of_master;
+Device* list_of_devices;
+vector<Scheduler>  scheduler_records;
+int n_services, n_devices, n_master, lambda, tot_sim, seed;
 
 
 int main() {	  
 	cout << "Progetto SSIoT"<<endl;
+	// seed the RNG	
+	std::mt19937 rng(seed); // mt19937: Pseudo-random number generation
 
-	int n_services, n_devices, n_master, lambda, tot_sim, seed;
+	//int n_services, n_devices, n_master, lambda, tot_sim, seed;
 	
 
     //float alfa, beta, gamma;
@@ -38,18 +45,17 @@ int main() {
 	
 	srand(seed);  
 	
-	Service *list_of_services;	
-	list_of_services = ServicesCreation(n_services);
-	
-	Master *list_of_master;
-	list_of_master = MasterCreation(n_master, n_services, list_of_services);
-	
-	Device *list_of_devices;
-	list_of_devices = DeviceCreation(n_devices, n_services, n_master, list_of_services, list_of_master);
+	//Service *list_of_services;	
+	list_of_services = ServicesCreation();	
+	//Master *list_of_master;
+	list_of_master = MasterCreation();	
+	//Device *list_of_devices;
+	list_of_devices = DeviceCreation();
 	
 	GenerateSocialRel(n_devices, list_of_devices);	
 
-	vector<Scheduler>  scheduler_records = GenerateEventsArray(seed, lambda, tot_sim, list_of_services, n_services, list_of_devices, n_devices, list_of_master, n_master);
+	//vector<Scheduler>  
+	scheduler_records = GenerateEventsArray(tot_sim);
 
 	tend = time(0);
 	cout << "Until scheduler lasts: " << difftime(tend, tstart) << " second(s)." << endl;
@@ -63,21 +69,20 @@ int main() {
 		cout << "Sched[" << next_event.GetSchedulerID() << "]..." << endl;
 
 		if (next_event.GetEventType() == "scheduler") {
-			scheduler_records[next_event.GetSchedulerID()] = ServiceProviderFiltering(scheduler_records[next_event.GetSchedulerID()], list_of_services, n_services, list_of_devices, n_devices, list_of_master, n_master, seed);
+			ServiceProviderFiltering(next_event.GetSchedulerID());
 
-			event_assigned = Orchestrator_MakeDecisions(scheduler_records[next_event.GetSchedulerID()], list_of_master, n_master, list_of_devices, n_devices, list_of_services, n_services);
+			event_assigned = Orchestrator_MakeDecisions(next_event.GetSchedulerID());
 
 			if (event_assigned) {
 				// schedulo riassegnazione risorse
 				// tempo di calcolo???? 
-				double processing_time = 100;
+				double processing_time = EstimateProcessingTime(next_event.GetSchedulerID());; // cycles/s -> bit/cycles (1/1000) ->  bit 				
 				double new_timestamp = next_event.GetTimeStamp() + processing_time;
 				event_calendar.AddEvent(next_event.GetSchedulerID(), new_timestamp, "end_service");
 			}
 			else {
-				// schedulo di nuovo il servizio
-				// backoff???
-				double backoff = 200;
+				// schedulo di nuovo il servizio				
+				double backoff = rand() % 35;
 				double new_timestamp = next_event.GetTimeStamp() + backoff;
 				event_calendar.AddEvent(next_event.GetSchedulerID(), new_timestamp, "scheduler");
 			}

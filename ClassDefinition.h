@@ -1,9 +1,6 @@
 extern bool vDEBUG;
 extern bool qos_ctrl;
 extern bool resource_ctrl;
-
-extern double alpha, beta, gamma;
-
 #include <algorithm>
 
 
@@ -112,7 +109,7 @@ class Device{
 			this->id_manufacturer	= 0;
 			this->location			= 0;
 			this->device_class		= 0;
-			this->clock_speed 		= 0;
+			this->clock_speed 		= 0; // gigacycles/s
 			this->malicious_node	= false;
 			
 			vector<Friend_Record> empty_friend_list;
@@ -556,6 +553,7 @@ class Scheduler
 	int requested_service;
 	vector<int> service_providers_array;
 	int handling_master_node;	
+	int choosen_service_provider;
 	//Master obj_master_node;
 	vector<Trust_record> Trust_list;
 
@@ -659,6 +657,17 @@ public:
 			this->obj_master_node = obj_mn;
 		}
 	*/
+
+	int GetChoosenSP()
+	{
+		return this->choosen_service_provider;
+	};
+
+	void SetChoosenSP(int new_csp)
+	{
+		this->choosen_service_provider = new_csp;
+
+	};
 
 };
 
@@ -799,9 +808,3 @@ public:
 	}	
 };
 
-
-/* DEFINE GLOBAL VARIABLE
-extern Service* list_of_services;
-extern Master* list_of_master;
-extern Device* list_of_devices;
-*/

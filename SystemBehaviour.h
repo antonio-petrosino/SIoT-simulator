@@ -1,13 +1,22 @@
 #include <vector>
-#include "ClassDefinition.h"
 #include <algorithm>
+#include "ClassDefinition.h"
 
 #define INIT_FEED = 0.5;
 
-Service *ServicesCreation(int n_services){
+/* DEFINE GLOBAL VARIABLE */
+extern double alpha, beta, gamma;
+extern Service* list_of_services;
+extern Master* list_of_master;
+extern Device* list_of_devices;
+extern vector<Scheduler>  scheduler_records;
+extern int n_services, n_devices, n_master, lambda, tot_sim, seed;
+
+
+Service *ServicesCreation(){
 
     const float possible_power_cost[] = {0.1,0.1,0.1,0.2,0.2,0.2,0.3,0.3};
-    const int possible_cpu_req[]      = {6  ,6  ,  6, 10, 10, 10, 14, 14};
+    const int possible_cpu_req[]      = {6, 6, 6, 10, 10, 10, 14, 14};
     
     Service* arrayOfServices = new Service[n_services];    
     
@@ -40,8 +49,7 @@ Service *ServicesCreation(int n_services){
 	return arrayOfServices;
 }
 
-
-Device* DeviceCreation(int n_devices, int n_services, int n_master, Service *defined_services, Master *defined_master){
+Device* DeviceCreation(){
 	
 	Device* arrayOfDevice = new Device[n_devices];
 	
@@ -106,9 +114,9 @@ Device* DeviceCreation(int n_devices, int n_services, int n_master, Service *def
 		vector<int> suitable_services; // elenco di id
 		
 		for(int j=0;j<n_services;j++){
-			if(arrayOfDevice[i].GetTotalPower() >= (defined_services[j].GetPowerCost() * 2))
+			if(arrayOfDevice[i].GetTotalPower() >= (list_of_services[j].GetPowerCost() * 2))
 			{ 
-				suitable_services.push_back(defined_services[j].GetServiceId());											
+				suitable_services.push_back(list_of_services[j].GetServiceId());											
 			}
 		}
 					
@@ -130,7 +138,7 @@ Device* DeviceCreation(int n_devices, int n_services, int n_master, Service *def
 		
 		for(int j=0;j<choosen_services.size();j++){		
 				for(int k=0;k<n_master;k++){
-					vector<int> service_to_find = defined_master[k].GetAllServices();					
+					vector<int> service_to_find = list_of_master[k].GetAllServices();					
 					for(int s=0;s<service_to_find.size();s++){						
 						if(service_to_find[s] == choosen_services[j]){	
 												
@@ -139,8 +147,8 @@ Device* DeviceCreation(int n_devices, int n_services, int n_master, Service *def
 //							vector<Friend_Record> empty_friend_list;
 //							new_device_to_add.friend_info = empty_friend_list;
 							
-							defined_master[k].AddDevice(arrayOfDevice[i].GetID());
-							arrayOfDevice[i].master_node_id_list.push_back(defined_master[k].GetID());
+							list_of_master[k].AddDevice(arrayOfDevice[i].GetID());
+							arrayOfDevice[i].master_node_id_list.push_back(list_of_master[k].GetID());
 						}
 					}					
 				}	
@@ -213,7 +221,7 @@ void GenerateSocialRel(int n_devices, Device *defined_devices){
 	}
 }
 
-Master* MasterCreation(int n_master, int n_services, Service *defined_services){
+Master* MasterCreation(){
 	Master* arrayOfMaster = new Master[n_master];
 	
 	for(int i=0;i<n_master;i++){ 
@@ -222,7 +230,7 @@ Master* MasterCreation(int n_master, int n_services, Service *defined_services){
 	
 	int given_master_id = 0;	
 	for(int i=0;i<n_services;i++){							
-		arrayOfMaster[i % n_master].AddNewService(defined_services[i].GetServiceId());
+		arrayOfMaster[i % n_master].AddNewService(list_of_services[i].GetServiceId());
 		
 	}
 		
@@ -234,12 +242,12 @@ Master* MasterCreation(int n_master, int n_services, Service *defined_services){
 }
 
 
-vector<Scheduler> GenerateEventsArray(int seed, int averageArrival, int sim_duration,  Service* list_of_services, int n_services , Device* list_of_devices, int n_devices, Master* list_of_master, int n_master) {
+vector<Scheduler> GenerateEventsArray(int sim_duration) {
 	// seed the RNG	
 	std::mt19937 rng(seed); // mt19937: Pseudo-random number generation
 		
 	//double lambda = static_cast<double>(1)/ averageArrival;
-	double lambda = averageArrival;
+
 	std::exponential_distribution<double> exp(lambda);
 
    float sumArrivalTimes = 0;
@@ -290,17 +298,18 @@ bool contains(int src, vector<Friend_Record> subjects)
 	return iter != subjects.end();
 }
 
-Scheduler ServiceProviderFiltering(Scheduler scheduler_record, Service* list_of_services, int n_services, Device* list_of_devices, int n_devices, Master* list_of_master, int n_master, int seed) {
+void ServiceProviderFiltering(int id_scheduler_record) {
 // Filtra in base al servizio scelto -> Master node -> provider registrati -> filtro solo su un servizio
-		int id_handling_master = scheduler_record.GetMaster();
+		
+		int id_handling_master = scheduler_records[id_scheduler_record].GetMaster();
 
 		Master selected_master;
 		Device selected_provider;
 		Device selected_service_requester; 
 		vector<Trust_record> Trust_list; // {id_provider, valore} 
 
-		int id_service_requester = scheduler_record.GetSR();
-		int id_requested_service = scheduler_record.GetReqServ();
+		int id_service_requester = scheduler_records[id_scheduler_record].GetSR();
+		int id_requested_service = scheduler_records[id_scheduler_record].GetReqServ();
 
 
 		for (int j = 0; j < n_master; j++) {
@@ -396,7 +405,7 @@ Scheduler ServiceProviderFiltering(Scheduler scheduler_record, Service* list_of_
 							}
 						}
 
-						scheduler_record.AddServiceProvider(selected_provider.GetID());												
+						scheduler_records[id_scheduler_record].AddServiceProvider(selected_provider.GetID());
 						break;
 					}
 				}
@@ -409,8 +418,8 @@ Scheduler ServiceProviderFiltering(Scheduler scheduler_record, Service* list_of_
 		std::sort(Trust_list.begin(), Trust_list.end(), CompareByTrustDesc);
 
 		//QuS ordino solo dopo il cut
-		scheduler_record.SetTrustList(Trust_list);
-		return scheduler_record;
+		scheduler_records[id_scheduler_record].SetTrustList(Trust_list);
+		//return scheduler_record;
 		
 }
 
@@ -442,17 +451,19 @@ void AssignFeedback(Master* list_of_master, int n_master, int id_master, int id_
 
 }
 
-bool Orchestrator_MakeDecisions(Scheduler sched_event, Master* list_of_master, int n_master, Device* list_of_devices, int n_devices, Service* list_of_service, int n_services) {
-	vector<Trust_record> providers_ranking = sched_event.GetTrustList();
+bool Orchestrator_MakeDecisions(int id_sched_event) {	
+	vector<Trust_record> providers_ranking = scheduler_records[id_sched_event].GetTrustList();
 	Master selected_master;
 	Device selected_provider;
 	Service selected_service;
 	int service_id;
-	int master_id = sched_event.GetMaster();
+	int master_id = scheduler_records[id_sched_event].GetMaster();
 	
 
 	if (resource_ctrl) {
-
+		// lofaremo
+		// secondo in classifica ecc..ecc..
+		// definire la soglia minima
 	}
 	else {
 		
@@ -464,17 +475,21 @@ bool Orchestrator_MakeDecisions(Scheduler sched_event, Master* list_of_master, i
 		}
 		
 		selected_provider = selected_master.GetDeviceByID(providers_ranking[0].id_service_provider,list_of_devices, n_devices);
-		service_id = sched_event.GetReqServ();
+		service_id = scheduler_records[id_sched_event].GetReqServ();
 		
 		for (int i = 0; i < n_services; i++) {
-			if (list_of_devices[i].GetID() == service_id) {
-				selected_service = list_of_service[i];
+			if (list_of_services[i].GetServiceId() == service_id) {
+				selected_service = list_of_services[i];
 				break;
 			}
 		}
 
-
-		return selected_provider.AllocateDeviceResources(selected_service.GetPowerCost());
+		bool allocation_success = selected_provider.AllocateDeviceResources(selected_service.GetPowerCost());
+		if (allocation_success) {
+			scheduler_records[id_sched_event].SetChoosenSP(selected_provider.GetID());
+		}
+			
+		return allocation_success;
 		
 	}
 
@@ -482,3 +497,48 @@ bool Orchestrator_MakeDecisions(Scheduler sched_event, Master* list_of_master, i
 	// ritornare vero se ho un provider valido
 	return true;
 }
+
+
+double EstimateProcessingTime(int id_sched_event) {
+	Master selected_master;
+	Device selected_provider;
+	Service selected_service;
+	int provider_id;
+	int service_id;
+	int master_id = scheduler_records[id_sched_event].GetMaster();
+
+
+		for (int i = 0; i < n_master; i++) {
+			if (list_of_master[i].GetID() == master_id) {
+				selected_master = list_of_master[i];
+				break;
+			}
+		}
+
+		provider_id = scheduler_records[id_sched_event].GetChoosenSP();
+		service_id = scheduler_records[id_sched_event].GetReqServ();
+
+		for (int i = 0; i < n_services; i++) {
+			if (list_of_services[i].GetServiceId() == service_id) {
+				selected_service = list_of_services[i];
+				break;
+			}
+		}
+
+		for (int i = 0; i < n_devices; i++) {
+			if (list_of_devices[i].GetID() == service_id) {
+				selected_provider = list_of_devices[i];
+				break;
+			}
+		}
+
+
+		double cyclespersec = selected_provider.GetClockSpeed();
+		int bitperservice = selected_service.GetCpuReq();
+
+
+		double time = (1000 * double(bitperservice)) / (cyclespersec);
+
+		return time;
+}
+
