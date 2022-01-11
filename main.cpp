@@ -11,8 +11,8 @@ bool vDEBUG = false;
 double alpha = 0.5;
 double beta = 0.3;
 double gamma = 0.2;
-bool resource_ctrl = true;
-bool qos_ctrl = true;
+bool resource_ctrl = false;
+bool qos_ctrl = false;
 time_t tstart, tend;
 
 
@@ -57,35 +57,39 @@ int main() {
 	Calendar event_calendar = Calendar(scheduler_records);
 
 	while (!event_calendar.IsEmpty()) {
-		//ProcessOneEvent();
+		
 		Event next_event = event_calendar.GetNextEvent();
-
+		bool event_assigned;
 		cout << "Sched[" << next_event.GetSchedulerID() << "]..." << endl;
 
-		scheduler_records[next_event.GetSchedulerID()] = ServiceProviderFiltering(scheduler_records[next_event.GetSchedulerID()], list_of_services, n_services, list_of_devices, n_devices, list_of_master, n_master, seed);
+		if (next_event.GetEventType() == "scheduler") {
+			scheduler_records[next_event.GetSchedulerID()] = ServiceProviderFiltering(scheduler_records[next_event.GetSchedulerID()], list_of_services, n_services, list_of_devices, n_devices, list_of_master, n_master, seed);
 
-		//event_calendar.AddEvent(next_event.GetSchedulerID(), next_event.timestamp + 1, next_event.GetSchedulerItem());
+			event_assigned = Orchestrator_MakeDecisions(scheduler_records[next_event.GetSchedulerID()], list_of_master, n_master, list_of_devices, n_devices, list_of_services, n_services);
 
-		event_calendar.DeleteEvent();
-		cout << "..." << endl;
+			if (event_assigned) {
+				// schedulo riassegnazione risorse
+				// tempo di calcolo???? 
+				double processing_time = 100;
+				double new_timestamp = next_event.GetTimeStamp() + processing_time;
+				event_calendar.AddEvent(next_event.GetSchedulerID(), new_timestamp, "end_service");
+			}
+			else {
+				// schedulo di nuovo il servizio
+				// backoff???
+				double backoff = 200;
+				double new_timestamp = next_event.GetTimeStamp() + backoff;
+				event_calendar.AddEvent(next_event.GetSchedulerID(), new_timestamp, "scheduler");
+			}
+
+			event_calendar.DeleteEvent();
+			cout << "..." << endl;
+		}
+		else if (next_event.GetEventType() == "end_service") {
+			cout << "..." << endl;
+		}
 	}
-	
-/*
-	for (int i = 0; i < scheduler_records.size(); i++) {
-		cout << "Sched[" << i << "]..." << endl;
-		scheduler_records[i] = ServiceProviderFiltering(scheduler_records[i], list_of_services, n_services, list_of_devices, n_devices, list_of_master, n_master, seed);		
 
-		//AssignFeedback(list_of_master, n_master, scheduler_records[i].GetMaster(), scheduler_records[i].GetSR(), scheduler_records[i].GetSR(), scheduler_records[i].GetReqServ(), true);
-
-		cout << "..." << endl;
-	}
-*/
-	
-
-//	for(int i=0; i<n_master; i++){
-	//		list_of_master[i].PrintMaster();
-	//	}	
-	// 
 	tend = time(0);
 	cout << "Until provider threshold: " << difftime(tend, tstart) << " second(s)." << endl;
 
@@ -94,10 +98,5 @@ int main() {
 	// possibilità di calcolare quanto tempo effettivo impiega il master a calcolare tutto (poi vediamo)
 	// si può fare
 
-	// facciamo un oggetto "calendario" che itera 
-
     return 0;
 }
-
-
-// return_vettore_di_servizi ...

@@ -442,3 +442,43 @@ void AssignFeedback(Master* list_of_master, int n_master, int id_master, int id_
 
 }
 
+bool Orchestrator_MakeDecisions(Scheduler sched_event, Master* list_of_master, int n_master, Device* list_of_devices, int n_devices, Service* list_of_service, int n_services) {
+	vector<Trust_record> providers_ranking = sched_event.GetTrustList();
+	Master selected_master;
+	Device selected_provider;
+	Service selected_service;
+	int service_id;
+	int master_id = sched_event.GetMaster();
+	
+
+	if (resource_ctrl) {
+
+	}
+	else {
+		
+		for (int i = 0; i < n_master;i++) {
+			if (list_of_master[i].GetID() == master_id) {
+				selected_master = list_of_master[i];
+				break;
+			}
+		}
+		
+		selected_provider = selected_master.GetDeviceByID(providers_ranking[0].id_service_provider,list_of_devices, n_devices);
+		service_id = sched_event.GetReqServ();
+		
+		for (int i = 0; i < n_services; i++) {
+			if (list_of_devices[i].GetID() == service_id) {
+				selected_service = list_of_service[i];
+				break;
+			}
+		}
+
+
+		return selected_provider.AllocateDeviceResources(selected_service.GetPowerCost());
+		
+	}
+
+	// ritornare falso se non l'ho assegnato
+	// ritornare vero se ho un provider valido
+	return true;
+}

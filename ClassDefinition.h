@@ -645,6 +645,11 @@ public:
 		this->Trust_list = new_list;
 	}
 
+
+	vector<Trust_record> GetTrustList() {
+		return this->Trust_list;
+	}
+
 	/*
 		Master GetMasterObj() {
 			return this->obj_master_node;
@@ -657,35 +662,10 @@ public:
 
 };
 
-/*
-class Simulator {
-	private: 
-
-	public: 
-		void Run() {
-			while (!event_calendar.IsEmpty()) {
-				ProcessOneEvent();
-			}
-		}
-
-		void ProcessOneEvent() {
-			Event my_event = event_calendar.GetEvent();
-			
-			if (!my_event == 0) {
-				my_event.RunEvent();
-			}
-		
-			event_calendar.RemoveEvent();
-		}
-
-
-};
-*/
-
 class Event {
 private:
 	int scheduler_id;	
-	Scheduler scheduler_item;
+	//Scheduler scheduler_item;
 	bool deleted;
 	string event_type;
 
@@ -695,7 +675,7 @@ public:
 	Event() {
 		this->scheduler_id = -1;
 		this->timestamp = 0.0;
-		this->scheduler_item = {};
+		//this->scheduler_item = {};
 		this->deleted = false;
 	}
 
@@ -722,7 +702,8 @@ public:
 	double GetTimeStamp() {
 		return this->timestamp;
 	}
-
+	
+	/*
 	void SetSchedulerItem(Scheduler sch_itm) {
 		this->scheduler_item = sch_itm;
 	}
@@ -730,6 +711,7 @@ public:
 	Scheduler GetSchedulerItem() {
 		return this->scheduler_item;
 	}
+	*/
 
 	void MarkAsDeleted() {
 		this->deleted = true;
@@ -763,33 +745,19 @@ public:
 			Event new_event_to_add = Event();
 			new_event_to_add.SetEventType("scheduler");
 			new_event_to_add.SetSchedulerID(list_of_events_to_handle[i].GetID());
-			new_event_to_add.SetTimeStamp(list_of_events_to_handle[i].GetTOA());
-			new_event_to_add.SetSchedulerItem(list_of_events_to_handle[i]);
+			new_event_to_add.SetTimeStamp(list_of_events_to_handle[i].GetTOA());			
 			this->list_of_events.push_back(new_event_to_add);
 		}
 	}
 
-	void AddEvent(int scheduler_id, double timestamp, Scheduler event_to_handle) {
+	void AddEvent(int scheduler_id, double timestamp, string event_type) {
 		Event new_event_to_add = Event();
-		new_event_to_add.SetEventType("scheduler");
+		new_event_to_add.SetEventType(event_type);
 		new_event_to_add.SetSchedulerID(scheduler_id);
-		new_event_to_add.SetTimeStamp(timestamp);		
-		new_event_to_add.SetSchedulerItem(event_to_handle); //forse non serve, ci basta l'id dello scheduler
+		new_event_to_add.SetTimeStamp(timestamp);				
 		this->list_of_events.push_back(new_event_to_add);
 	}
 
-	/*void InitializeCalendar(vector<Scheduler> list_of_events_to_handle) {
-		for (int i = 0; i < list_of_events_to_handle.size(); i++) {
-			//list_of_events_to_handle[i]
-			Event new_event_to_add = Event();
-			new_event_to_add.SetSchedulerID(list_of_events_to_handle[i].GetID());
-			new_event_to_add.SetTimeStamp(list_of_events_to_handle[i].GetTOA());
-			new_event_to_add.SetSchedulerItem(list_of_events_to_handle[i]);
-
-			this->list_of_events.push_back(new_event_to_add);
-		}
-	}
-	*/
 	Event GetNextEvent() {		
 		OrderEvents(); // ordinamento e getto il primo ....
 		for (int i = 0; i < this->list_of_events.size(); i++) {
@@ -831,3 +799,9 @@ public:
 	}	
 };
 
+
+/* DEFINE GLOBAL VARIABLE
+extern Service* list_of_services;
+extern Master* list_of_master;
+extern Device* list_of_devices;
+*/
