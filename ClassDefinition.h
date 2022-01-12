@@ -16,11 +16,17 @@ struct Reputation {
 	int id_service_provider;	 
 	int id_service_requester;
 	int id_requested_service;
-	int feedback; //TODO: vettore con timestamp per importanza nel tempo?
+	int feedback; //TODO: vettore con timestamp per importanza nel tempo?	
 	int num_feedback;
 	double reputation_value;
 };
 
+struct Queue{
+	int total_service_queued; 
+	int total_empty_list;
+	double timestamp;
+}
+;
 
 struct Trust_record {
 	int id_service_provider;	
@@ -464,6 +470,36 @@ class Master
 
 			return rep_output;
 		}
+
+
+		double AverageReputation(int id_service_provider, int id_requested_service) {
+			double avgRep = 0.0;
+			double totRep = 0;
+
+			if (this->list_of_reputation.size() > 0) {
+				for (int i = 0; i < list_of_reputation.size(); i++) {
+					if (list_of_reputation[i].id_service_provider == id_service_provider) {
+						if (list_of_reputation[i].id_requested_service == id_requested_service) {
+							if (list_of_reputation[i].num_feedback > 100) {
+								totRep = totRep + 1;
+								avgRep = avgRep + list_of_reputation[i].reputation_value;
+							}						
+						}
+						
+							
+					}
+					
+				}
+			}
+
+			if (totRep > 0) {
+				return avgRep / totRep;
+
+			}
+			else {
+				return 0.9;
+			}
+		}
 				
 		void PrintMaster(){	
 			cout << endl;
@@ -554,6 +590,8 @@ class Scheduler
 	vector<int> service_providers_array;
 	int handling_master_node;	
 	int choosen_service_provider;
+	double end_timestamp;
+	int number_of_reschedule;
 	//Master obj_master_node;
 	vector<Trust_record> Trust_list;
 
@@ -564,6 +602,9 @@ public:
 		service_requester = -1;
 		requested_service = -1;
 		handling_master_node = -1;
+		choosen_service_provider = -1;
+		number_of_reschedule = 0;
+		end_timestamp = -0.01;
 	};
 
 	void SetId(int new_id)
@@ -576,6 +617,14 @@ public:
 	{
 		return this->id_action;
 	};
+
+	void SetRescheduleTime(int r_time) {
+		this->number_of_reschedule = r_time;
+	};
+
+	int GetRescheduleTime() {
+		return this->number_of_reschedule;
+	}
 
 	void SetTOA(float new_toa)
 	{
@@ -669,10 +718,23 @@ public:
 
 	};
 
+
+	void SetEndTimestamp(double new_ts)
+	{
+		this->end_timestamp = new_ts;
+
+	};
+
+	double GetEndTimestamp()
+	{
+		return this->end_timestamp;
+	};
+
 };
 
 class Event {
 private:
+	int event_id;
 	int scheduler_id;	
 	//Scheduler scheduler_item;
 	bool deleted;
@@ -694,6 +756,14 @@ public:
 
 	string GetEventType() {
 		return this->event_type;
+	}
+
+	void SetEventID(int e_id) {
+		this->event_id = e_id;
+	}
+
+	int GetEventID() {
+		return this->event_id;
 	}
 
 	void SetSchedulerID(double id) {
@@ -752,6 +822,7 @@ public:
 		for (int i = 0; i < list_of_events_to_handle.size(); i++) {
 			//list_of_events_to_handle[i]
 			Event new_event_to_add = Event();
+			new_event_to_add.SetEventID(i);
 			new_event_to_add.SetEventType("scheduler");
 			new_event_to_add.SetSchedulerID(list_of_events_to_handle[i].GetID());
 			new_event_to_add.SetTimeStamp(list_of_events_to_handle[i].GetTOA());			
@@ -760,15 +831,19 @@ public:
 	}
 
 	void AddEvent(int scheduler_id, double timestamp, string event_type) {
+		// riordino solo all'aggiunta di un evento? 
+		
 		Event new_event_to_add = Event();
+		new_event_to_add.SetEventID(list_of_events.size());
 		new_event_to_add.SetEventType(event_type);
 		new_event_to_add.SetSchedulerID(scheduler_id);
 		new_event_to_add.SetTimeStamp(timestamp);				
 		this->list_of_events.push_back(new_event_to_add);
+		OrderEvents();
 	}
 
 	Event GetNextEvent() {		
-		OrderEvents(); // ordinamento e getto il primo ....
+		//OrderEvents(); // ordinamento e getto il primo ....
 		for (int i = 0; i < this->list_of_events.size(); i++) {
 			if (!list_of_events[i].IsDeleted()) {
 				return this->list_of_events[i];
@@ -781,9 +856,10 @@ public:
 		std::sort(this->list_of_events.begin(), this->list_of_events.end(), AscTimestamp_order);		
 	}
 
-	void DeleteEvent() {
+	void DeleteEvent(int event_id) {
 		for (int i = 0; i < this->list_of_events.size(); i++) {
-			if (!list_of_events[i].IsDeleted()) {
+			//if (!list_of_events[i].IsDeleted()) {
+			if(list_of_events[i].GetEventID() == event_id){
 				this->list_of_events[i].MarkAsDeleted();
 				break;
 			}

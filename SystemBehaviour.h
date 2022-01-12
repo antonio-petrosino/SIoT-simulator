@@ -15,7 +15,8 @@ extern int n_services, n_devices, n_master, lambda, tot_sim, seed;
 
 Service *ServicesCreation(){
 
-    const float possible_power_cost[] = {0.1,0.1,0.1,0.2,0.2,0.2,0.3,0.3};
+    //const float possible_power_cost[] = {0.1,0.1,0.1,0.2,0.2,0.2,0.3,0.3};
+	const float possible_power_cost[] = { 0.3,0.3,0.3,0.3,0.3,0.4,0.5,0.5 };
     const int possible_cpu_req[]      = {6, 6, 6, 10, 10, 10, 14, 14};
     
     Service* arrayOfServices = new Service[n_services];    
@@ -350,11 +351,13 @@ void ServiceProviderFiltering(int id_scheduler_record) {
 				for (int k = 0; k < selected_services.size(); k++) {
 					if (selected_services[k] == id_requested_service) {						
 						
-						// aggiungerò solo se la soglia va bene 
-						// TODO: manca calcolo punteggio amici di amici					
-
+						// TODO1: manca calcolo punteggio amici di amici	
+						// 
+						// TODO2: se è vuota??
+						bool at_least_one_friend = false;
 						for (int i = 0; i < friend_of_requester.size(); i++) {
-							if (friend_of_requester[i].friend_device_id == selected_provider.GetID()) {								
+							if (friend_of_requester[i].friend_device_id == selected_provider.GetID()) {			
+								at_least_one_friend = true;
 								Trust_record trust_value_to_add{};
 								trust_value_to_add.id_service_provider = friend_of_requester[i].friend_device_id;
 								trust_value_to_add.social_value = friend_of_requester[i].sociality_factor;
@@ -400,7 +403,14 @@ void ServiceProviderFiltering(int id_scheduler_record) {
 
 								trust_value_to_add.rep_value = rep_results;
 								trust_value_to_add.trust_value = trust_value_to_add.social_value*trust_value_to_add.rep_value;
-								Trust_list.push_back(trust_value_to_add);
+								
+								// SOGLIA
+								double avgRep = selected_master.AverageReputation(selected_provider.GetID(), id_requested_service);
+								// TODO: ripristinare taglio soglia
+								avgRep = 1;
+								if (avgRep >= 0.75) {
+									Trust_list.push_back(trust_value_to_add);
+								}
 								break;
 							}
 						}
@@ -414,16 +424,16 @@ void ServiceProviderFiltering(int id_scheduler_record) {
 			}
 			
 		}
-		//TODO: eventuale taglio sotto  una certa soglia (per reputation)
+		
 		std::sort(Trust_list.begin(), Trust_list.end(), CompareByTrustDesc);
 
 		//QuS ordino solo dopo il cut
 		scheduler_records[id_scheduler_record].SetTrustList(Trust_list);
-		//return scheduler_record;
+		
 		
 }
 
-void AssignFeedback(Master* list_of_master, int n_master, int id_master, int id_service_provider, int id_service_requester, int id_requested_service, bool mal_behaviour){
+void AssignFeedback(int id_master, int id_service_provider, int id_service_requester, int id_requested_service, bool mal_behaviour){
 	
 	const int possible_mal_feedback[]	= { 0,0,0,0,0,1,1,1,1,1 }; // mal 50%
 	const int possible_feedback[]		= { 1,1,1,1,1,1,1,1,1,0 }; // ben 90%
@@ -451,51 +461,60 @@ void AssignFeedback(Master* list_of_master, int n_master, int id_master, int id_
 
 }
 
-bool Orchestrator_MakeDecisions(int id_sched_event) {	
+int Orchestrator_MakeDecisions(int id_sched_event) {	
 	vector<Trust_record> providers_ranking = scheduler_records[id_sched_event].GetTrustList();
+
 	Master selected_master;
 	Device selected_provider;
 	Service selected_service;
-	int service_id;
+	bool allocation_success = false;
+
+	int service_id = scheduler_records[id_sched_event].GetReqServ();
+	for (int i = 0; i < n_services; i++) {
+		if (list_of_services[i].GetServiceId() == service_id) {
+			selected_service = list_of_services[i];
+			break;
+		}
+	}
+
 	int master_id = scheduler_records[id_sched_event].GetMaster();
-	
+	for (int i = 0; i < n_master; i++) {
+		if (list_of_master[i].GetID() == master_id) {
+			selected_master = list_of_master[i];
+			break;
+		}
+	}
+
+	if (providers_ranking.size() < 1) {
+		return -2;
+	}
 
 	if (resource_ctrl) {
-		// lofaremo
-		// secondo in classifica ecc..ecc..
-		// definire la soglia minima
-	}
-	else {
-		
-		for (int i = 0; i < n_master;i++) {
-			if (list_of_master[i].GetID() == master_id) {
-				selected_master = list_of_master[i];
-				break;
-			}
-		}
-		
-		selected_provider = selected_master.GetDeviceByID(providers_ranking[0].id_service_provider,list_of_devices, n_devices);
-		service_id = scheduler_records[id_sched_event].GetReqServ();
-		
-		for (int i = 0; i < n_services; i++) {
-			if (list_of_services[i].GetServiceId() == service_id) {
-				selected_service = list_of_services[i];
-				break;
-			}
-		}
 
-		bool allocation_success = selected_provider.AllocateDeviceResources(selected_service.GetPowerCost());
+		for (int i = 0; i < providers_ranking.size(); i++) {
+			selected_provider = selected_master.GetDeviceByID(providers_ranking[i].id_service_provider, list_of_devices, n_devices);
+			allocation_success = selected_provider.AllocateDeviceResources(selected_service.GetPowerCost());
+
+			if (allocation_success) {
+				scheduler_records[id_sched_event].SetChoosenSP(selected_provider.GetID());
+				return 1;
+			}
+		}	
+	}
+	else {				
+		selected_provider = selected_master.GetDeviceByID(providers_ranking[0].id_service_provider, list_of_devices, n_devices);
+		allocation_success = selected_provider.AllocateDeviceResources(selected_service.GetPowerCost());
+
 		if (allocation_success) {
 			scheduler_records[id_sched_event].SetChoosenSP(selected_provider.GetID());
+			return 1;
 		}
-			
-		return allocation_success;
-		
+		else {
+			return -1;
+		}		
 	}
 
-	// ritornare falso se non l'ho assegnato
-	// ritornare vero se ho un provider valido
-	return true;
+	return -1;
 }
 
 
@@ -542,3 +561,37 @@ double EstimateProcessingTime(int id_sched_event) {
 		return time;
 }
 
+void EndService(int id_sched_event, double end_ts) {
+	// riassegnazione risorse 
+	Master selected_master;
+	Device selected_provider;
+	Service selected_service;
+	//int provider_id;	
+	int master_id = scheduler_records[id_sched_event].GetMaster();
+	int requester_id = scheduler_records[id_sched_event].GetSR();
+
+	int service_id = scheduler_records[id_sched_event].GetReqServ();
+
+	for (int i = 0; i < n_services; i++) {
+		if (list_of_services[i].GetServiceId() == service_id) {
+			selected_service = list_of_services[i];
+			break;
+		}
+	}
+		
+	for (int i = 0; i < n_master; i++) {
+		if (list_of_master[i].GetID() == master_id) {
+			selected_master = list_of_master[i];
+			break;
+		}
+	}
+
+
+	selected_provider = selected_master.GetDeviceByID(scheduler_records[id_sched_event].GetChoosenSP(),list_of_devices, n_devices);
+	scheduler_records[id_sched_event].SetEndTimestamp(end_ts);
+	selected_provider.ReleaseDeviceResources(selected_service.GetPowerCost());
+	// TODO: assegno ai nodi malevoli, feed negativi
+	AssignFeedback(master_id, selected_provider.GetID(), requester_id, service_id, false);
+
+	// rilascio feedback
+}
