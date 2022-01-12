@@ -67,7 +67,7 @@ class Service
 	public:
 		Service(){
 			this->service_id = 0;
-			this->power_cost = 0.0;
+			this->power_cost = 0;
 			this->cpu_req 	= 0;
 		};
 		
@@ -261,24 +261,6 @@ class Device{
 			}
 		};
 
-
-		bool AllocateDeviceResources(double service_power) {
-			// return true only if the device can handle the service
-			if (this->remaining_power - service_power > 0) {
-				this->remaining_power = this->remaining_power - service_power;
-				return true;
-			}
-			else {
-				return false;
-			}
-			
-		}
-
-		void ReleaseDeviceResources(double service_power) {
-			this->remaining_power = this->remaining_power + service_power;			
-		}
-
-				
 		void PrintDevice(){	
 			cout << endl;
 			cout << "## ID Device:" 		<< this->device_id;
@@ -517,14 +499,14 @@ class Master
 		}
 
 		
-		Device GetDeviceByID(int id_device, Device* list_of_devices, int n_devices) {
+		int GetDeviceIndexByID(int id_device, Device* list_of_devices, int n_devices) {
 			Device device_to_return = Device();
 			for (int v = 0; v < n_devices; v++) {
 				if (list_of_devices[v].GetID() == id_device) {
-					device_to_return =  list_of_devices[v];
+					//device_to_return =  list_of_devices[v];
+					return v;
 				}
-			}
-			return device_to_return;
+			}			
 		};
 
 
@@ -539,7 +521,7 @@ class Master
 
 			//infos.list_of_friend_indexes
 
-			Device device_to_analyze = GetDeviceByID(id_requester, list_of_devices, n_devices);
+			Device device_to_analyze = list_of_devices[GetDeviceIndexByID(id_requester, list_of_devices, n_devices)];
 			vector<Friend_Record> friends = device_to_analyze.GetAllFriends();
 						
 			for (unsigned int i = 0; i < this->registered_devices.size(); i++) {
@@ -548,7 +530,7 @@ class Master
 				
 				for (unsigned int j = 0; j < friends.size(); j++) {
 					if (friends[j].friend_device_id == this->registered_devices[i]) {
-						Device friend_to_analyze = GetDeviceByID(friends[j].friend_device_id, list_of_devices, n_devices);
+						Device friend_to_analyze = list_of_devices[GetDeviceIndexByID(friends[j].friend_device_id, list_of_devices, n_devices)];
 						vector<int> services_list = friend_to_analyze.GetServiceIDList();
 						if (std::find(services_list.begin(), services_list.end(), id_requested_service) != services_list.end()) {
 							isFriend = true;

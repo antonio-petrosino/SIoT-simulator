@@ -15,9 +15,9 @@ extern vector<Queue> info_queue;
 
 Service *ServicesCreation(){
 
-    //const float possible_power_cost[] = {0.1,0.1,0.1,0.2,0.2,0.2,0.3,0.3};
-	const double possible_power_cost[] = { 0.3,0.3,0.3,0.3,0.3,0.4,0.5,0.5 };
-    const int possible_cpu_req[]      = {6, 6, 6, 10, 10, 10, 14, 14};
+	vector<double> possible_power_cost = {0.1,0.1,0.1,0.2,0.2,0.2,0.3,0.3};
+	//vector<double> possible_power_cost = {0.3,0.3,0.3,0.3,0.3,0.4,0.5,0.5 };
+	vector<int> possible_cpu_req      = {6, 6, 6, 10, 10, 10, 14, 14};
     
     Service* arrayOfServices = new Service[n_services];    
     
@@ -461,6 +461,38 @@ void AssignFeedback(int id_master, int id_service_provider, int id_service_reque
 
 }
 
+
+bool AllocateDeviceResources(double service_power, int device_index) {
+	// return true only if the device can handle the service
+	if (service_power > 0) {
+		if (list_of_devices[device_index].GetRemainingPower() - service_power > 0) {
+			list_of_devices[device_index].SetRemainingPower(list_of_devices[device_index].GetRemainingPower() - service_power);
+
+			//double a = this->GetTotalPower() - this->GetRemainingPower();
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	else {
+		return false;
+	}
+
+}
+
+void ReleaseDeviceResources(double service_power, int device_index) {
+	if (list_of_devices[device_index].GetRemainingPower() != list_of_devices[device_index].GetTotalPower()) {
+		list_of_devices[device_index].SetRemainingPower(list_of_devices[device_index].GetRemainingPower() + service_power);
+	}
+	else {
+		cout << "ERRORE!" << endl;
+		system("pause");
+	}
+
+}
+
+
 int Orchestrator_MakeDecisions(int id_sched_event) {	
 	vector<Trust_record> providers_ranking = scheduler_records[id_sched_event].GetTrustList();
 
@@ -492,8 +524,9 @@ int Orchestrator_MakeDecisions(int id_sched_event) {
 	if (resource_ctrl) {
 
 		for (unsigned int i = 0; i < providers_ranking.size(); i++) {
-			selected_provider = selected_master.GetDeviceByID(providers_ranking[i].id_service_provider, list_of_devices, n_devices);
-			allocation_success = selected_provider.AllocateDeviceResources(selected_service.GetPowerCost());
+			//selected_provider = selected_master.GetDeviceByID(providers_ranking[i].id_service_provider, list_of_devices, n_devices);
+			//allocation_success = list_of_devices[].
+			allocation_success = AllocateDeviceResources(selected_service.GetPowerCost(), selected_master.GetDeviceIndexByID(providers_ranking[i].id_service_provider, list_of_devices, n_devices));
 
 			if (allocation_success) {
 				scheduler_records[id_sched_event].SetChoosenSP(selected_provider.GetID());
@@ -502,8 +535,8 @@ int Orchestrator_MakeDecisions(int id_sched_event) {
 		}	
 	}
 	else {				
-		selected_provider = selected_master.GetDeviceByID(providers_ranking[0].id_service_provider, list_of_devices, n_devices);
-		allocation_success = selected_provider.AllocateDeviceResources(selected_service.GetPowerCost());
+		//selected_provider = 			
+		allocation_success = AllocateDeviceResources(selected_service.GetPowerCost(), selected_master.GetDeviceIndexByID(providers_ranking[0].id_service_provider, list_of_devices, n_devices));
 
 		if (allocation_success) {
 			scheduler_records[id_sched_event].SetChoosenSP(selected_provider.GetID());
@@ -567,9 +600,9 @@ void EndService(int id_sched_event, double end_ts) {
 	Device selected_provider;
 	Service selected_service;
 	//int provider_id;	
+
 	int master_id = scheduler_records[id_sched_event].GetMaster();
 	int requester_id = scheduler_records[id_sched_event].GetSR();
-
 	int service_id = scheduler_records[id_sched_event].GetReqServ();
 
 	for (int i = 0; i < n_services; i++) {
@@ -587,13 +620,18 @@ void EndService(int id_sched_event, double end_ts) {
 	}
 
 
-	selected_provider = selected_master.GetDeviceByID(scheduler_records[id_sched_event].GetChoosenSP(),list_of_devices, n_devices);
-	scheduler_records[id_sched_event].SetEndTimestamp(end_ts);
-	selected_provider.ReleaseDeviceResources(selected_service.GetPowerCost());
-	// TODO: assegno ai nodi malevoli, feed negativi
-	AssignFeedback(master_id, selected_provider.GetID(), requester_id, service_id, false);
+	//selected_provider = ;
 
+	
+
+	scheduler_records[id_sched_event].SetEndTimestamp(end_ts);
+	//list_of_devices[].ReleaseDeviceResources(selected_service.GetPowerCost());
+	ReleaseDeviceResources(selected_service.GetPowerCost(), selected_master.GetDeviceIndexByID(scheduler_records[id_sched_event].GetChoosenSP(), list_of_devices, n_devices));
+	//selected_provider.
+
+	// TODO: assegno ai nodi malevoli, feed negativi
 	// rilascio feedback
+	AssignFeedback(master_id, selected_provider.GetID(), requester_id, service_id, false);
 }
 
 
@@ -653,3 +691,4 @@ void UpdateQueue(Event next_event, bool event_assigned, bool empty_list) {
 
 
 }
+

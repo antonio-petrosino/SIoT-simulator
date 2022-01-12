@@ -70,8 +70,7 @@ int main() {
 			
 			bool empty_list = false;			
 			if (event_assigned == 1) {
-				// schedulo riassegnazione risorse
-				// tempo di calcolo???? 
+				// schedulo riassegnazione risorse				
 				double processing_time = EstimateProcessingTime(next_event.GetSchedulerID()); // cycles/s -> bit/cycles (1/1000) ->  bit 				
 				double new_timestamp = next_event.GetTimeStamp() + processing_time;
 				event_calendar.AddEvent(next_event.GetSchedulerID(), new_timestamp, "end_service");
@@ -80,7 +79,7 @@ int main() {
 				// schedulo di nuovo il servizio				
 				double backoff = rand() % 35;
 				double new_timestamp = next_event.GetTimeStamp() + backoff;
-				
+
 				if (scheduler_records[next_event.GetSchedulerID()].GetRescheduleTime() < max_resched) {
 					scheduler_records[next_event.GetSchedulerID()].SetRescheduleTime(scheduler_records[next_event.GetSchedulerID()].GetRescheduleTime() + 1);
 					event_calendar.AddEvent(next_event.GetSchedulerID(), new_timestamp, "re-scheduler");
@@ -91,15 +90,13 @@ int main() {
 				// a volte è falso perchè la lista dei provider è vuota? POSSIBILE?
 				empty_list = true;
 			}
-			UpdateQueue(next_event, event_assigned, empty_list);
 
+			UpdateQueue(next_event, event_assigned, empty_list);
 			event_calendar.DeleteEvent(next_event.GetEventID());
 			cout << "..." << endl;
 		}
 		else if (next_event.GetEventType() == "end_service") {
-
-			EndService(next_event.GetSchedulerID(), next_event.GetTimeStamp());
-			// TODO: manca assegnazione feedback
+			EndService(next_event.GetSchedulerID(), next_event.GetTimeStamp());			
 			event_calendar.DeleteEvent(next_event.GetEventID());
 			UpdateQueue(next_event, false, false);
 
