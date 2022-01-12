@@ -24,6 +24,7 @@ struct Reputation {
 struct Queue{
 	int total_service_queued; 
 	int total_empty_list;
+	int total_accomplished;
 	double timestamp;
 }
 ;
@@ -377,7 +378,7 @@ class Master
 			vector<int> temp_vect;	
 			int index_to_delete = -1;
 			
-			for(int i=0;i<this->registered_devices.size();i++){
+			for(unsigned int i=0;i<this->registered_devices.size();i++){
 				if(this->registered_devices[i] == devices_to_delete){
 					index_to_delete = i;
 					break;
@@ -412,7 +413,7 @@ class Master
 			*/
 			bool rep_found = false;
 
-			for (int i = 0; i < list_of_reputation.size(); i++) {
+			for (unsigned int i = 0; i < list_of_reputation.size(); i++) {
 				if(list_of_reputation[i].id_requested_service == id_requested_service){
 					if (list_of_reputation[i].id_service_requester == id_service_requester) {
 						if (list_of_reputation[i].id_service_provider == id_service_provider) {
@@ -443,7 +444,7 @@ class Master
 
 			rep_output.reputation_value = -1;
 			if (this->list_of_reputation.size() > 0) {
-				for (int i=0; i < list_of_reputation.size(); i++) {
+				for (unsigned int i=0; i < list_of_reputation.size(); i++) {
 					if (this->list_of_reputation[i].id_service_requester == id_service_requester) {
 						if (this->list_of_reputation[i].id_service_provider == id_service_provider) {
 							if (this->list_of_reputation[i].id_requested_service = id_requested_service) {
@@ -477,7 +478,7 @@ class Master
 			double totRep = 0;
 
 			if (this->list_of_reputation.size() > 0) {
-				for (int i = 0; i < list_of_reputation.size(); i++) {
+				for (unsigned int i = 0; i < list_of_reputation.size(); i++) {
 					if (list_of_reputation[i].id_service_provider == id_service_provider) {
 						if (list_of_reputation[i].id_requested_service == id_requested_service) {
 							if (list_of_reputation[i].num_feedback > 100) {
@@ -541,11 +542,11 @@ class Master
 			Device device_to_analyze = GetDeviceByID(id_requester, list_of_devices, n_devices);
 			vector<Friend_Record> friends = device_to_analyze.GetAllFriends();
 						
-			for (int i = 0; i < this->registered_devices.size(); i++) {
+			for (unsigned int i = 0; i < this->registered_devices.size(); i++) {
 
 				bool isFriend = false;
 				
-				for (int j = 0; j < friends.size(); j++) {
+				for (unsigned int j = 0; j < friends.size(); j++) {
 					if (friends[j].friend_device_id == this->registered_devices[i]) {
 						Device friend_to_analyze = GetDeviceByID(friends[j].friend_device_id, list_of_devices, n_devices);
 						vector<int> services_list = friend_to_analyze.GetServiceIDList();
@@ -567,7 +568,7 @@ class Master
 				}				
 			}				
 
-			for (int i = 0; i < this->registered_devices.size(); i++) {
+			for (unsigned int i = 0; i < this->registered_devices.size(); i++) {
 				// se non è contenuto in vettore amico, aggiungo al vettore non amici				
 				if (!(std::find(infos.list_of_friend_indexes.begin(), infos.list_of_friend_indexes.end(), this->registered_devices[i]) != infos.list_of_friend_indexes.end())) {
 					infos.list_of_non_friend_indexes.push_back(this->registered_devices[i]);
@@ -584,7 +585,7 @@ class Master
 class Scheduler
 {
 	int id_action;
-	float time_of_arrival;
+	double time_of_arrival;
 	int service_requester;
 	int requested_service;
 	vector<int> service_providers_array;
@@ -626,13 +627,13 @@ public:
 		return this->number_of_reschedule;
 	}
 
-	void SetTOA(float new_toa)
+	void SetTOA(double new_toa)
 	{
 		this->time_of_arrival = new_toa;
 
 	};
 
-	float GetTOA()
+	double GetTOA()
 	{
 		return this->time_of_arrival;
 	};
@@ -670,7 +671,7 @@ public:
 		return this->handling_master_node;
 	};
 
-	void AddServiceProvider(float new_service_provider) {
+	void AddServiceProvider(int new_service_provider) {
 		this->service_providers_array.push_back(new_service_provider);
 	}
 
@@ -679,7 +680,7 @@ public:
 		vector<int> temp_vect;
 		int index_to_delete = -1;
 
-		for (int i = 0; i < this->service_providers_array.size(); i++) {
+		for (unsigned int i = 0; i < this->service_providers_array.size(); i++) {
 			if (this->service_providers_array[i] == sp_to_delete) {
 				index_to_delete = i;
 				break;
@@ -744,6 +745,7 @@ public:
 	double timestamp;
 
 	Event() {
+		this->event_id = -1;
 		this->scheduler_id = -1;
 		this->timestamp = 0.0;
 		//this->scheduler_item = {};
@@ -766,7 +768,7 @@ public:
 		return this->event_id;
 	}
 
-	void SetSchedulerID(double id) {
+	void SetSchedulerID(int id) {
 		this->scheduler_id = id;
 	}
 
@@ -819,7 +821,7 @@ public:
 	Calendar(vector<Scheduler> list_of_events_to_handle) {
 		//this->list_of_events = {};
 
-		for (int i = 0; i < list_of_events_to_handle.size(); i++) {
+		for (unsigned int i = 0; i < list_of_events_to_handle.size(); i++) {
 			//list_of_events_to_handle[i]
 			Event new_event_to_add = Event();
 			new_event_to_add.SetEventID(i);
@@ -844,11 +846,12 @@ public:
 
 	Event GetNextEvent() {		
 		//OrderEvents(); // ordinamento e getto il primo ....
-		for (int i = 0; i < this->list_of_events.size(); i++) {
+		for (unsigned int i = 0; i < this->list_of_events.size(); i++) {
 			if (!list_of_events[i].IsDeleted()) {
 				return this->list_of_events[i];
 			}
 		}	
+		return {};
 	}
 
 	void OrderEvents() {
@@ -857,7 +860,7 @@ public:
 	}
 
 	void DeleteEvent(int event_id) {
-		for (int i = 0; i < this->list_of_events.size(); i++) {
+		for (unsigned int i = 0; i < this->list_of_events.size(); i++) {
 			//if (!list_of_events[i].IsDeleted()) {
 			if(list_of_events[i].GetEventID() == event_id){
 				this->list_of_events[i].MarkAsDeleted();
@@ -869,7 +872,7 @@ public:
 	bool IsEmpty() {
 		int tot_element_deleted = 0;
 
-		for (int i = 0; i < this->list_of_events.size(); i++) {
+		for (unsigned int i = 0; i < this->list_of_events.size(); i++) {
 			if ((list_of_events[i].IsDeleted())) {
 				tot_element_deleted++;
 			}			

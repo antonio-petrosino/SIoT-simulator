@@ -11,20 +11,20 @@ extern Master* list_of_master;
 extern Device* list_of_devices;
 extern vector<Scheduler>  scheduler_records;
 extern int n_services, n_devices, n_master, lambda, tot_sim, seed;
-
+extern vector<Queue> info_queue;
 
 Service *ServicesCreation(){
 
     //const float possible_power_cost[] = {0.1,0.1,0.1,0.2,0.2,0.2,0.3,0.3};
-	const float possible_power_cost[] = { 0.3,0.3,0.3,0.3,0.3,0.4,0.5,0.5 };
+	const double possible_power_cost[] = { 0.3,0.3,0.3,0.3,0.3,0.4,0.5,0.5 };
     const int possible_cpu_req[]      = {6, 6, 6, 10, 10, 10, 14, 14};
     
     Service* arrayOfServices = new Service[n_services];    
     
     int length_possible = sizeof(possible_power_cost)/ sizeof(float);    
 
-	int choosenIndex, randomCpuReq, temp_power_cost, temp_cpu_req;
-	float randomNumber;
+	int choosenIndex, randomCpuReq;
+	double randomNumber;
 	
 		
 	for(int i=0; i<n_services; i++){	
@@ -54,7 +54,7 @@ Device* DeviceCreation(){
 	
 	Device* arrayOfDevice = new Device[n_devices];
 	
-	const float possible_total_power[] = {0.2,0.4,0.6,0.8};
+	const double possible_total_power[] = {0.2,0.4,0.6,0.8};
 	const int possible_class[] = {1,2,2,3};	
 	const int possible_clock_speed[]={400, 1000, 1000, 2000};
 	
@@ -71,7 +71,7 @@ Device* DeviceCreation(){
 	}
 				
 	int choosenIndex, id_owner, id_man, loc, d_class, clock_s;
-	float total_power;
+	double total_power;
 	
 	for(int i=0; i<n_devices; i++){
 
@@ -137,10 +137,10 @@ Device* DeviceCreation(){
 		arrayOfDevice[i].SetServicesList(choosen_services); // assegno finalmente i servizi definiti
 
 		
-		for(int j=0;j<choosen_services.size();j++){		
+		for(unsigned int j=0;j<choosen_services.size();j++){
 				for(int k=0;k<n_master;k++){
 					vector<int> service_to_find = list_of_master[k].GetAllServices();					
-					for(int s=0;s<service_to_find.size();s++){						
+					for(unsigned int s=0;s<service_to_find.size();s++){
 						if(service_to_find[s] == choosen_services[j]){	
 												
 //							Registered_Device new_device_to_add; 
@@ -251,8 +251,8 @@ vector<Scheduler> GenerateEventsArray(int sim_duration) {
 
 	std::exponential_distribution<double> exp(lambda);
 
-   float sumArrivalTimes = 0;
-   float newArrivalTime;
+   double sumArrivalTimes = 0;
+   double newArrivalTime;
 
    //vector<float> eventArray;
 
@@ -336,8 +336,8 @@ void ServiceProviderFiltering(int id_scheduler_record) {
 
 		RelationshipInformationNumber rel_info = selected_master.GetRelationshipInformationNumber(selected_service_requester.GetID(), id_requested_service, list_of_devices, n_devices);
 				
-		for (int j = 0; j < master_registered_devices_ids.size(); j++) {
-			for (int k = 0; k < n_devices; k++) {				
+		for (unsigned int j = 0; j < master_registered_devices_ids.size(); j++) {
+			for (int k = 0; k < n_devices; k++) {
 				if (list_of_devices[k].GetID() == master_registered_devices_ids[j]) {
 					selected_provider = list_of_devices[k];
 					break;
@@ -348,14 +348,14 @@ void ServiceProviderFiltering(int id_scheduler_record) {
 
 				vector<int> selected_services = selected_provider.GetServiceIDList();
 
-				for (int k = 0; k < selected_services.size(); k++) {
+				for (unsigned int k = 0; k < selected_services.size(); k++) {
 					if (selected_services[k] == id_requested_service) {						
 						
 						// TODO1: manca calcolo punteggio amici di amici	
 						// 
 						// TODO2: se è vuota??
 						bool at_least_one_friend = false;
-						for (int i = 0; i < friend_of_requester.size(); i++) {
+						for (unsigned int i = 0; i < friend_of_requester.size(); i++) {
 							if (friend_of_requester[i].friend_device_id == selected_provider.GetID()) {			
 								at_least_one_friend = true;
 								Trust_record trust_value_to_add{};
@@ -370,7 +370,7 @@ void ServiceProviderFiltering(int id_scheduler_record) {
 								// rep_value dagli amici 
 								double sum_of_friend_rep = 0; 
 								int number_of_friend_updated = 0;
-								for (int k = 0; k < rel_info.list_of_friend_indexes.size(); k++) {
+								for (unsigned int k = 0; k < rel_info.list_of_friend_indexes.size(); k++) {
 									Reputation friend_rep_inspection{};
 									friend_rep_inspection = selected_master.GetReputation(rel_info.list_of_friend_indexes[k], selected_provider.GetID(), id_requested_service);
 									if (friend_rep_inspection.feedback > 100) {
@@ -383,7 +383,7 @@ void ServiceProviderFiltering(int id_scheduler_record) {
 								// rep_value dei non amici
 								double sum_of_non_friend_rep = 0;
 								int number_of_non_friend_updated = 0;
-								for (int k = 0; k < rel_info.list_of_non_friend_indexes.size(); k++) {
+								for (unsigned int k = 0; k < rel_info.list_of_non_friend_indexes.size(); k++) {
 									Reputation friend_rep_inspection{};
 									friend_rep_inspection = selected_master.GetReputation(rel_info.list_of_non_friend_indexes[k], selected_provider.GetID(), id_requested_service);
 									if(friend_rep_inspection.num_feedback > 100) {
@@ -491,7 +491,7 @@ int Orchestrator_MakeDecisions(int id_sched_event) {
 
 	if (resource_ctrl) {
 
-		for (int i = 0; i < providers_ranking.size(); i++) {
+		for (unsigned int i = 0; i < providers_ranking.size(); i++) {
 			selected_provider = selected_master.GetDeviceByID(providers_ranking[i].id_service_provider, list_of_devices, n_devices);
 			allocation_success = selected_provider.AllocateDeviceResources(selected_service.GetPowerCost());
 
@@ -594,4 +594,62 @@ void EndService(int id_sched_event, double end_ts) {
 	AssignFeedback(master_id, selected_provider.GetID(), requester_id, service_id, false);
 
 	// rilascio feedback
+}
+
+
+void UpdateQueue(Event next_event, bool event_assigned, bool empty_list) {
+	int prev_total = 0;
+	int empty_prev_total = 0;
+	int prev_accomplished = 0;
+
+	if (info_queue.size() > 0) {
+		Queue prev_queue_variation = info_queue[info_queue.size() - 1];
+		prev_total = prev_queue_variation.total_service_queued;
+		empty_prev_total = prev_queue_variation.total_empty_list;
+		prev_accomplished = prev_queue_variation.total_accomplished;
+
+	}
+
+	Queue queue_variation = {};
+
+	if (next_event.GetEventType() == "re-scheduler" && event_assigned) {
+		// coda --, timestamp				
+		queue_variation.total_service_queued = prev_total - 1;
+		queue_variation.timestamp = next_event.GetTimeStamp();
+		queue_variation.total_empty_list = empty_prev_total;
+		info_queue.push_back(queue_variation);
+	}
+	else if (next_event.GetEventType() == "scheduler" && !event_assigned)
+	{
+		// coda ++, timestamp
+		queue_variation.total_service_queued = prev_total + 1;
+		queue_variation.timestamp = next_event.GetTimeStamp();
+		queue_variation.total_empty_list = empty_prev_total;
+		queue_variation.total_accomplished = prev_accomplished;
+		info_queue.push_back(queue_variation);
+	}
+	else if (empty_list) {
+		queue_variation.total_service_queued = prev_total;
+		queue_variation.timestamp = next_event.GetTimeStamp();
+		queue_variation.total_empty_list = empty_prev_total + 1;
+		queue_variation.total_accomplished = prev_accomplished;
+		info_queue.push_back(queue_variation);
+	}
+	else if (next_event.GetEventType() == "end_service") {
+		queue_variation.total_service_queued = prev_total;
+		queue_variation.timestamp = next_event.GetTimeStamp();
+		queue_variation.total_empty_list = empty_prev_total;
+		queue_variation.total_accomplished = prev_accomplished + 1;
+		info_queue.push_back(queue_variation);
+
+	}
+	/*
+	else {
+		queue_variation.total_service_queued = prev_total;
+		queue_variation.timestamp = next_event.GetTimeStamp();
+		info_queue.push_back(queue_variation);
+	}
+	*/
+
+
 }
