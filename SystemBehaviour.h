@@ -425,6 +425,10 @@ void ServiceProviderFiltering(int id_scheduler_record) {
 			
 		}
 		
+		if (Trust_list.size() == 0) {
+			cout << "Empty list" << endl;
+		}
+
 		std::sort(Trust_list.begin(), Trust_list.end(), CompareByTrustDesc);
 
 		//QuS ordino solo dopo il cut
@@ -497,7 +501,7 @@ int Orchestrator_MakeDecisions(int id_sched_event) {
 	vector<Trust_record> providers_ranking = scheduler_records[id_sched_event].GetTrustList();
 
 	Master selected_master;
-	Device selected_provider;
+	//Device selected_provider;
 	Service selected_service;
 	bool allocation_success = false;
 
@@ -526,10 +530,13 @@ int Orchestrator_MakeDecisions(int id_sched_event) {
 		for (unsigned int i = 0; i < providers_ranking.size(); i++) {
 			//selected_provider = selected_master.GetDeviceByID(providers_ranking[i].id_service_provider, list_of_devices, n_devices);
 			//allocation_success = list_of_devices[].
+
+
+
 			allocation_success = AllocateDeviceResources(selected_service.GetPowerCost(), selected_master.GetDeviceIndexByID(providers_ranking[i].id_service_provider, list_of_devices, n_devices));
 
 			if (allocation_success) {
-				scheduler_records[id_sched_event].SetChoosenSP(selected_provider.GetID());
+				scheduler_records[id_sched_event].SetChoosenSP(providers_ranking[i].id_service_provider);
 				return 1;
 			}
 		}	
@@ -539,7 +546,7 @@ int Orchestrator_MakeDecisions(int id_sched_event) {
 		allocation_success = AllocateDeviceResources(selected_service.GetPowerCost(), selected_master.GetDeviceIndexByID(providers_ranking[0].id_service_provider, list_of_devices, n_devices));
 
 		if (allocation_success) {
-			scheduler_records[id_sched_event].SetChoosenSP(selected_provider.GetID());
+			scheduler_records[id_sched_event].SetChoosenSP(providers_ranking[0].id_service_provider);
 			return 1;
 		}
 		else {
@@ -618,58 +625,41 @@ void EndService(int id_sched_event, double end_ts) {
 			break;
 		}
 	}
-
-
-	//selected_provider = ;
-
-	
-
 	scheduler_records[id_sched_event].SetEndTimestamp(end_ts);
-	//list_of_devices[].ReleaseDeviceResources(selected_service.GetPowerCost());
 	ReleaseDeviceResources(selected_service.GetPowerCost(), selected_master.GetDeviceIndexByID(scheduler_records[id_sched_event].GetChoosenSP(), list_of_devices, n_devices));
-	//selected_provider.
-
 	// TODO: assegno ai nodi malevoli, feed negativi
 	// rilascio feedback
 	AssignFeedback(master_id, selected_provider.GetID(), requester_id, service_id, false);
 }
 
 
-void UpdateQueue(Event next_event, bool event_assigned, bool empty_list) {
+void UpdateQueue(Event next_event, int event_assigned, bool empty_list) {
 	int prev_total = 0;
 	int empty_prev_total = 0;
 	int prev_accomplished = 0;
 
 	if (info_queue.size() > 0) {
 		Queue prev_queue_variation = info_queue[info_queue.size() - 1];
+		
 		prev_total = prev_queue_variation.total_service_queued;
 		empty_prev_total = prev_queue_variation.total_empty_list;
 		prev_accomplished = prev_queue_variation.total_accomplished;
-
 	}
 
 	Queue queue_variation = {};
 
-	if (next_event.GetEventType() == "re-scheduler" && event_assigned) {
-		// coda --, timestamp				
-		queue_variation.total_service_queued = prev_total - 1;
-		queue_variation.timestamp = next_event.GetTimeStamp();
-		queue_variation.total_empty_list = empty_prev_total;
-		info_queue.push_back(queue_variation);
-	}
-	else if (next_event.GetEventType() == "scheduler" && !event_assigned)
-	{
-		// coda ++, timestamp
-		queue_variation.total_service_queued = prev_total + 1;
+	if (next_event.GetEventType() == "re-scheduler" && event_assigned == 1) {						
+		queue_variation.total_service_queued = prev_total - 1; // coda --, timestamp
 		queue_variation.timestamp = next_event.GetTimeStamp();
 		queue_variation.total_empty_list = empty_prev_total;
 		queue_variation.total_accomplished = prev_accomplished;
 		info_queue.push_back(queue_variation);
 	}
-	else if (empty_list) {
-		queue_variation.total_service_queued = prev_total;
+	else if (next_event.GetEventType() == "scheduler" && event_assigned == -1)
+	{	
+		queue_variation.total_service_queued = prev_total + 1; // coda ++, timestamp
 		queue_variation.timestamp = next_event.GetTimeStamp();
-		queue_variation.total_empty_list = empty_prev_total + 1;
+		queue_variation.total_empty_list = empty_prev_total;
 		queue_variation.total_accomplished = prev_accomplished;
 		info_queue.push_back(queue_variation);
 	}
@@ -679,8 +669,15 @@ void UpdateQueue(Event next_event, bool event_assigned, bool empty_list) {
 		queue_variation.total_empty_list = empty_prev_total;
 		queue_variation.total_accomplished = prev_accomplished + 1;
 		info_queue.push_back(queue_variation);
-
 	}
+	else if (empty_list) {
+		queue_variation.total_service_queued = prev_total;
+		queue_variation.timestamp = next_event.GetTimeStamp();
+		queue_variation.total_empty_list = empty_prev_total + 1;
+		queue_variation.total_accomplished = prev_accomplished;
+		info_queue.push_back(queue_variation);
+	}
+
 	/*
 	else {
 		queue_variation.total_service_queued = prev_total;

@@ -519,10 +519,8 @@ class Master
 			infos.non_friends = 0;
 			
 
-			//infos.list_of_friend_indexes
-
-			Device device_to_analyze = list_of_devices[GetDeviceIndexByID(id_requester, list_of_devices, n_devices)];
-			vector<Friend_Record> friends = device_to_analyze.GetAllFriends();
+			//infos.list_of_friend_indexes			
+			vector<Friend_Record> friends = list_of_devices[GetDeviceIndexByID(id_requester, list_of_devices, n_devices)].GetAllFriends();
 						
 			for (unsigned int i = 0; i < this->registered_devices.size(); i++) {
 
@@ -530,8 +528,8 @@ class Master
 				
 				for (unsigned int j = 0; j < friends.size(); j++) {
 					if (friends[j].friend_device_id == this->registered_devices[i]) {
-						Device friend_to_analyze = list_of_devices[GetDeviceIndexByID(friends[j].friend_device_id, list_of_devices, n_devices)];
-						vector<int> services_list = friend_to_analyze.GetServiceIDList();
+						//Device friend_to_analyze = ;
+						vector<int> services_list = list_of_devices[GetDeviceIndexByID(friends[j].friend_device_id, list_of_devices, n_devices)].GetServiceIDList();
 						if (std::find(services_list.begin(), services_list.end(), id_requested_service) != services_list.end()) {
 							isFriend = true;
 							infos.list_of_friend_indexes.push_back(friends[j].friend_device_id);
@@ -815,14 +813,14 @@ public:
 	}
 
 	void AddEvent(int scheduler_id, double timestamp, string event_type) {
-		// riordino solo all'aggiunta di un evento? 
-		
+		// riordino solo all'aggiunta di un evento? 		
 		Event new_event_to_add = Event();
 		new_event_to_add.SetEventID(list_of_events.size());
 		new_event_to_add.SetEventType(event_type);
 		new_event_to_add.SetSchedulerID(scheduler_id);
 		new_event_to_add.SetTimeStamp(timestamp);				
 		this->list_of_events.push_back(new_event_to_add);
+
 		OrderEvents();
 	}
 
