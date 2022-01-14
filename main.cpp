@@ -4,6 +4,7 @@ using namespace std;
 #include <array>
 #include <vector>
 #include <ctime>
+#include <iomanip>
 #include "SystemBehaviour.h"
 
 
@@ -23,22 +24,22 @@ int n_services, n_devices, n_master, lambda, tot_sim, seed;
 double cutting_value;
 
 int main() {	
-	int max_resched = 999;
+	int max_resched = 99999;
 	cutting_value = 0.24; 
+	//cutting_value = 0.3;
 	cout << "Progetto SSIoT"<<endl;
 	// seed the RNG	
 	std::mt19937 rng(seed); // mt19937: Pseudo-random number generation
-
-	// TODO: generare nodi malevoli
+		
 	Tic();
 
 	n_services		= 6;	
-	n_devices 		= 150;	
+	n_devices 		= 200;	
 	n_master 		= 5;
 
-	lambda			= 3;
-	tot_sim			= 1000;	 // secondi
-	seed			= 11;
+	lambda			= 7;
+	tot_sim			= 800;	 // secondi
+	seed			= 10;
 		
 	cout <<"Start..."<< endl;	
 	srand(seed);  
@@ -49,15 +50,17 @@ int main() {
 	GenerateSocialRel(n_devices, list_of_devices);
 	scheduler_records = GenerateEventsArray(tot_sim);
 
-
 	Toc("scheduler");
 	//tend = time(0);
 	//cout << "Until scheduler lasts: " << difftime(tend, tstart) << " second(s)." << endl;
+	std::cout << std::setprecision(3) << std::fixed;
+
 	Calendar event_calendar = Calendar(scheduler_records);
 
 	while (!event_calendar.IsEmpty()) {
 		Toc("init get next event");
 		Event next_event = event_calendar.GetNextEvent();
+		unsigned long start_master_processing = clock();
 		Toc("end get next event");
 
 		int event_assigned = false;
@@ -74,7 +77,8 @@ int main() {
 
 			event_assigned = Orchestrator_MakeDecisions(next_event.GetSchedulerID());	
 			Toc("end Orchestrator_MakeDecisions");
-
+			unsigned long end_master_processing = clock();
+			unsigned long total_master_processing = (end_master_processing - start_master_processing) / 1000;
 			if (vDEBUG) {
 				if (event_assigned == 1) {
 					cout << "Event assignment: TRUE" << endl;
@@ -87,7 +91,7 @@ int main() {
 			if (event_assigned == 1) {
 				// schedulo riassegnazione risorse				
 				double processing_time = EstimateProcessingTime(next_event.GetSchedulerID()); // cycles/s -> bit/cycles (1/1000) ->  bit 				
-				double new_timestamp = next_event.GetTimeStamp() + processing_time;
+				double new_timestamp = next_event.GetTimeStamp() + processing_time + total_master_processing;
 
 				Toc("start add event");
 				event_calendar.AddEvent(next_event.GetSchedulerID(), new_timestamp, "end_service");
@@ -100,7 +104,7 @@ int main() {
 			else if(event_assigned == -1){
 				// schedulo di nuovo il servizio				
 				double backoff = rand() % 35;
-				double new_timestamp = next_event.GetTimeStamp() + backoff;
+				double new_timestamp = next_event.GetTimeStamp() + backoff + total_master_processing;
 
 				if (scheduler_records[next_event.GetSchedulerID()].GetRescheduleTime() < max_resched) {
 					scheduler_records[next_event.GetSchedulerID()].SetRescheduleTime(scheduler_records[next_event.GetSchedulerID()].GetRescheduleTime() + 1);
@@ -136,7 +140,9 @@ int main() {
 			//cout << "..." << endl;
 		}
 		UpdateQueue(next_event, event_assigned, empty_list);
-		cout << next_event.timestamp << "..." << endl;
+		//system("CLS");
+		int perc_tot = (next_event.timestamp * 100) / tot_sim;
+		cout << "t: \t" << next_event.timestamp <<"\t\t" << perc_tot << " % <-- computed" << endl;
 		event_calendar.DeleteEvent(next_event.GetEventID());		
 		
 	}
@@ -147,9 +153,10 @@ int main() {
 	PrintInfoQueue();
 	PrintAvgReputation();
 	PrintSchedulerItem();
+	PrintUserInfo();
 	// -> in una cartella con i nomi dei parametri di avvio
 	// -> istante per istante valore di delta (avgRep)
-	// printinfoutente
+	
   	system("pause");
 
 	// possibilità di calcolare quanto tempo effettivo impiega il master a calcolare tutto (poi vediamo)

@@ -22,8 +22,8 @@ extern double cutting_value;
 
 Service *ServicesCreation(){
 
-	//vector<double> possible_power_cost = {0.1,0.1,0.1,0.2,0.2,0.2,0.3,0.3};
-	vector<double> possible_power_cost = { 0.3,0.2,0.3,0.1,0.2,0.2,0.1,0.1 };
+	vector<double> possible_power_cost = {0.1,0.1,0.1,0.2,0.2,0.2,0.3,0.3};
+	//vector<double> possible_power_cost = { 0.3,0.2,0.3,0.1,0.2,0.2,0.1,0.1 };
 	
 	vector<int> possible_cpu_req      = {6, 6, 6, 10, 10, 10, 14, 14};
     
@@ -586,10 +586,14 @@ void ServiceProviderFiltering(int id_scheduler_record) {
 		if (Trust_list.size() == 0) {
 			cout << "ERRORE" << endl;
 		}
-		std::sort(Trust_list.begin(), Trust_list.end(), CompareByTrustDesc);
+		else {
+			std::sort(Trust_list.begin(), Trust_list.end(), CompareByTrustDesc);
+			//QoS ordino solo dopo il cut
+			scheduler_records[id_scheduler_record].SetTrustList(Trust_list);
+		}
+		
 
-		//QuS ordino solo dopo il cut
-		scheduler_records[id_scheduler_record].SetTrustList(Trust_list);
+		
 		
 		
 }
@@ -957,4 +961,52 @@ void PrintAvgReputation() {
 	else cout << "Unable to open file";
 
 	
+}
+
+void PrintUserInfo() {
+	ofstream myfile("UserInfo.txt");
+	if (myfile.is_open())
+	{
+		myfile << "device_id\t";
+		myfile << "id_owner\t";
+		myfile << "id_manufacturer\t";
+		myfile << "location\t";
+		myfile << "device_class\t";
+		myfile << "clock_speed\t";
+		myfile << "total_power\t";
+		myfile << "remaining_power\t";
+		myfile << "malicious_node\t";
+		myfile << "services_id_list\t\n";
+
+		for (int i = 0; i < n_devices; i++) {
+			
+			myfile << list_of_devices[i].GetID() << "\t";
+			myfile << list_of_devices[i].GetIDOwner() << "\t";
+			myfile << list_of_devices[i].GetIDManufacturer() << "\t";
+			myfile << list_of_devices[i].GetLocation() << "\t";
+			myfile << list_of_devices[i].GetDeviceClass() << "\t";
+			myfile << list_of_devices[i].GetClockSpeed() << "\t";
+			myfile << list_of_devices[i].GetTotalPower() << "\t";
+			myfile << list_of_devices[i].GetRemainingPower() << "\t";
+			myfile << list_of_devices[i].GetMalicious() << "\t";
+			vector<int> service_of_user = list_of_devices[i].GetServiceIDList();
+			myfile << "[ ";
+			for (int j = 0; j < service_of_user.size(); j++) {
+				if (service_of_user.size() != (j + 1)) {
+					myfile << service_of_user[j] << ", ";
+				}
+				else {
+					myfile << service_of_user[j];
+				}
+			}
+			myfile << " ]" << "\t";
+			myfile << "" << "\t";
+			myfile << "\n";
+			
+		}
+
+		myfile.close();
+
+	}
+	else cout << "Unable to open file";
 }
