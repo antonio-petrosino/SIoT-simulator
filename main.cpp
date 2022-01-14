@@ -159,7 +159,7 @@ int main() {
 		UpdateQueue(next_event, event_assigned, empty_list);
 		//system("CLS");
 		int perc_tot = (next_event.timestamp * 100) / tot_sim;
-		cout << "t: \t" << next_event.timestamp <<"\t\t" << perc_tot << " % <-- computed";
+		cout << "t: \t" << next_event.timestamp <<"\t\t" << perc_tot << " % <-- completed";
 		cout << "\t \t [ ";
 
 		int perc_tracking = perc_tot / 10;
@@ -184,7 +184,7 @@ int main() {
 	PrintSchedulerItem();
 	PrintUserInfo();
 	// -> istante per istante valore di delta (avgRep) ??? HOW???
-	
+	cout << "Text file exported." << endl;
   	system("pause");
     return 0;
 }
