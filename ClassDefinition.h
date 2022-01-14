@@ -44,7 +44,10 @@ struct RelationshipInformationNumber{
 	vector<int> list_of_non_friend_indexes;
 };
 
-
+struct FriendsOfFriend {
+	int friend_of_requester_id;
+	int friend_of_friend_id;
+};
 
 /*
 Device GetDeviceByID(int id_device, Device* list_of_devices, int n_devices) {

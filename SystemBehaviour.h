@@ -335,100 +335,239 @@ void ServiceProviderFiltering(int id_scheduler_record) {
 		vector<Friend_Record> friend_of_requester = selected_service_requester.GetAllFriends();
 
 		RelationshipInformationNumber rel_info = selected_master.GetRelationshipInformationNumber(selected_service_requester.GetID(), id_requested_service, list_of_devices, n_devices);
-				
-		for (unsigned int j = 0; j < master_registered_devices_ids.size(); j++) {
-			for (int k = 0; k < n_devices; k++) {
-				if (list_of_devices[k].GetID() == master_registered_devices_ids[j]) {
-					selected_provider = list_of_devices[k];
-					break;
-				}
-			}
-			
-			if (selected_provider.GetID() != -1) {
-
-				vector<int> selected_services = selected_provider.GetServiceIDList();
-
-				for (unsigned int k = 0; k < selected_services.size(); k++) {
-					if (selected_services[k] == id_requested_service) {						
-						
-						// TODO1: manca calcolo punteggio amici di amici	
-						// 
-						// TODO2: se è vuota??
-						bool at_least_one_friend = false;
-						for (unsigned int i = 0; i < friend_of_requester.size(); i++) {
-							if (friend_of_requester[i].friend_device_id == selected_provider.GetID()) {			
-								at_least_one_friend = true;
-								Trust_record trust_value_to_add{};
-								trust_value_to_add.id_service_provider = friend_of_requester[i].friend_device_id;
-								trust_value_to_add.social_value = friend_of_requester[i].sociality_factor;
-								trust_value_to_add.provider_class = selected_provider.GetDeviceClass();
-								Reputation rep_inspection{};								
-								rep_inspection = selected_master.GetReputation(selected_service_requester.GetID(), selected_provider.GetID(), id_requested_service);
-								
-								double direct_reputation = rep_inspection.reputation_value;	  // ottengo la rep_value diretta
-																
-								// rep_value dagli amici 
-								double sum_of_friend_rep = 0; 
-								int number_of_friend_updated = 0;
-								for (unsigned int k = 0; k < rel_info.list_of_friend_indexes.size(); k++) {
-									Reputation friend_rep_inspection{};
-									friend_rep_inspection = selected_master.GetReputation(rel_info.list_of_friend_indexes[k], selected_provider.GetID(), id_requested_service);
-									if (friend_rep_inspection.feedback > 100) {
-										sum_of_friend_rep = sum_of_friend_rep + friend_rep_inspection.reputation_value;
-										number_of_friend_updated++;
-									}
-									
-								}
-
-								// rep_value dei non amici
-								double sum_of_non_friend_rep = 0;
-								int number_of_non_friend_updated = 0;
-								for (unsigned int k = 0; k < rel_info.list_of_non_friend_indexes.size(); k++) {
-									Reputation friend_rep_inspection{};
-									friend_rep_inspection = selected_master.GetReputation(rel_info.list_of_non_friend_indexes[k], selected_provider.GetID(), id_requested_service);
-									if(friend_rep_inspection.num_feedback > 100) {
-										sum_of_non_friend_rep = sum_of_non_friend_rep + friend_rep_inspection.reputation_value;
-										number_of_non_friend_updated++;
-									}
-								}
-								
-								double rep_results = alpha * direct_reputation;
-
-								if (number_of_friend_updated > 0) {
-									rep_results = rep_results + ((beta / double(number_of_friend_updated)) * sum_of_friend_rep);
-								}
-								if (number_of_non_friend_updated > 0) {
-									rep_results = rep_results + ((gamma / double(number_of_non_friend_updated)) * sum_of_non_friend_rep);
-								}
-
-								trust_value_to_add.rep_value = rep_results;
-								trust_value_to_add.trust_value = trust_value_to_add.social_value*trust_value_to_add.rep_value;
-								
-								// SOGLIA
-								double avgRep = selected_master.AverageReputation(selected_provider.GetID(), id_requested_service);
-								// TODO: ripristinare taglio soglia
-								avgRep = 1;
-								if (avgRep >= 0.75) {
-									Trust_list.push_back(trust_value_to_add);
-								}
-								break;
-							}
-						}
-
-						scheduler_records[id_scheduler_record].AddServiceProvider(selected_provider.GetID());
+		
+		// no amici? ->
+		if (rel_info.friends != 0) {
+			for (unsigned int j = 0; j < master_registered_devices_ids.size(); j++) {
+				for (int k = 0; k < n_devices; k++) {
+					if (list_of_devices[k].GetID() == master_registered_devices_ids[j]) {
+						selected_provider = list_of_devices[k];
 						break;
 					}
 				}
 
-				
-			}
-			
-		}
-		
-		if (Trust_list.size() == 0) {
-			cout << "Empty list" << endl;
-		}
+				if (selected_provider.GetID() != -1) {
 
+					vector<int> selected_services = selected_provider.GetServiceIDList();
+
+					for (unsigned int k = 0; k < selected_services.size(); k++) {
+						if (selected_services[k] == id_requested_service) {
+
+							// TODO1: manca calcolo punteggio amici di amici	
+							// 
+							// TODO2: se è vuota??
+
+							for (unsigned int i = 0; i < friend_of_requester.size(); i++) {
+								if (friend_of_requester[i].friend_device_id == selected_provider.GetID()) {
+
+									Trust_record trust_value_to_add{};
+									trust_value_to_add.id_service_provider = friend_of_requester[i].friend_device_id;
+									trust_value_to_add.social_value = friend_of_requester[i].sociality_factor;
+									trust_value_to_add.provider_class = selected_provider.GetDeviceClass();
+									
+									Reputation rep_inspection{};
+									rep_inspection = selected_master.GetReputation(selected_service_requester.GetID(), selected_provider.GetID(), id_requested_service);
+
+									double direct_reputation = rep_inspection.reputation_value;	  // ottengo la rep_value diretta
+
+									// rep_value dagli amici 
+									double sum_of_friend_rep = 0;
+									int number_of_friend_updated = 0;
+									for (unsigned int k = 0; k < rel_info.list_of_friend_indexes.size(); k++) {
+										Reputation friend_rep_inspection{};
+										friend_rep_inspection = selected_master.GetReputation(rel_info.list_of_friend_indexes[k], selected_provider.GetID(), id_requested_service);
+										if (friend_rep_inspection.feedback > 100) {
+											sum_of_friend_rep = sum_of_friend_rep + friend_rep_inspection.reputation_value;
+											number_of_friend_updated++;
+										}
+
+									}
+
+									// rep_value dei non amici
+									double sum_of_non_friend_rep = 0;
+									int number_of_non_friend_updated = 0;
+									for (unsigned int k = 0; k < rel_info.list_of_non_friend_indexes.size(); k++) {
+										Reputation friend_rep_inspection{};
+										friend_rep_inspection = selected_master.GetReputation(rel_info.list_of_non_friend_indexes[k], selected_provider.GetID(), id_requested_service);
+										if (friend_rep_inspection.num_feedback > 100) {
+											sum_of_non_friend_rep = sum_of_non_friend_rep + friend_rep_inspection.reputation_value;
+											number_of_non_friend_updated++;
+										}
+									}
+
+									double rep_results = alpha * direct_reputation;
+
+									if (number_of_friend_updated > 0) {
+										rep_results = rep_results + ((beta / double(number_of_friend_updated)) * sum_of_friend_rep);
+									}
+									if (number_of_non_friend_updated > 0) {
+										rep_results = rep_results + ((gamma / double(number_of_non_friend_updated)) * sum_of_non_friend_rep);
+									}
+
+									trust_value_to_add.rep_value = rep_results;
+									trust_value_to_add.trust_value = trust_value_to_add.social_value * trust_value_to_add.rep_value;
+
+									// SOGLIA
+									double avgRep = selected_master.AverageReputation(selected_provider.GetID(), id_requested_service);
+									// TODO: ripristinare taglio soglia
+									
+									if (avgRep >= 0.75) {
+										Trust_list.push_back(trust_value_to_add);
+									}
+									break;
+								}
+							}
+
+							scheduler_records[id_scheduler_record].AddServiceProvider(selected_provider.GetID());
+							break;
+						}
+					}
+
+
+				}
+
+			}
+		}else{
+			// elenco degli amici del requester -> friend_of_requester
+			// per ogni amico devo ottenere un vettore di amici di amici
+			// definire struttura FOF???
+			Device temp_device_to_analyze; 
+			vector<FriendsOfFriend> friends_of_friend_info;
+			vector<int> friend_of_friend_over_master_id;
+			// per ogni amico
+			for (unsigned int i = 0; i < friend_of_requester.size(); i++) {
+				for (int j = 0; j < n_devices; j++) {
+					if (list_of_devices[j].GetID() == friend_of_requester[i].friend_device_id) {
+						temp_device_to_analyze = list_of_devices[j];
+						break;
+					} // carico oggetto amico 
+				}
+
+				vector<Friend_Record> friends_of_friend_record = temp_device_to_analyze.GetAllFriends();
+
+				for (unsigned int k = 0; k < friends_of_friend_record.size(); k++) {
+					if (std::find(master_registered_devices_ids.begin(), master_registered_devices_ids.end(), friends_of_friend_record[k].friend_device_id) != master_registered_devices_ids.end()) {
+						FriendsOfFriend new_info; 
+						new_info.friend_of_friend_id = friends_of_friend_record[k].friend_device_id;
+						new_info.friend_of_requester_id = temp_device_to_analyze.GetID();
+						friends_of_friend_info.push_back(new_info);
+						if (!(std::find(friend_of_friend_over_master_id.begin(), friend_of_friend_over_master_id.end(), friends_of_friend_record[k].friend_device_id) != friend_of_friend_over_master_id.end())) {
+							friend_of_friend_over_master_id.push_back(friends_of_friend_record[k].friend_device_id);
+						}
+						
+					} /* v contains x */
+				}
+			}
+
+			for (unsigned i = 0; i < friend_of_friend_over_master_id.size(); i++) {
+				int number_of_fof = 0;
+				for (unsigned j = 0; j < friends_of_friend_info.size();j++) {
+					if (friends_of_friend_info[j].friend_of_friend_id == friend_of_friend_over_master_id[i]) {
+						number_of_fof = number_of_fof + 1;
+					}
+				}
+				Device friend_to_analyze;
+				for (int j = 0; j < n_devices; j++) {
+					if (list_of_devices[j].GetID() == friend_of_friend_over_master_id[i]) {
+						friend_to_analyze = list_of_devices[j];
+						break;
+					} // carico oggetto amico 
+				}
+
+
+
+				/*
+				*  CAMBIARE SOGGETTI PER OTTENERE LA SECONDA PARTE
+				*/
+				/*
+				Reputation rep_inspection{};
+				rep_inspection = selected_master.GetReputation(selected_service_requester.GetID(), selected_provider.GetID(), id_requested_service);
+
+				double direct_reputation = rep_inspection.reputation_value;	  // ottengo la rep_value diretta
+
+				// rep_value dagli amici 
+				double sum_of_friend_rep = 0;
+				int number_of_friend_updated = 0;
+				for (unsigned int k = 0; k < rel_info.list_of_friend_indexes.size(); k++) {
+					Reputation friend_rep_inspection{};
+					friend_rep_inspection = selected_master.GetReputation(rel_info.list_of_friend_indexes[k], selected_provider.GetID(), id_requested_service);
+					if (friend_rep_inspection.feedback > 100) {
+						sum_of_friend_rep = sum_of_friend_rep + friend_rep_inspection.reputation_value;
+						number_of_friend_updated++;
+					}
+
+				}
+
+				// rep_value dei non amici
+				double sum_of_non_friend_rep = 0;
+				int number_of_non_friend_updated = 0;
+				for (unsigned int k = 0; k < rel_info.list_of_non_friend_indexes.size(); k++) {
+					Reputation friend_rep_inspection{};
+					friend_rep_inspection = selected_master.GetReputation(rel_info.list_of_non_friend_indexes[k], selected_provider.GetID(), id_requested_service);
+					if (friend_rep_inspection.num_feedback > 100) {
+						sum_of_non_friend_rep = sum_of_non_friend_rep + friend_rep_inspection.reputation_value;
+						number_of_non_friend_updated++;
+					}
+				}
+
+				double rep_results = alpha * direct_reputation;
+
+				if (number_of_friend_updated > 0) {
+					rep_results = rep_results + ((beta / double(number_of_friend_updated)) * sum_of_friend_rep);
+				}
+				if (number_of_non_friend_updated > 0) {
+					rep_results = rep_results + ((gamma / double(number_of_non_friend_updated)) * sum_of_non_friend_rep);
+				}
+
+				trust_value_to_add.rep_value = rep_results;
+				trust_value_to_add.trust_value = trust_value_to_add.social_value * trust_value_to_add.rep_value;
+
+				// SOGLIA
+				double avgRep = selected_master.AverageReputation(selected_provider.GetID(), id_requested_service);
+				// TODO: ripristinare taglio soglia
+
+				if (avgRep >= 0.75) {
+					Trust_list.push_back(trust_value_to_add);
+				}
+				*/
+				/*
+				* 
+				*/
+
+				Trust_record trust_value_to_add{};
+				trust_value_to_add.id_service_provider = friend_to_analyze.GetID();
+
+
+				
+				if (number_of_fof < (n_devices * 5 /100)) {
+					trust_value_to_add.social_value = 0.3;
+				}
+				else {
+					trust_value_to_add.social_value = 0.5;
+				}
+
+				trust_value_to_add.provider_class = friend_to_analyze.GetDeviceClass();
+								
+				double avgRep = selected_master.AverageReputation(friend_to_analyze.GetID(), id_requested_service);
+				trust_value_to_add.rep_value = avgRep;
+
+				trust_value_to_add.trust_value = trust_value_to_add.social_value * trust_value_to_add.rep_value;
+
+				if (avgRep >= 0.75) {
+					Trust_list.push_back(trust_value_to_add);
+				}
+
+				//Trust_list.push_back(trust_value_to_add);
+
+			}
+
+			if (vDEBUG) {
+				cout << "No friends on master list." << endl;
+			}
+		}
+		if (Trust_list.size() == 0) {
+			cout << "ERRORE" << endl;
+		}
 		std::sort(Trust_list.begin(), Trust_list.end(), CompareByTrustDesc);
 
 		//QuS ordino solo dopo il cut

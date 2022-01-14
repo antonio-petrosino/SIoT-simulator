@@ -31,11 +31,11 @@ int main() {
 	tstart = time(0);
 
 	n_services		= 6;	
-	n_devices 		= 150;	
+	n_devices 		= 400;	
 	n_master 		= 5;
 
-	lambda			= 3;
-	tot_sim			= 600;	 // secondi
+	lambda			= 5;
+	tot_sim			= 1000;	 // secondi
 	seed			= 2;
 		
 	cout <<"Start..."<< endl;	
