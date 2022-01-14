@@ -1,6 +1,10 @@
 #include <vector>
 #include <algorithm>
+#include <ratio>
+#include <chrono>
 #include "ClassDefinition.h"
+#include <fstream>
+
 
 #define INIT_FEED = 0.5;
 
@@ -12,16 +16,20 @@ extern Device* list_of_devices;
 extern vector<Scheduler>  scheduler_records;
 extern int n_services, n_devices, n_master, lambda, tot_sim, seed;
 extern vector<Queue> info_queue;
+extern unsigned long tstart;
+extern unsigned long tend;
+extern double cutting_value;
 
 Service *ServicesCreation(){
 
-	vector<double> possible_power_cost = {0.1,0.1,0.1,0.2,0.2,0.2,0.3,0.3};
-	//vector<double> possible_power_cost = {0.3,0.3,0.3,0.3,0.3,0.4,0.5,0.5 };
+	//vector<double> possible_power_cost = {0.1,0.1,0.1,0.2,0.2,0.2,0.3,0.3};
+	vector<double> possible_power_cost = { 0.3,0.2,0.3,0.1,0.2,0.2,0.1,0.1 };
+	
 	vector<int> possible_cpu_req      = {6, 6, 6, 10, 10, 10, 14, 14};
     
     Service* arrayOfServices = new Service[n_services];    
     
-    int length_possible = sizeof(possible_power_cost)/ sizeof(float);    
+    int length_possible = sizeof(possible_power_cost)/ sizeof(double);
 
 	int choosenIndex, randomCpuReq;
 	double randomNumber;
@@ -54,16 +62,23 @@ Device* DeviceCreation(){
 	
 	Device* arrayOfDevice = new Device[n_devices];
 	
+
 	const double possible_total_power[] = {0.2,0.4,0.6,0.8};
+	int length_pos_total_p = sizeof(possible_total_power) / sizeof(double);
+
 	const int possible_class[] = {1,2,2,3};	
+
 	const int possible_clock_speed[]={400, 1000, 1000, 2000};
+
+	const int possible_malicious[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 };
+	int length_pos_malicious = sizeof(possible_malicious) / sizeof(int);
+
+
+	const int possible_owner[] = { 1,2,3,4,5,6,7,8,9,10 };
+	int length_pos_owner = sizeof(possible_owner) / sizeof(int);
 	
-	int length_pos_total_p = sizeof(possible_total_power)/ sizeof(float);
+	const int length_pos_loc = n_master;	
 	
-	const int possible_owner[] = {1,2,3,4,5,6,7,8,9,10};
-	int length_pos_owner = sizeof(possible_owner)/ sizeof(int);
-	
-	const int length_pos_loc = n_master;
 	vector<int> possible_location(length_pos_loc);
 	
 	for(int i=0;i<length_pos_loc; i++){
@@ -133,7 +148,12 @@ Device* DeviceCreation(){
 			suitable_services.erase(suitable_services.begin() + choosenSuitableService);
 		    }
 		}
-				
+		int choosenMalIndex = rand() % length_pos_malicious;
+
+		if (possible_malicious[choosenMalIndex] == 1) {
+			arrayOfDevice[i].SetMalicious(true);
+		}	
+
 		arrayOfDevice[i].SetServicesList(choosen_services); // assegno finalmente i servizi definiti
 
 		
@@ -408,11 +428,14 @@ void ServiceProviderFiltering(int id_scheduler_record) {
 									trust_value_to_add.trust_value = trust_value_to_add.social_value * trust_value_to_add.rep_value;
 
 									// SOGLIA
-									double avgRep = selected_master.AverageReputation(selected_provider.GetID(), id_requested_service);
+									// double avgRep = selected_master.AverageReputation(selected_provider.GetID(), id_requested_service);
 									// TODO: ripristinare taglio soglia
 									
-									if (avgRep >= 0.75) {
+									if (trust_value_to_add.trust_value >= cutting_value) {
 										Trust_list.push_back(trust_value_to_add);
+									}
+									else {
+										int kkkk = 1;
 									}
 									break;
 								}
@@ -429,8 +452,7 @@ void ServiceProviderFiltering(int id_scheduler_record) {
 			}
 		}else{
 			// elenco degli amici del requester -> friend_of_requester
-			// per ogni amico devo ottenere un vettore di amici di amici
-			// definire struttura FOF???
+			// per ogni amico devo ottenere un vettore di amici di amici		
 			Device temp_device_to_analyze; 
 			vector<FriendsOfFriend> friends_of_friend_info;
 			vector<int> friend_of_friend_over_master_id;
@@ -444,6 +466,8 @@ void ServiceProviderFiltering(int id_scheduler_record) {
 				}
 
 				vector<Friend_Record> friends_of_friend_record = temp_device_to_analyze.GetAllFriends();
+				// carico amici dell'amico
+				// e seleziono solo quelli presenti sul master
 
 				for (unsigned int k = 0; k < friends_of_friend_record.size(); k++) {
 					if (std::find(master_registered_devices_ids.begin(), master_registered_devices_ids.end(), friends_of_friend_record[k].friend_device_id) != master_registered_devices_ids.end()) {
@@ -455,17 +479,19 @@ void ServiceProviderFiltering(int id_scheduler_record) {
 							friend_of_friend_over_master_id.push_back(friends_of_friend_record[k].friend_device_id);
 						}
 						
-					} /* v contains x */
+					} 
 				}
 			}
-
+			
 			for (unsigned i = 0; i < friend_of_friend_over_master_id.size(); i++) {
+				// calcolo numero di amici in comune
 				int number_of_fof = 0;
 				for (unsigned j = 0; j < friends_of_friend_info.size();j++) {
 					if (friends_of_friend_info[j].friend_of_friend_id == friend_of_friend_over_master_id[i]) {
 						number_of_fof = number_of_fof + 1;
 					}
 				}
+
 				Device friend_to_analyze;
 				for (int j = 0; j < n_devices; j++) {
 					if (list_of_devices[j].GetID() == friend_of_friend_over_master_id[i]) {
@@ -474,23 +500,36 @@ void ServiceProviderFiltering(int id_scheduler_record) {
 					} // carico oggetto amico 
 				}
 
+				Trust_record trust_value_to_add{};
+				trust_value_to_add.id_service_provider = friend_to_analyze.GetID();
 
+				if (number_of_fof < (n_devices * 5 / 100)) {
+					trust_value_to_add.social_value = 0.3;
+				}
+				else {
+					trust_value_to_add.social_value = 0.55;
+				}
+
+				trust_value_to_add.provider_class = friend_to_analyze.GetDeviceClass();
 
 				/*
 				*  CAMBIARE SOGGETTI PER OTTENERE LA SECONDA PARTE
 				*/
-				/*
+				
 				Reputation rep_inspection{};
-				rep_inspection = selected_master.GetReputation(selected_service_requester.GetID(), selected_provider.GetID(), id_requested_service);
+				rep_inspection = selected_master.GetReputation(selected_service_requester.GetID(), friend_to_analyze.GetID(), id_requested_service);
+
+				
 
 				double direct_reputation = rep_inspection.reputation_value;	  // ottengo la rep_value diretta
 
-				// rep_value dagli amici 
+				// rep_value: valutazione del provider j dagli amici di chi ha fatto la richiesta
+				// sicuramente non ciclerà poichè amici nel master == 0
 				double sum_of_friend_rep = 0;
 				int number_of_friend_updated = 0;
 				for (unsigned int k = 0; k < rel_info.list_of_friend_indexes.size(); k++) {
 					Reputation friend_rep_inspection{};
-					friend_rep_inspection = selected_master.GetReputation(rel_info.list_of_friend_indexes[k], selected_provider.GetID(), id_requested_service);
+					friend_rep_inspection = selected_master.GetReputation(rel_info.list_of_friend_indexes[k], friend_to_analyze.GetID(), id_requested_service);
 					if (friend_rep_inspection.feedback > 100) {
 						sum_of_friend_rep = sum_of_friend_rep + friend_rep_inspection.reputation_value;
 						number_of_friend_updated++;
@@ -503,7 +542,7 @@ void ServiceProviderFiltering(int id_scheduler_record) {
 				int number_of_non_friend_updated = 0;
 				for (unsigned int k = 0; k < rel_info.list_of_non_friend_indexes.size(); k++) {
 					Reputation friend_rep_inspection{};
-					friend_rep_inspection = selected_master.GetReputation(rel_info.list_of_non_friend_indexes[k], selected_provider.GetID(), id_requested_service);
+					friend_rep_inspection = selected_master.GetReputation(rel_info.list_of_non_friend_indexes[k], friend_to_analyze.GetID(), id_requested_service);
 					if (friend_rep_inspection.num_feedback > 100) {
 						sum_of_non_friend_rep = sum_of_non_friend_rep + friend_rep_inspection.reputation_value;
 						number_of_non_friend_updated++;
@@ -526,39 +565,18 @@ void ServiceProviderFiltering(int id_scheduler_record) {
 				double avgRep = selected_master.AverageReputation(selected_provider.GetID(), id_requested_service);
 				// TODO: ripristinare taglio soglia
 
-				if (avgRep >= 0.75) {
+				if (trust_value_to_add.trust_value >= cutting_value) {
 					Trust_list.push_back(trust_value_to_add);
-				}
-				*/
-				/*
-				* 
-				*/
-
-				Trust_record trust_value_to_add{};
-				trust_value_to_add.id_service_provider = friend_to_analyze.GetID();
-
-
-				
-				if (number_of_fof < (n_devices * 5 /100)) {
-					trust_value_to_add.social_value = 0.3;
 				}
 				else {
-					trust_value_to_add.social_value = 0.5;
+					int kkkk = 1;
 				}
-
-				trust_value_to_add.provider_class = friend_to_analyze.GetDeviceClass();
-								
-				double avgRep = selected_master.AverageReputation(friend_to_analyze.GetID(), id_requested_service);
-				trust_value_to_add.rep_value = avgRep;
-
-				trust_value_to_add.trust_value = trust_value_to_add.social_value * trust_value_to_add.rep_value;
-
-				if (avgRep >= 0.75) {
-					Trust_list.push_back(trust_value_to_add);
-				}
-
+				
+											
+				//double avgRep = selected_master.AverageReputation(friend_to_analyze.GetID(), id_requested_service);
+				//trust_value_to_add.rep_value = avgRep;
+				//trust_value_to_add.trust_value = trust_value_to_add.social_value * trust_value_to_add.rep_value;
 				//Trust_list.push_back(trust_value_to_add);
-
 			}
 
 			if (vDEBUG) {
@@ -768,7 +786,9 @@ void EndService(int id_sched_event, double end_ts) {
 	ReleaseDeviceResources(selected_service.GetPowerCost(), selected_master.GetDeviceIndexByID(scheduler_records[id_sched_event].GetChoosenSP(), list_of_devices, n_devices));
 	// TODO: assegno ai nodi malevoli, feed negativi
 	// rilascio feedback
-	AssignFeedback(master_id, selected_provider.GetID(), requester_id, service_id, false);
+	// selected_provider.GetID()
+	bool mal_node = list_of_devices[selected_master.GetDeviceIndexByID(scheduler_records[id_sched_event].GetChoosenSP(), list_of_devices, n_devices)].GetMalicious();
+	AssignFeedback(master_id, scheduler_records[id_sched_event].GetChoosenSP(), requester_id, service_id, mal_node);
 }
 
 
@@ -828,3 +848,113 @@ void UpdateQueue(Event next_event, int event_assigned, bool empty_list) {
 
 }
 
+
+void Tic() {
+	//tstart = time(nullptr);
+	if (vDEBUG) {
+		tstart = clock();
+	}
+}
+
+void Toc(string event) {
+	if (vDEBUG) {
+		tend = clock();
+		unsigned long diff = difftime(tend, tstart);
+		cout << "Until " << event << ": " << diff << " millisecond(s) or " << diff / 1000 << " second(s)." << endl;
+	}
+
+}
+
+
+void PrintInfoQueue() {
+	ofstream myfile("InfoQueue.txt");
+	if (myfile.is_open())
+	{
+		myfile << "total_service_queued" << "\t" << "total_empty_list" << "\t" << "total_accomplished" << "\t" << "timestamp" << "\n";
+
+		for (unsigned int i = 0; i < info_queue.size(); i++) {
+			myfile << info_queue[i].total_service_queued << "\t" << info_queue[i].total_empty_list << "\t" << info_queue[i].total_accomplished << "\t" << info_queue[i].timestamp << "\n";
+		}
+
+		myfile.close();
+	}
+	else cout << "Unable to open file";
+}
+
+void PrintSchedulerItem(){
+	ofstream myfile("SchedInfo.txt");
+	if (myfile.is_open())
+	{
+		myfile << "id_action\t" << "time_of_arrival\t" << "service_requester\t" << "requested_service\t";
+		myfile << "handling_master_node\t" << "choosen_service_provider\t" << "end_timestamp\t" << "number_of_reschedule\t" << "\n";
+
+		for (unsigned int i = 0; i < scheduler_records.size(); i++) {
+			myfile << "%%%%%%%%%%%%%%%% SCHEDULER ITEM(" << i <<")%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << "\n";
+			myfile << scheduler_records[i].GetID() << "\t";
+			myfile << scheduler_records[i].GetTOA() << "\t";
+			myfile << scheduler_records[i].GetSR() << "\t";
+			myfile << scheduler_records[i].GetReqServ() << "\t";
+			myfile << scheduler_records[i].GetMaster() << "\t";
+			myfile << scheduler_records[i].GetChoosenSP() << "\t";
+			myfile << scheduler_records[i].GetEndTimestamp() << "\t";
+			myfile << scheduler_records[i].GetRescheduleTime() << "\t\n";
+			myfile << "############## Trust list ###############" << "\n";
+			myfile << "id_service_provider\t" << "provider_class\t" << "social_value\t" << "rep_value\t" << "trust_value\t" << "\n";
+
+			vector<Trust_record> trust_list = scheduler_records[i].GetTrustList();
+
+			for (int j = 0; j < trust_list.size(); j++) {
+				myfile << trust_list[j].id_service_provider << "\t";
+				myfile << trust_list[j].provider_class << "\t";
+				myfile << trust_list[j].social_value << "\t";
+				myfile << trust_list[j].rep_value << "\t";
+				myfile << trust_list[j].trust_value << "\t";
+				myfile << "\n";
+			}
+			myfile << "#########################################" << "\n";
+		}
+
+		myfile.close();
+
+	}
+	else cout << "Unable to open file";
+}
+
+void PrintAvgReputation() {
+
+	//for ogni master
+	//	for ogni nodo
+	//		for ogni servizio 
+	ofstream myfile("AvgRepInfo.txt");
+	if (myfile.is_open())
+	{
+		myfile <<"NodeID\t" << "ServiceID\t" << "AvgRep\t" << "\n";
+		Master selected_master;
+		for (int i = 0; i < n_master; i++) {
+			selected_master = list_of_master[i];
+
+			vector<int> devices_on_master_i = selected_master.GetAllDevices();
+
+			for (unsigned int j = 0; j < devices_on_master_i.size(); j++) {
+				Device device_to_analyze;
+				for (int k = 0; k < n_devices; k++) {
+					if (list_of_devices[k].GetID() == devices_on_master_i[j]) {
+						device_to_analyze = list_of_devices[k];
+						vector<int> list_of_services_of_device_k = device_to_analyze.GetServiceIDList();
+						for (int z = 0; z<list_of_services_of_device_k.size(); z++) {
+							double avgToWriteOnFile = selected_master.AverageReputation(device_to_analyze.GetID(), list_of_services_of_device_k[z]);
+							myfile << device_to_analyze.GetID() << "\t" << list_of_services_of_device_k[z] << "\t" << avgToWriteOnFile << "\n";
+						}
+						break;
+					}
+
+				}
+			}
+		}
+		myfile.close();
+
+	}
+	else cout << "Unable to open file";
+
+	
+}

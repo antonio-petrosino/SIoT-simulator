@@ -34,7 +34,7 @@ struct Trust_record {
 	int provider_class;
 	double social_value;
 	double rep_value;
-	double trust_value;// potrebbe non servire 
+	double trust_value;
 };
 
 struct RelationshipInformationNumber{
