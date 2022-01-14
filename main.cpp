@@ -41,11 +41,11 @@ int main() {
 	qos_ctrl		= false;
 
 	n_services		= 6;	
-	n_devices 		= 150;	
+	n_devices 		= 100;	
 	n_master 		= 5;
 
-	lambda			= 7;
-	tot_sim			= 2500;	 // secondi
+	lambda			= 10;
+	tot_sim			= 3000;	 // secondi
 	seed			= 10;
 	
 
@@ -159,7 +159,7 @@ int main() {
 		UpdateQueue(next_event, event_assigned, empty_list);
 		//system("CLS");
 		int perc_tot = (next_event.timestamp * 100) / tot_sim;
-		cout << "t: \t" << next_event.timestamp <<"\t\t" << perc_tot << " % <-- completed";
+		cout << "t: \t" << next_event.timestamp <<"\t\t\t\t" << perc_tot << " % <-- completed";
 		cout << "\t \t [ ";
 
 		int perc_tracking = perc_tot / 10;
@@ -173,6 +173,7 @@ int main() {
 			cout << "-";
 		}
 		cout << " ]" << "\r";
+	
 		event_calendar.DeleteEvent(next_event.GetEventID());		
 		
 	}
