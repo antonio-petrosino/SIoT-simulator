@@ -172,7 +172,7 @@ int main() {
 		for (int m = 0; m < 10 - perc_tracking; m++) {
 			cout << "-";
 		}
-		cout << " ]" << endl;
+		cout << " ]" << "\r";
 		event_calendar.DeleteEvent(next_event.GetEventID());		
 		
 	}
