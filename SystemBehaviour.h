@@ -19,6 +19,7 @@ extern vector<Queue> info_queue;
 extern unsigned long tstart;
 extern unsigned long tend;
 extern double cutting_value;
+extern string folder_name;
 
 Service *ServicesCreation(){
 
@@ -871,7 +872,7 @@ void Toc(string event) {
 
 
 void PrintInfoQueue() {
-	ofstream myfile("InfoQueue.txt");
+	ofstream myfile(".\\"+ folder_name + "InfoQueue.txt");
 	if (myfile.is_open())
 	{
 		myfile << "total_service_queued" << "\t" << "total_empty_list" << "\t" << "total_accomplished" << "\t" << "timestamp" << "\n";
@@ -886,7 +887,7 @@ void PrintInfoQueue() {
 }
 
 void PrintSchedulerItem(){
-	ofstream myfile("SchedInfo.txt");
+	ofstream myfile(".\\" + folder_name + "SchedInfo.txt");
 	if (myfile.is_open())
 	{
 		myfile << "id_action\t" << "time_of_arrival\t" << "service_requester\t" << "requested_service\t";
@@ -907,7 +908,7 @@ void PrintSchedulerItem(){
 
 			vector<Trust_record> trust_list = scheduler_records[i].GetTrustList();
 
-			for (int j = 0; j < trust_list.size(); j++) {
+			for (unsigned int j = 0; j < trust_list.size(); j++) {
 				myfile << trust_list[j].id_service_provider << "\t";
 				myfile << trust_list[j].provider_class << "\t";
 				myfile << trust_list[j].social_value << "\t";
@@ -929,7 +930,7 @@ void PrintAvgReputation() {
 	//for ogni master
 	//	for ogni nodo
 	//		for ogni servizio 
-	ofstream myfile("AvgRepInfo.txt");
+	ofstream myfile(".\\" + folder_name + "AvgRepInfo.txt");
 	if (myfile.is_open())
 	{
 		myfile <<"NodeID\t" << "ServiceID\t" << "AvgRep\t" << "\n";
@@ -945,7 +946,7 @@ void PrintAvgReputation() {
 					if (list_of_devices[k].GetID() == devices_on_master_i[j]) {
 						device_to_analyze = list_of_devices[k];
 						vector<int> list_of_services_of_device_k = device_to_analyze.GetServiceIDList();
-						for (int z = 0; z<list_of_services_of_device_k.size(); z++) {
+						for (unsigned int z = 0; z<list_of_services_of_device_k.size(); z++) {
 							double avgToWriteOnFile = selected_master.AverageReputation(device_to_analyze.GetID(), list_of_services_of_device_k[z]);
 							myfile << device_to_analyze.GetID() << "\t" << list_of_services_of_device_k[z] << "\t" << avgToWriteOnFile << "\n";
 						}
@@ -964,7 +965,7 @@ void PrintAvgReputation() {
 }
 
 void PrintUserInfo() {
-	ofstream myfile("UserInfo.txt");
+	ofstream myfile(".\\" + folder_name + "UserInfo.txt");
 	if (myfile.is_open())
 	{
 		myfile << "device_id\t";
@@ -991,7 +992,7 @@ void PrintUserInfo() {
 			myfile << list_of_devices[i].GetMalicious() << "\t";
 			vector<int> service_of_user = list_of_devices[i].GetServiceIDList();
 			myfile << "[ ";
-			for (int j = 0; j < service_of_user.size(); j++) {
+			for (unsigned int j = 0; j < service_of_user.size(); j++) {
 				if (service_of_user.size() != (j + 1)) {
 					myfile << service_of_user[j] << ", ";
 				}

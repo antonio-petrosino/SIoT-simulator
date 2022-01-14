@@ -5,15 +5,17 @@ using namespace std;
 #include <vector>
 #include <ctime>
 #include <iomanip>
+#include <string>  
 #include "SystemBehaviour.h"
 
+#include<direct.h>
 
 bool vDEBUG = false;
 double alpha = 0.5;
 double beta = 0.3;
 double gamma = 0.2;
-bool resource_ctrl = true;
-bool qos_ctrl = true;
+bool resource_ctrl;
+bool qos_ctrl;
 unsigned long tstart, tend;
 Service* list_of_services;
 Master* list_of_master;
@@ -22,25 +24,43 @@ vector<Scheduler>  scheduler_records;
 vector<Queue> info_queue;
 int n_services, n_devices, n_master, lambda, tot_sim, seed;
 double cutting_value;
+string folder_name;
 
 int main() {	
 	int max_resched = 99999;
 	cutting_value = 0.24; 
 	//cutting_value = 0.3;
-	cout << "Progetto SSIoT"<<endl;
+	cout << "SSIoT Simulator"<<endl;
+	
 	// seed the RNG	
 	std::mt19937 rng(seed); // mt19937: Pseudo-random number generation
 		
 	Tic();
 
+	resource_ctrl	= false;
+	qos_ctrl		= false;
+
 	n_services		= 6;	
-	n_devices 		= 200;	
+	n_devices 		= 150;	
 	n_master 		= 5;
 
 	lambda			= 7;
-	tot_sim			= 800;	 // secondi
+	tot_sim			= 2500;	 // secondi
 	seed			= 10;
-		
+	
+
+	folder_name = "Sim-n_services_"+ to_string(n_services)+"-n_devices_" + to_string(n_devices) + "-n_master_" + to_string(n_master) +
+		"-lambda_" + to_string(lambda) + "-tot_sim_"+ to_string(tot_sim) + "-seed_"+ to_string(seed) +"-resource_ctrl_"
+		+ to_string(resource_ctrl) +"-qos_ctrl_"+to_string(qos_ctrl) +"/";
+
+	const char* folder_name_char = folder_name.c_str();
+	if (_mkdir(folder_name_char) == -1) {
+		cout << "Folder exists." << endl;
+	}
+	else {
+		cout << "Folder created." << endl;
+	}
+
 	cout <<"Start..."<< endl;	
 	srand(seed);  
 	
@@ -120,46 +140,51 @@ int main() {
 
 			}else if(event_assigned == -2){
 				// lista vuota???
-				// a volte è falso perchè la lista dei provider è vuota? POSSIBILE?
+				// a volte è falso perchè la lista dei provider è vuota? 
 				empty_list = true;
 
 				if (vDEBUG) {
 					cout << "Event: empty list." << endl;
 				}
 			}
-
-			//UpdateQueue(next_event, event_assigned, empty_list);
-			//event_calendar.DeleteEvent(next_event.GetEventID());
 			
 		}
 		else if (next_event.GetEventType() == "end_service") {
 			EndService(next_event.GetSchedulerID(), next_event.GetTimeStamp());		
 			if (vDEBUG) {
 				cout << "Event: End_service." << endl;
-			}
-			//cout << "..." << endl;
+			}			
 		}
+
 		UpdateQueue(next_event, event_assigned, empty_list);
 		//system("CLS");
 		int perc_tot = (next_event.timestamp * 100) / tot_sim;
-		cout << "t: \t" << next_event.timestamp <<"\t\t" << perc_tot << " % <-- computed" << endl;
+		cout << "t: \t" << next_event.timestamp <<"\t\t" << perc_tot << " % <-- computed";
+		cout << "\t \t [ ";
+
+		int perc_tracking = perc_tot / 10;
+		if (perc_tracking > 10) {
+			perc_tracking = 10;
+		}
+		for (int m = 0; m < perc_tracking; m++) {
+			cout << "|";
+		}
+		for (int m = 0; m < 10 - perc_tracking; m++) {
+			cout << "-";
+		}
+		cout << " ]" << endl;
 		event_calendar.DeleteEvent(next_event.GetEventID());		
 		
 	}
 
-	//tend = time(0);
-	//cout << "Until end: " << difftime(tend, tstart) << " second(s)." << endl;
 	Toc("end");
+
 	PrintInfoQueue();
 	PrintAvgReputation();
 	PrintSchedulerItem();
 	PrintUserInfo();
-	// -> in una cartella con i nomi dei parametri di avvio
-	// -> istante per istante valore di delta (avgRep)
+	// -> istante per istante valore di delta (avgRep) ??? HOW???
 	
   	system("pause");
-
-	// possibilità di calcolare quanto tempo effettivo impiega il master a calcolare tutto (poi vediamo)
-	// si può fare
     return 0;
 }
