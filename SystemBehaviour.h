@@ -345,6 +345,8 @@ void ServiceProviderFiltering(int id_scheduler_record) {
 
 		vector<int> master_registered_devices_ids = selected_master.GetAllDevices();
 
+
+		//selected_service_requester = list_of_devices[]
 		// riempio service_requester
 		for (int j = 0; j < n_devices; j++) {
 			if (list_of_devices[j].GetID() == id_service_requester) {
@@ -1014,11 +1016,8 @@ void PrintUserInfo() {
 
 
 
-void PrintDeltaStateEachDevices(string timestamp) {
-	ofstream myfile(".\\" + folder_name + "delta_folder\\DeltaState_" + timestamp + ".txt");
+void EstimateDeltaStateEachDevices( double timestamp) {
 
-	if (myfile.is_open()) {
-		myfile << "ID_DEVICE\t" << "ID_SERVICE\t" << "DELTA\n";
 		Master selected_master;
 		for (int i = 0; i < n_master; i++) {
 			selected_master = list_of_master[i];
@@ -1026,22 +1025,24 @@ void PrintDeltaStateEachDevices(string timestamp) {
 			vector<int> services_on_master = selected_master.GetAllServices();
 			for (int z = 0; z < services_on_master.size(); z++) {
 				for (int j = 0; j < devices_on_master.size(); j++) {
-					Device device_to_analyze;
-					for (int k = 0; k < n_devices; k++) {
-						if (devices_on_master[j] == list_of_devices[k].GetID()) {
-							device_to_analyze = list_of_devices[k];
-							break;
-						}
+					int k_index = 0;
+					//for (int k = 0; k < n_devices; k++) {
+						//if (devices_on_master[j] == list_of_devices[k].GetID()) {							
+					k_index = devices_on_master[j] - 1;
+						//	break;
+						//}
 
-						double avgRep = selected_master.AverageReputation(device_to_analyze.GetID(), services_on_master[z]);
-						myfile << device_to_analyze.GetID() <<"\t" << services_on_master[z] << "\t" << avgRep;
-						myfile << "\n";
-					}
+					DeltaTrace new_delta; 
+					new_delta.avgValue = selected_master.AverageReputation(devices_on_master[j], services_on_master[z]);
+					new_delta.timestamp = timestamp;
+
+					list_of_devices[k_index].PushBackDeltaValue(new_delta);
+
+						//myfile << list_of_devices[k_index].GetID() <<"\t" << services_on_master[z] << "\t" << avgRep;
+						//myfile << "\n";
+					//}
 				}
 
 			}
 		}
-	}
-
-	myfile.close();
 }

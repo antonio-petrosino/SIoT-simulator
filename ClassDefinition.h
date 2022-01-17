@@ -49,6 +49,11 @@ struct FriendsOfFriend {
 	int friend_of_friend_id;
 };
 
+struct DeltaTrace {
+	double avgValue;
+	double timestamp;
+};
+
 /*
 Device GetDeviceByID(int id_device, Device* list_of_devices, int n_devices) {
 	for (int j = 0; j < n_devices; j++) {
@@ -107,6 +112,7 @@ class Device{
 	double total_power, remaining_power;
 	vector<int> services_id_list;  // vettore di id -> elenco di servizi che può fare
 	bool malicious_node;
+	vector<DeltaTrace> delta_value = {};
 	
 	public: 
 		vector<int> master_node_id_list;
@@ -295,6 +301,10 @@ class Device{
 			
 			cout << " ##"<<endl;
 		};
+
+		void PushBackDeltaValue(DeltaTrace new_delta) {
+			this->delta_value.push_back(new_delta);
+		}
 	
 };
 

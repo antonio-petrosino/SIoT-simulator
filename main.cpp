@@ -41,11 +41,11 @@ int main() {
 	qos_ctrl		= false;
 
 	n_services		= 6;	
-	n_devices 		= 100;	
+	n_devices 		= 150;	
 	n_master 		= 5;
 
-	lambda			= 10;
-	tot_sim			= 300;	 // secondi
+	lambda			= 2;
+	tot_sim			= 600;	 // secondi
 	seed			= 10;
 	
 
@@ -61,14 +61,14 @@ int main() {
 		cout << "Folder created." << endl;
 	}
 
-	string folder_name_delta = folder_name + "\\delta_folder\\";
-	const char* folder_name_char_delta = folder_name.c_str();
+	string folder_name_delta = folder_name + "delta_folder/";
+	const char* folder_name_char_delta = folder_name_delta.c_str();
 
 	if (_mkdir(folder_name_char_delta) == -1) {
-		cout << "Folder exists." << endl;
+		cout << "Delta folder exists." << endl;
 	}
 	else {
-		cout << "Folder created." << endl;
+		cout << "Delta folder created." << endl;
 	}
 
 	cout <<"Start..."<< endl;	
@@ -86,6 +86,8 @@ int main() {
 	std::cout << std::setprecision(3) << std::fixed;
 
 	Calendar event_calendar = Calendar(scheduler_records);
+	//ofstream myfile_delta(".\\" + folder_name + "delta_folder\\DeltaState.txt");
+
 
 	while (!event_calendar.IsEmpty()) {
 		Toc("init get next event");
@@ -186,20 +188,24 @@ int main() {
 	
 		event_calendar.DeleteEvent(next_event.GetEventID());		
 		
-		PrintDeltaStateEachDevices(to_string(next_event.GetTimeStamp()));
+		EstimateDeltaStateEachDevices(next_event.GetTimeStamp());
 
 	}
 
-	Toc("end");
+	
 	cout << "\n";
+	//myfile_delta.close();
+
+	vDEBUG = true;
+	Toc("end");
+
 	PrintInfoQueue();
 	PrintAvgReputation();
 	PrintSchedulerItem();
 	PrintUserInfo();
 	// -> istante per istante valore di delta (avgRep) ??? HOW???
-	
-	// SA ID_SERVIZIO ID_PROVIDER 
-	cout << "Text file exported." << endl;
+	cout << "\nText file exported." << endl;
+	// SA ID_SERVIZIO ID_PROVIDER 	
   	system("pause");
     return 0;
 }
