@@ -933,7 +933,7 @@ void PrintAvgReputation() {
 	ofstream myfile(".\\" + folder_name + "AvgRepInfo.txt");
 	if (myfile.is_open())
 	{
-		myfile <<"NodeID\t" << "ServiceID\t" << "AvgRep\t" << "\n";
+		myfile << "NodeID\t" << "ServiceID\t" << "AvgRep\t" << "\n";
 		Master selected_master;
 		for (int i = 0; i < n_master; i++) {
 			selected_master = list_of_master[i];
@@ -946,7 +946,7 @@ void PrintAvgReputation() {
 					if (list_of_devices[k].GetID() == devices_on_master_i[j]) {
 						device_to_analyze = list_of_devices[k];
 						vector<int> list_of_services_of_device_k = device_to_analyze.GetServiceIDList();
-						for (unsigned int z = 0; z<list_of_services_of_device_k.size(); z++) {
+						for (unsigned int z = 0; z < list_of_services_of_device_k.size(); z++) {
 							double avgToWriteOnFile = selected_master.AverageReputation(device_to_analyze.GetID(), list_of_services_of_device_k[z]);
 							myfile << device_to_analyze.GetID() << "\t" << list_of_services_of_device_k[z] << "\t" << avgToWriteOnFile << "\n";
 						}
@@ -961,7 +961,7 @@ void PrintAvgReputation() {
 	}
 	else cout << "Unable to open file";
 
-	
+
 }
 
 void PrintUserInfo() {
@@ -1010,4 +1010,38 @@ void PrintUserInfo() {
 
 	}
 	else cout << "Unable to open file";
+}
+
+
+
+void PrintDeltaStateEachDevices(string timestamp) {
+	ofstream myfile(".\\" + folder_name + "delta_folder\\DeltaState_" + timestamp + ".txt");
+
+	if (myfile.is_open()) {
+		myfile << "ID_DEVICE\t" << "ID_SERVICE\t" << "DELTA\n";
+		Master selected_master;
+		for (int i = 0; i < n_master; i++) {
+			selected_master = list_of_master[i];
+			vector<int> devices_on_master = selected_master.GetAllDevices();
+			vector<int> services_on_master = selected_master.GetAllServices();
+			for (int z = 0; z < services_on_master.size(); z++) {
+				for (int j = 0; j < devices_on_master.size(); j++) {
+					Device device_to_analyze;
+					for (int k = 0; k < n_devices; k++) {
+						if (devices_on_master[j] == list_of_devices[k].GetID()) {
+							device_to_analyze = list_of_devices[k];
+							break;
+						}
+
+						double avgRep = selected_master.AverageReputation(device_to_analyze.GetID(), services_on_master[z]);
+						myfile << device_to_analyze.GetID() <<"\t" << services_on_master[z] << "\t" << avgRep;
+						myfile << "\n";
+					}
+				}
+
+			}
+		}
+	}
+
+	myfile.close();
 }

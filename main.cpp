@@ -45,7 +45,7 @@ int main() {
 	n_master 		= 5;
 
 	lambda			= 10;
-	tot_sim			= 3000;	 // secondi
+	tot_sim			= 300;	 // secondi
 	seed			= 10;
 	
 
@@ -55,6 +55,16 @@ int main() {
 
 	const char* folder_name_char = folder_name.c_str();
 	if (_mkdir(folder_name_char) == -1) {
+		cout << "Folder exists." << endl;
+	}
+	else {
+		cout << "Folder created." << endl;
+	}
+
+	string folder_name_delta = folder_name + "\\delta_folder\\";
+	const char* folder_name_char_delta = folder_name.c_str();
+
+	if (_mkdir(folder_name_char_delta) == -1) {
 		cout << "Folder exists." << endl;
 	}
 	else {
@@ -176,15 +186,19 @@ int main() {
 	
 		event_calendar.DeleteEvent(next_event.GetEventID());		
 		
+		PrintDeltaStateEachDevices(to_string(next_event.GetTimeStamp()));
+
 	}
 
 	Toc("end");
-
+	cout << "\n";
 	PrintInfoQueue();
 	PrintAvgReputation();
 	PrintSchedulerItem();
 	PrintUserInfo();
 	// -> istante per istante valore di delta (avgRep) ??? HOW???
+	
+	// SA ID_SERVIZIO ID_PROVIDER 
 	cout << "Text file exported." << endl;
   	system("pause");
     return 0;
