@@ -52,6 +52,7 @@ struct FriendsOfFriend {
 struct DeltaTrace {
 	double avgValue;
 	double timestamp;
+	int service_id;
 };
 
 /*
@@ -306,6 +307,9 @@ class Device{
 			this->delta_value.push_back(new_delta);
 		}
 	
+		vector <DeltaTrace> GetDeltaValue() {
+			return this->delta_value;
+		}
 };
 
 //struct Registered_Device{	

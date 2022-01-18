@@ -41,11 +41,11 @@ int main() {
 	qos_ctrl		= false;
 
 	n_services		= 6;	
-	n_devices 		= 150;	
+	n_devices 		= 100;	
 	n_master 		= 5;
 
-	lambda			= 2;
-	tot_sim			= 600;	 // secondi
+	lambda			= 10;
+	tot_sim			= 100;	 // secondi
 	seed			= 10;
 	
 
@@ -59,16 +59,6 @@ int main() {
 	}
 	else {
 		cout << "Folder created." << endl;
-	}
-
-	string folder_name_delta = folder_name + "delta_folder/";
-	const char* folder_name_char_delta = folder_name_delta.c_str();
-
-	if (_mkdir(folder_name_char_delta) == -1) {
-		cout << "Delta folder exists." << endl;
-	}
-	else {
-		cout << "Delta folder created." << endl;
 	}
 
 	cout <<"Start..."<< endl;	
@@ -86,7 +76,7 @@ int main() {
 	std::cout << std::setprecision(3) << std::fixed;
 
 	Calendar event_calendar = Calendar(scheduler_records);
-	//ofstream myfile_delta(".\\" + folder_name + "delta_folder\\DeltaState.txt");
+	
 
 
 	while (!event_calendar.IsEmpty()) {
@@ -171,7 +161,13 @@ int main() {
 		UpdateQueue(next_event, event_assigned, empty_list);
 		//system("CLS");
 		int perc_tot = (next_event.timestamp * 100) / tot_sim;
-		cout << "t: \t" << next_event.timestamp <<"\t\t\t\t" << perc_tot << " % <-- completed";
+		cout << "t: \t" << next_event.timestamp <<"\t\t\t\t" << perc_tot << " % ";
+		if (info_queue.size() > 0) {
+			cout << " queue: \t" << info_queue.back().total_service_queued << "\t";
+		}
+		else {
+			cout << " queued: \t" << "0" << "\t";
+		}
 		cout << "\t \t [ ";
 
 		int perc_tracking = perc_tot / 10;
@@ -184,11 +180,12 @@ int main() {
 		for (int m = 0; m < 10 - perc_tracking; m++) {
 			cout << "-";
 		}
+		
 		cout << " ]" << "\r";
 	
 		event_calendar.DeleteEvent(next_event.GetEventID());		
 		
-		EstimateDeltaStateEachDevices(next_event.GetTimeStamp());
+		//EstimateDeltaStateEachDevices(next_event.GetTimeStamp());
 
 	}
 
@@ -203,6 +200,10 @@ int main() {
 	PrintAvgReputation();
 	PrintSchedulerItem();
 	PrintUserInfo();
+	PrintEstimateDeltaStateEachDevices();
+
+	Toc("end");
+
 	// -> istante per istante valore di delta (avgRep) ??? HOW???
 	cout << "\nText file exported." << endl;
 	// SA ID_SERVIZIO ID_PROVIDER 	

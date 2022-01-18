@@ -601,12 +601,12 @@ void ServiceProviderFiltering(int id_scheduler_record) {
 		
 }
 
-void AssignFeedback(int id_master, int id_service_provider, int id_service_requester, int id_requested_service, bool mal_behaviour){
-	
-	const int possible_mal_feedback[]	= { 0,0,0,0,0,1,1,1,1,1 }; // mal 50%
-	const int possible_feedback[]		= { 1,1,1,1,1,1,1,1,1,0 }; // ben 90%
-	int len_possible_feedback			= sizeof(possible_feedback) / sizeof(int);
-	int choosenFeedback					= rand() % len_possible_feedback;
+void AssignFeedback(int id_master, int id_service_provider, int id_service_requester, int id_requested_service, bool mal_behaviour, double timestamp) {
+
+	const int possible_mal_feedback[] = { 0,0,0,0,0,1,1,1,1,1 }; // mal 50%
+	const int possible_feedback[] = { 1,1,1,1,1,1,1,1,1,0 }; // ben 90%
+	int len_possible_feedback = sizeof(possible_feedback) / sizeof(int);
+	int choosenFeedback = rand() % len_possible_feedback;
 	int selected_master_id;
 	int new_feed;
 
@@ -626,6 +626,20 @@ void AssignFeedback(int id_master, int id_service_provider, int id_service_reque
 	}
 
 	list_of_master[selected_master_id].SetReputation(id_service_provider, id_service_requester, id_requested_service, new_feed);
+
+	DeltaTrace new_delta;
+	new_delta.avgValue = list_of_master[selected_master_id].AverageReputation(id_service_provider, id_requested_service);
+	new_delta.timestamp = timestamp;
+	new_delta.service_id = id_requested_service;
+
+	for (int i = 0; i < n_devices; i++) {
+		if (list_of_devices[i].GetID() == id_service_provider) {
+			list_of_devices[i].PushBackDeltaValue(new_delta);
+			break;
+		}
+	}
+
+	
 
 }
 
@@ -749,7 +763,7 @@ double EstimateProcessingTime(int id_sched_event) {
 		}
 
 		for (int i = 0; i < n_devices; i++) {
-			if (list_of_devices[i].GetID() == service_id) {
+			if (list_of_devices[i].GetID() == provider_id) {
 				selected_provider = list_of_devices[i];
 				break;
 			}
@@ -795,7 +809,7 @@ void EndService(int id_sched_event, double end_ts) {
 	// rilascio feedback
 	// selected_provider.GetID()
 	bool mal_node = list_of_devices[selected_master.GetDeviceIndexByID(scheduler_records[id_sched_event].GetChoosenSP(), list_of_devices, n_devices)].GetMalicious();
-	AssignFeedback(master_id, scheduler_records[id_sched_event].GetChoosenSP(), requester_id, service_id, mal_node);
+	AssignFeedback(master_id, scheduler_records[id_sched_event].GetChoosenSP(), requester_id, service_id, mal_node, end_ts);
 }
 
 
@@ -1016,33 +1030,80 @@ void PrintUserInfo() {
 
 
 
-void EstimateDeltaStateEachDevices( double timestamp) {
+void EstimateDeltaStateEachDevices(double timestamp) {
+	Master selected_master;
+	for (int i = 0; i < n_master; i++) {
+		selected_master = list_of_master[i];
+		vector < int > devices_on_master = selected_master.GetAllDevices();
+		vector < int > services_on_master = selected_master.GetAllServices();
+		for (int z = 0; z < services_on_master.size(); z++) {
+			for (int j = 0; j < devices_on_master.size(); j++) {
+				int k_index = 0;
+				//for (int k = 0; k < n_devices; k++) {
+				//if (devices_on_master[j] == list_of_devices[k].GetID()) {							
+				k_index = devices_on_master[j] - 1;
+				//	break;
+				//}
 
+				DeltaTrace new_delta;
+				new_delta.avgValue = selected_master.AverageReputation(devices_on_master[j], services_on_master[z]);
+				new_delta.timestamp = timestamp;
+				new_delta.service_id = services_on_master[z];
+
+				list_of_devices[k_index].PushBackDeltaValue(new_delta);
+
+				//myfile << list_of_devices[k_index].GetID() <<"\t" << services_on_master[z] << "\t" << avgRep;
+				//myfile << "\n";
+				//}
+			}
+
+		}
+	}
+}
+
+
+void PrintEstimateDeltaStateEachDevices() {
+	ofstream myfile(".\\" + folder_name + "DeltaState.txt");
+
+	if (myfile.is_open()) {
 		Master selected_master;
 		for (int i = 0; i < n_master; i++) {
 			selected_master = list_of_master[i];
-			vector<int> devices_on_master = selected_master.GetAllDevices();
-			vector<int> services_on_master = selected_master.GetAllServices();
+			vector < int > devices_on_master = selected_master.GetAllDevices();
+			vector < int > services_on_master = selected_master.GetAllServices();
 			for (int z = 0; z < services_on_master.size(); z++) {
 				for (int j = 0; j < devices_on_master.size(); j++) {
 					int k_index = 0;
 					//for (int k = 0; k < n_devices; k++) {
-						//if (devices_on_master[j] == list_of_devices[k].GetID()) {							
+					//if (devices_on_master[j] == list_of_devices[k].GetID()) {							
 					k_index = devices_on_master[j] - 1;
-						//	break;
-						//}
+					//	break;
+					//}
+					vector < DeltaTrace > list_of_delta = list_of_devices[k_index].GetDeltaValue();
+					myfile << "USER INFO \t ID\t" << devices_on_master[j] << "\t SERVICE ID\t" << services_on_master[z] << "\n";
+					myfile << "DELTA INFO\n";
+					myfile << "AVGVALUE\tTIMESTAMP\n";
 
-					DeltaTrace new_delta; 
-					new_delta.avgValue = selected_master.AverageReputation(devices_on_master[j], services_on_master[z]);
-					new_delta.timestamp = timestamp;
+					for (int k = 0; k < list_of_delta.size(); k++) {
+						if (list_of_delta[k].service_id == services_on_master[z]) {
+							myfile << list_of_delta[k].avgValue << "\t";
+							myfile << list_of_delta[k].timestamp << "\n";
+						}
+					}
+					myfile << "END DELTA INFO\n";
+					myfile << "END USER INFO\n";
 
-					list_of_devices[k_index].PushBackDeltaValue(new_delta);
-
-						//myfile << list_of_devices[k_index].GetID() <<"\t" << services_on_master[z] << "\t" << avgRep;
-						//myfile << "\n";
+					//myfile << list_of_devices[k_index].GetID() <<"\t" << services_on_master[z] << "\t" << avgRep;
+					//myfile << "\n";
 					//}
 				}
 
 			}
 		}
-}
+		myfile.close();
+
+	}
+	else {
+		cout << "Unable to open file";
+	}
+};
