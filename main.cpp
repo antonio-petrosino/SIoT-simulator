@@ -37,15 +37,15 @@ int main() {
 		
 	Tic();
 
-	resource_ctrl	= false;
+	resource_ctrl	= true;
 	qos_ctrl		= false;
 
 	n_services		= 6;	
-	n_devices 		= 100;	
+	n_devices 		= 300;	
 	n_master 		= 5;
 
-	lambda			= 10;
-	tot_sim			= 100;	 // secondi
+	lambda			= 8;
+	tot_sim			= 2000;	 // secondi
 	seed			= 10;
 	
 
