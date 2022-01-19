@@ -191,7 +191,7 @@ Device* DeviceCreation(){
 
 bool CompareByTrustDesc(const Trust_record& a, const Trust_record& b)
 {
-	if (qos_ctrl) {
+	if (qoe_ctrl) {
 		if (a.provider_class != b.provider_class) {
 			return a.provider_class > b.provider_class;
 		}
@@ -591,7 +591,7 @@ void ServiceProviderFiltering(int id_scheduler_record) {
 		}
 		else {
 			std::sort(Trust_list.begin(), Trust_list.end(), CompareByTrustDesc);
-			//QoS ordino solo dopo il cut
+			//QoE ordino solo dopo il cut
 			scheduler_records[id_scheduler_record].SetTrustList(Trust_list);
 		}
 		

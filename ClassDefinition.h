@@ -1,5 +1,5 @@
 extern bool vDEBUG;
-extern bool qos_ctrl;
+extern bool qoe_ctrl;
 extern bool resource_ctrl;
 #include <algorithm>
 

@@ -10,12 +10,12 @@ using namespace std;
 
 #include<direct.h>
 
-bool vDEBUG = false;
+bool vDEBUG = true;
 double alpha = 0.5;
 double beta = 0.3;
 double gamma = 0.2;
 bool resource_ctrl;
-bool qos_ctrl;
+bool qoe_ctrl;
 unsigned long tstart, tend;
 Service* list_of_services;
 Master* list_of_master;
@@ -32,181 +32,216 @@ int main() {
 	//cutting_value = 0.3;
 	cout << "SSIoT Simulator"<<endl;
 	
-	// seed the RNG	
-	std::mt19937 rng(seed); // mt19937: Pseudo-random number generation
-		
+	
 	Tic();
 
-	resource_ctrl	= true;
-	qos_ctrl		= false;
-
-	n_services		= 6;	
-	n_devices 		= 300;	
-	n_master 		= 5;
-
-	lambda			= 8;
-	tot_sim			= 2000;	 // secondi
-	seed			= 10;
+	vector<bool>	parameter_to_test_resource_ctrl		= { true }; //{true, false};
+	vector<bool>	parameter_to_test_qoe_ctrl			= { true };
 	
+	vector<int>		parameter_to_test_n_services		= { 6 };
+	vector<int>		parameter_to_test_n_devices			= { 100 };
+	vector<int>		parameter_to_test_n_master			= { 5 };
 
-	folder_name = "Sim-n_services_"+ to_string(n_services)+"-n_devices_" + to_string(n_devices) + "-n_master_" + to_string(n_master) +
-		"-lambda_" + to_string(lambda) + "-tot_sim_"+ to_string(tot_sim) + "-seed_"+ to_string(seed) +"-resource_ctrl_"
-		+ to_string(resource_ctrl) +"-qos_ctrl_"+to_string(qos_ctrl) +"/";
+	vector<int>		parameter_to_test_lambda			= { 10 };
+	vector<int>		parameter_to_test_seed				= { 1 };
 
-	const char* folder_name_char = folder_name.c_str();
-	if (_mkdir(folder_name_char) == -1) {
-		cout << "Folder exists." << endl;
-	}
-	else {
-		cout << "Folder created." << endl;
-	}
+	vector<int>		parameter_to_test_tot_sim			= { 100, 3000 };
 
-	cout <<"Start..."<< endl;	
-	srand(seed);  
-	
-	list_of_services = ServicesCreation();	
-	list_of_master = MasterCreation();	
-	list_of_devices = DeviceCreation();	
-	GenerateSocialRel(n_devices, list_of_devices);
-	scheduler_records = GenerateEventsArray(tot_sim);
+	for (int nts = 0; nts < parameter_to_test_tot_sim.size(); nts++) {
+		for (int rc = 0; rc < parameter_to_test_resource_ctrl.size(); rc++) {
+			for (int qc = 0; qc < parameter_to_test_qoe_ctrl.size(); qc++) {
 
-	Toc("scheduler");
-	//tend = time(0);
-	//cout << "Until scheduler lasts: " << difftime(tend, tstart) << " second(s)." << endl;
-	std::cout << std::setprecision(3) << std::fixed;
+				for (int ns = 0; ns < parameter_to_test_n_services.size(); ns++) {
+					for (int nd = 0; nd < parameter_to_test_n_devices.size(); nd++) {
+						for (int nm = 0; nm < parameter_to_test_n_master.size(); nm++) {
 
-	Calendar event_calendar = Calendar(scheduler_records);
-	
+							for (int nl = 0; nl < parameter_to_test_lambda.size(); nl++) {
+								for (int nseed = 0; nseed < parameter_to_test_seed.size(); nseed++) {
+
+									resource_ctrl = parameter_to_test_resource_ctrl[rc];
+									qoe_ctrl = parameter_to_test_qoe_ctrl[qc];
+
+									n_services = parameter_to_test_n_services[ns];
+									n_devices = parameter_to_test_n_devices[nd];
+									n_master = parameter_to_test_n_master[nm];
+
+									lambda = parameter_to_test_lambda[nl];
+									tot_sim = parameter_to_test_tot_sim[nts];	 // secondi
+									seed = parameter_to_test_seed[nseed];
+
+									// seed the RNG	
+									std::mt19937 rng(seed); // mt19937: Pseudo-random number generation
 
 
-	while (!event_calendar.IsEmpty()) {
-		Toc("init get next event");
-		Event next_event = event_calendar.GetNextEvent();
-		unsigned long start_master_processing = clock();
-		Toc("end get next event");
+									folder_name = "Sim-n_services_" + to_string(n_services) + "-n_devices_" + to_string(n_devices) + "-n_master_" + to_string(n_master) +
+										"-lambda_" + to_string(lambda) + "-tot_sim_" + to_string(tot_sim) + "-seed_" + to_string(seed) + "-resource_ctrl_"
+										+ to_string(resource_ctrl) + "-qoe_ctrl_" + to_string(qoe_ctrl) + "/";
 
-		int event_assigned = false;
-		bool empty_list = false;
+									const char* folder_name_char = folder_name.c_str();
+									if (_mkdir(folder_name_char) == -1) {
+										cout << "Folder exists." << endl;
+									}
+									else {
+										cout << "Folder created." << endl;
+									}
 
-		if (vDEBUG) {
-			cout << "Sched[" << next_event.GetSchedulerID() << "]..." << endl;
-		}
+									cout << "Start..." << endl;
+									srand(seed);
 
-		if (next_event.GetEventType() == "scheduler" || next_event.GetEventType() == "re-scheduler") {
-			Toc("start ServiceProviderFiltering");
-			ServiceProviderFiltering(next_event.GetSchedulerID());
-			Toc("end ServiceProviderFiltering - start Orchestrator_MakeDecisions");
+									list_of_services = ServicesCreation();
+									list_of_master = MasterCreation();
+									list_of_devices = DeviceCreation();
+									GenerateSocialRel(n_devices, list_of_devices);
+									scheduler_records = GenerateEventsArray(tot_sim);
 
-			event_assigned = Orchestrator_MakeDecisions(next_event.GetSchedulerID());	
-			Toc("end Orchestrator_MakeDecisions");
-			unsigned long end_master_processing = clock();
-			unsigned long total_master_processing = (end_master_processing - start_master_processing) / 1000;
-			if (vDEBUG) {
-				if (event_assigned == 1) {
-					cout << "Event assignment: TRUE" << endl;
-				}
-				else {
-					cout << "Event assignment: FALSE" << endl;
-				}
-			}
+									Toc("scheduler");
+									std::cout << std::setprecision(3) << std::fixed;
 
-			if (event_assigned == 1) {
-				// schedulo riassegnazione risorse				
-				double processing_time = EstimateProcessingTime(next_event.GetSchedulerID()); // cycles/s -> bit/cycles (1/1000) ->  bit 				
-				double new_timestamp = next_event.GetTimeStamp() + processing_time + total_master_processing;
+									Calendar event_calendar = Calendar(scheduler_records);
 
-				Toc("start add event");
-				event_calendar.AddEvent(next_event.GetSchedulerID(), new_timestamp, "end_service");
-				Toc("end add event");
 
-				if (vDEBUG) {
-					cout << "Event: assigned." << endl;
-				}
-			}
-			else if(event_assigned == -1){
-				// schedulo di nuovo il servizio				
-				double backoff = rand() % 35;
-				double new_timestamp = next_event.GetTimeStamp() + backoff + total_master_processing;
 
-				if (scheduler_records[next_event.GetSchedulerID()].GetRescheduleTime() < max_resched) {
-					scheduler_records[next_event.GetSchedulerID()].SetRescheduleTime(scheduler_records[next_event.GetSchedulerID()].GetRescheduleTime() + 1);
+									while (!event_calendar.IsEmpty()) {
+										Toc("init get next event");
+										Event next_event = event_calendar.GetNextEvent();
+										unsigned long start_master_processing = clock();
+										Toc("end get next event");
 
-					Toc("start add event");
-					event_calendar.AddEvent(next_event.GetSchedulerID(), new_timestamp, "re-scheduler");
-					Toc("end add event");
+										int event_assigned = false;
+										bool empty_list = false;
 
-					if (vDEBUG) {
-						cout << "Event: re-scheduler." << endl;
+										if (vDEBUG) {
+											cout << "Sched[" << next_event.GetSchedulerID() << "]..." << endl;
+										}
+
+										if (next_event.GetEventType() == "scheduler" || next_event.GetEventType() == "re-scheduler") {
+											Toc("start ServiceProviderFiltering");
+											ServiceProviderFiltering(next_event.GetSchedulerID());
+											Toc("end ServiceProviderFiltering - start Orchestrator_MakeDecisions");
+
+											event_assigned = Orchestrator_MakeDecisions(next_event.GetSchedulerID());
+											Toc("end Orchestrator_MakeDecisions");
+											unsigned long end_master_processing = clock();
+											unsigned long total_master_processing = (end_master_processing - start_master_processing) / 1000;
+											if (vDEBUG) {
+												if (event_assigned == 1) {
+													cout << "Event assignment: TRUE" << endl;
+												}
+												else {
+													cout << "Event assignment: FALSE" << endl;
+												}
+											}
+
+											if (event_assigned == 1) {
+												// de-allocate resources scheduling
+												double processing_time = EstimateProcessingTime(next_event.GetSchedulerID()); // cycles/s -> bit/cycles (1/1000) ->  bit 				
+												double new_timestamp = next_event.GetTimeStamp() + processing_time + total_master_processing;
+
+												Toc("start add event");
+												event_calendar.AddEvent(next_event.GetSchedulerID(), new_timestamp, "end_service");
+												Toc("end add event");
+
+												if (vDEBUG) {
+													cout << "Event: assigned." << endl;
+												}
+											}
+											else if (event_assigned == -1) {
+												// new service scheduling			
+												double backoff = rand() % 35;
+												double new_timestamp = next_event.GetTimeStamp() + backoff + total_master_processing;
+
+												if (scheduler_records[next_event.GetSchedulerID()].GetRescheduleTime() < max_resched) {
+													scheduler_records[next_event.GetSchedulerID()].SetRescheduleTime(scheduler_records[next_event.GetSchedulerID()].GetRescheduleTime() + 1);
+
+													Toc("start add event");
+													event_calendar.AddEvent(next_event.GetSchedulerID(), new_timestamp, "re-scheduler");
+													Toc("end add event");
+
+													if (vDEBUG) {
+														cout << "Event: re-scheduler." << endl;
+													}
+												}
+
+											}
+											else if (event_assigned == -2) {
+												// unwanted scenario												
+												empty_list = true;
+
+												if (vDEBUG) {
+													cout << "Event: empty list." << endl;
+												}
+											}
+
+										}
+										else if (next_event.GetEventType() == "end_service") {
+											EndService(next_event.GetSchedulerID(), next_event.GetTimeStamp());
+											if (vDEBUG) {
+												cout << "Event: End_service." << endl;
+											}
+										}
+
+										UpdateQueue(next_event, event_assigned, empty_list);
+										system("CLS");
+										cout << "SSIoT Simulator. \nScenario:" << folder_name << endl;
+										int perc_tot = (next_event.timestamp * 100) / tot_sim;
+										cout << "t: \t" << next_event.timestamp << "\t\t\t\t" << perc_tot << " % ";
+										if (info_queue.size() > 0) {
+											cout << "\t queue: \t" << info_queue.back().total_service_queued << "\t";
+										}
+										else {
+											cout << "\t queue: \t" << "0" << "\t";
+										}
+										cout << "\t \t [ ";
+
+										int perc_tracking = perc_tot / 10;
+										if (perc_tracking > 10) {
+											perc_tracking = 10;
+										}
+										for (int m = 0; m < perc_tracking; m++) {
+											cout << "|";
+										}
+										for (int m = 0; m < 10 - perc_tracking; m++) {
+											cout << "-";
+										}
+
+										cout << " ]";
+										tend = clock();
+										unsigned long diff = difftime(tend, tstart) / 1000;
+										cout << "\nElapsed time: " << diff << " sec" << endl;
+										if (perc_tot > 0) {
+											cout << "\nEstimated time: " << (diff * 100 / perc_tot) << " sec" << endl;
+										}
+										//cout << "\r";
+
+										event_calendar.DeleteEvent(next_event.GetEventID());									
+
+									}
+
+
+									cout << "\n";
+									
+									bool tempDebug = vDEBUG;
+									vDEBUG = true;
+									Toc("end");
+									vDEBUG = tempDebug;
+									PrintInfoQueue();
+									PrintAvgReputation();
+									PrintSchedulerItem();
+									PrintUserInfo();
+									PrintEstimateDeltaStateEachDevices();
+
+									Toc("end");									
+									cout << "\nText files exported. Folder:" << folder_name << endl;									
+								}
+
+							}
+						}
 					}
-				}				
-
-			}else if(event_assigned == -2){
-				// lista vuota???
-				// a volte è falso perchè la lista dei provider è vuota? 
-				empty_list = true;
-
-				if (vDEBUG) {
-					cout << "Event: empty list." << endl;
 				}
 			}
-			
 		}
-		else if (next_event.GetEventType() == "end_service") {
-			EndService(next_event.GetSchedulerID(), next_event.GetTimeStamp());		
-			if (vDEBUG) {
-				cout << "Event: End_service." << endl;
-			}			
-		}
-
-		UpdateQueue(next_event, event_assigned, empty_list);
-		//system("CLS");
-		int perc_tot = (next_event.timestamp * 100) / tot_sim;
-		cout << "t: \t" << next_event.timestamp <<"\t\t\t\t" << perc_tot << " % ";
-		if (info_queue.size() > 0) {
-			cout << " queue: \t" << info_queue.back().total_service_queued << "\t";
-		}
-		else {
-			cout << " queued: \t" << "0" << "\t";
-		}
-		cout << "\t \t [ ";
-
-		int perc_tracking = perc_tot / 10;
-		if (perc_tracking > 10) {
-			perc_tracking = 10;
-		}
-		for (int m = 0; m < perc_tracking; m++) {
-			cout << "|";
-		}
-		for (int m = 0; m < 10 - perc_tracking; m++) {
-			cout << "-";
-		}
-		
-		cout << " ]" << "\r";
-	
-		event_calendar.DeleteEvent(next_event.GetEventID());		
-		
-		//EstimateDeltaStateEachDevices(next_event.GetTimeStamp());
-
 	}
-
 	
-	cout << "\n";
-	//myfile_delta.close();
-
-	vDEBUG = true;
-	Toc("end");
-
-	PrintInfoQueue();
-	PrintAvgReputation();
-	PrintSchedulerItem();
-	PrintUserInfo();
-	PrintEstimateDeltaStateEachDevices();
-
-	Toc("end");
-
-	// -> istante per istante valore di delta (avgRep) ??? HOW???
-	cout << "\nText file exported." << endl;
-	// SA ID_SERVIZIO ID_PROVIDER 	
   	system("pause");
     return 0;
 }
