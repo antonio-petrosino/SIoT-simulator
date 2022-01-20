@@ -861,21 +861,29 @@ public:
 			//if (!list_of_events[i].IsDeleted()) {
 			if(list_of_events[i].GetEventID() == event_id){
 				this->list_of_events[i].MarkAsDeleted();
+				this->list_of_events.erase(list_of_events.begin()+i); // TODO: check if it is needed
 				break;
 			}
 		}
 	}
 
 	bool IsEmpty() {
-		int tot_element_deleted = 0;
+		//int tot_element_deleted = 0;
 
-		for (unsigned int i = 0; i < this->list_of_events.size(); i++) {
-			if ((list_of_events[i].IsDeleted())) {
-				tot_element_deleted++;
-			}			
-		}
+		//for (unsigned int i = 0; i < this->list_of_events.size(); i++) {
+		//	if ((list_of_events[i].IsDeleted())) {
+		//		tot_element_deleted++;
+		//	}			
+		//}
 
-		if (this->list_of_events.size() != tot_element_deleted) {
+		//if (this->list_of_events.size() != tot_element_deleted) {
+		//	return false;
+		//}
+		//else {
+		//	return true;
+		//}
+
+		if (this->list_of_events.size() > 0) {
 			return false;
 		}
 		else {

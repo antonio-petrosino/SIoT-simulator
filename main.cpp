@@ -7,7 +7,6 @@ using namespace std;
 #include <iomanip>
 #include <string>  
 #include "SystemBehaviour.h"
-
 #include<direct.h>
 
 bool vDEBUG = true;
@@ -35,8 +34,8 @@ int main() {
 	
 	Tic();
 
-	vector<bool>	parameter_to_test_resource_ctrl		= { true }; //{true, false};
-	vector<bool>	parameter_to_test_qoe_ctrl			= { true };
+	vector<bool>	parameter_to_test_resource_ctrl		= { false }; //{true, false};
+	vector<bool>	parameter_to_test_qoe_ctrl			= { false };
 	
 	vector<int>		parameter_to_test_n_services		= { 6 };
 	vector<int>		parameter_to_test_n_devices			= { 100 };
