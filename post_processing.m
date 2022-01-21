@@ -18,6 +18,10 @@ seed_to_find           = "1";
 resource_ctrl_to_find  = "1";
 qoe_ctrl_to_find       = "1";
 
+for i=str2double(n_devices_to_find)
+    user_info(i) = struct;
+end
+
 %% Elaborazione
 for i=1:length(files_list)
     %trovo tutte le cartelle presenti nella cartella master
@@ -85,7 +89,7 @@ for i=1:length(files_list)
                             
                         end
                         
-                        %% 
+                        %% DeltaValue
                         if selected_simulation_files_list(j).name =="DeltaState.txt"...
                                 && selected_simulation_files_list(j).isdir == 0 ...
                                 && selected_simulation_files_list(j).bytes > 0
@@ -94,10 +98,52 @@ for i=1:length(files_list)
                             buffer_lettura = fopen(strcat(new_Path_to_explore, sim_file_name));
                             %read_row = fgetl(buffer_lettura); % leggo la riga dell'intestazione
                             
-                            extracted_data = strsplit(fgetl(buffer_lettura), '\t');
+                            get_avg_value_enabled = false;
+                            selected_user_ID = -1;
+                            selected_service_ID = -1;
+                                    
+                            while ~feof(buffer_lettura)
+                                extracted_data = strsplit(fgetl(buffer_lettura), '\t');
+
+                                if string(extracted_data(1)) == 'USER INFO ' && get_avg_value_enabled == false
+                                    selected_user_ID = str2double(string(extracted_data(3)));
+                                    selected_service_ID = str2double(string(extracted_data(5)));
+                                elseif string(extracted_data(1)) == 'DELTA INFO' && get_avg_value_enabled == false
+                                elseif string(extracted_data(1)) == 'AVGVALUE' && get_avg_value_enabled == false
+                                    get_avg_value_enabled = true;
+                                elseif string(extracted_data(1)) == 'END DELTA INFO' && get_avg_value_enabled == true
+                                    get_avg_value_enabled = false;
+                                elseif string(extracted_data(1)) == 'END USER INFO'
+                                    selected_user_ID = -1;
+                                    selected_service_ID = -1;
+                                else
+                                    if selected_user_ID>0 && selected_service_ID > 0 && get_avg_value_enabled == true     
+                                        
+%                                         if isfield(user_info(selected_user_ID), 'service')
+%                                             service_length = length(user_info(selected_user_ID).service);
+%                                         else
+%                                             service_length = 0;
+%                                         end
+                                        user_info(selected_user_ID).service(selected_service_ID).name = selected_service_ID;
+                                        
+                                        if isfield(user_info(selected_user_ID).service(selected_service_ID), 'valore_storicizzato')
+                                            user_length_hystory = length(user_info(selected_user_ID).service(selected_service_ID).valore_storicizzato);
+                                        else
+                                            user_length_hystory = 0;
+                                        end
+                                        
+                                        user_info(selected_user_ID).service(selected_service_ID).valore_storicizzato(user_length_hystory+1).delta = str2double(string(extracted_data(1)));
+                                        user_info(selected_user_ID).service(selected_service_ID).valore_storicizzato(user_length_hystory+1).time = str2double(string(extracted_data(2)));
+                                    end
+                                    
+                                end
+                            end
                             
-                            
-                            
+                        end
+                        %% Mean Delay
+                        if selected_simulation_files_list(j).name =="SchedInfo.txt"...
+                                && selected_simulation_files_list(j).isdir == 0 ...
+                                && selected_simulation_files_list(j).bytes > 0
                         end
                     end
             end
