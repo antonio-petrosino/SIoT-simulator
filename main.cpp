@@ -9,7 +9,7 @@ using namespace std;
 #include "SystemBehaviour.h"
 #include<direct.h>
 
-bool vDEBUG = true;
+bool vDEBUG = false;
 double alpha = 0.5;
 double beta = 0.3;
 double gamma = 0.2;
@@ -34,21 +34,28 @@ int main() {
 	
 	Tic();
 
-	vector<bool>	parameter_to_test_resource_ctrl		= { false }; //{true, false};
-	vector<bool>	parameter_to_test_qoe_ctrl			= { false };
-	
-	vector<int>		parameter_to_test_n_services		= { 6 };
-	vector<int>		parameter_to_test_n_devices			= { 100 };
-	vector<int>		parameter_to_test_n_master			= { 5 };
+	vector<bool>	parameter_to_test_resource_ctrl = { true, false };
+	vector<bool>	parameter_to_test_qoe_ctrl = { true, false };
 
-	vector<int>		parameter_to_test_lambda			= { 10 };
-	vector<int>		parameter_to_test_seed				= { 1 };
+	vector<int>		parameter_to_test_n_services = { 6 };
+	vector<int>		parameter_to_test_n_devices = { 100, 150 };
+	vector<int>		parameter_to_test_n_master = { 5 };
 
-	vector<int>		parameter_to_test_tot_sim			= { 100, 3000 };
+	vector<int>		parameter_to_test_lambda = { 8 };
+	vector<int>		parameter_to_test_seed = { 1 };
+
+	vector<int>		parameter_to_test_tot_sim = { 2500 };
 
 	for (int nts = 0; nts < parameter_to_test_tot_sim.size(); nts++) {
 		for (int rc = 0; rc < parameter_to_test_resource_ctrl.size(); rc++) {
+			// se resource è falso, qoe non può essere vero
+			
 			for (int qc = 0; qc < parameter_to_test_qoe_ctrl.size(); qc++) {
+
+				// if resource control is off -> qoe cannot be enabled
+				if (parameter_to_test_resource_ctrl[rc] == false && parameter_to_test_qoe_ctrl[qc] == true) {
+					continue;
+				}
 
 				for (int ns = 0; ns < parameter_to_test_n_services.size(); ns++) {
 					for (int nd = 0; nd < parameter_to_test_n_devices.size(); nd++) {
