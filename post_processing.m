@@ -1,7 +1,7 @@
 %% Inizializzazione
 clc;
 clear; 
-%%close all;
+close all;
 
 %cartella master simulazioni
 folder_name = 'C:\Users\anton\OneDrive - Politecnico di Bari\SSIoT\Simulazioni\';
@@ -16,7 +16,7 @@ lambda_to_find         = "8";
 tot_sim_to_find        = "2500";
 seed_to_find           = "1";
 resource_ctrl_to_find  = "1";
-qoe_ctrl_to_find       = "1";
+qoe_ctrl_to_find       = "0";
 
 for i=str2double(n_devices_to_find)
     user_info(i) = struct;
@@ -141,9 +141,35 @@ for i=1:length(files_list)
                             
                         end
                         %% Mean Delay
+                       
                         if selected_simulation_files_list(j).name =="SchedInfo.txt"...
                                 && selected_simulation_files_list(j).isdir == 0 ...
                                 && selected_simulation_files_list(j).bytes > 0
+                            buffer_lettura = fopen(strcat(new_Path_to_explore, sim_file_name));
+                                                        
+                            schedule_index = 0;
+                            while ~feof(buffer_lettura)
+                                extracted_data = strsplit(fgetl(buffer_lettura), '\t');
+                                a = 100;
+                                if contains(extracted_data, '%%%%%%%%%%%%%%%% SCHEDULER ITEM(')
+                                    schedule_index = schedule_index + 1;
+                                    extracted_data = strsplit(fgetl(buffer_lettura), '\t');
+                                    
+                                    schedule_info(schedule_index) = struct;
+                                    %id_action	
+                                    %time_of_arrival	
+                                    %service_requester	
+                                    %requested_service	
+                                    %handling_master_node	
+                                    %choosen_service_provider	
+                                    %end_timestamp	
+                                    %number_of_reschedule	
+                                    
+                                    
+                                else if
+                                end
+                            end
+                            
                         end
                     end
             end
@@ -155,6 +181,8 @@ for i=1:length(files_list)
     end    
 end
 
+%% PLOT1: code
+figure(1);
 plot(time_queue, info_queue);
 ylabel('Number of requests [#]');
 xlabel('Simulation time [s]');
@@ -163,5 +191,48 @@ hold on;
 %plot(time_queue, total_accomplished);
 grid on;
 %legend('Queued', 'Accomplished');
+
+
+%% PLOT2: delta value per il riconoscimento malevoli
+figure(2);
+%legend_string = "";
+valid_user_plotted = 0;
+for i=1:length(user_info)
+    %%if length(user_info(i).service) > 0
+    for j=1:length(user_info(i).service)
+        user_and_service_vector_to_plot = [];
+        time_uas_vector = [];
+        if length(user_info(i).service(j).valore_storicizzato) > 0
+            valid_user_plotted = valid_user_plotted +1;
+            index_user_info = 0;
+            for k=1:length(user_info(i).service(j).valore_storicizzato)
+                index_user_info = index_user_info + 1;
+                user_and_service_vector_to_plot(index_user_info) = user_info(i).service(j).valore_storicizzato(k).delta;
+                time_uas_vector(index_user_info) = user_info(i).service(j).valore_storicizzato(k).time;
+            end
+            hold on;
+            grid on;
+            isIncreasing = all(diff(time_uas_vector));
+            if isIncreasing == 0 && false==true
+                disp("Possibile error in user n: " + i + " service n: " + j + ".")
+                valid_user_plotted = valid_user_plotted -1;
+            else
+                
+            plot(time_uas_vector, user_and_service_vector_to_plot);
+            legend_string(valid_user_plotted) = "user n: " + i + " service n: " + j + ".";
+            
+            end
+
+            
+        end
+    end
+end
+xline(str2num(tot_sim_to_find));
+legend(legend_string);
+
+%% PLOT3
+
+%% end procedure
+
 disp("End.");
 fclose('all');
