@@ -55,6 +55,15 @@ struct DeltaTrace {
 	int service_id;
 };
 
+struct NodesUnderThreshold {
+	int id_requester;
+	int id_provider; 
+	int id_service;
+	double trust_value;
+	double timestamp;
+	string type_rel;
+};
+
 /*
 Device GetDeviceByID(int id_device, Device* list_of_devices, int n_devices) {
 	for (int j = 0; j < n_devices; j++) {
@@ -430,8 +439,8 @@ class Master
 				new_rep_to_add.id_requested_service = id_requested_service;
 				new_rep_to_add.id_service_requester = id_service_requester;
 				new_rep_to_add.id_service_provider = id_service_provider;
-				new_rep_to_add.feedback = 90;
-				new_rep_to_add.num_feedback = 100;
+				new_rep_to_add.feedback = 45;
+				new_rep_to_add.num_feedback = 50;
 				new_rep_to_add.reputation_value = double(new_rep_to_add.feedback) / double(new_rep_to_add.num_feedback);
 				list_of_reputation.push_back(new_rep_to_add);
 			}
@@ -462,8 +471,8 @@ class Master
 				rep_output.id_service_provider = id_service_provider;
 				rep_output.id_service_requester = id_service_requester;
 				rep_output.id_requested_service = id_requested_service; 
-				rep_output.feedback = 90;
-				rep_output.num_feedback = 100;
+				rep_output.feedback = 45;
+				rep_output.num_feedback = 50;
 				rep_output.reputation_value = double(rep_output.feedback)/double(rep_output.num_feedback);
 				this->list_of_reputation.push_back(rep_output);				
 			}
@@ -590,6 +599,7 @@ class Scheduler
 	int choosen_service_provider;
 	double end_timestamp;
 	int number_of_reschedule;
+	double master_elaboration_time;
 	//Master obj_master_node;
 	vector<Trust_record> Trust_list;
 
@@ -727,6 +737,14 @@ public:
 	{
 		return this->end_timestamp;
 	};
+
+	double GetMasterTime() {
+		return this->master_elaboration_time;
+	};
+
+	void SetMasterTime(double time) {
+		this->master_elaboration_time = time;
+	}
 
 };
 

@@ -21,37 +21,34 @@ Master* list_of_master;
 Device* list_of_devices;
 vector<Scheduler>  scheduler_records;
 vector<Queue> info_queue;
+vector<NodesUnderThreshold> detected_potential_malicious_devices;
 int n_services, n_devices, n_master, lambda, tot_sim, seed;
 double cutting_value;
 string folder_name;
 
 int main() {	
 	int max_resched = 99999;
-	cutting_value = 0.24; 
-	//cutting_value = 0.3;
-	cout << "SSIoT Simulator"<<endl;
-	
+	cutting_value = 0.265; 	
+	//cutting_value = 0.27;
+	cout << "SSIoT Simulator"<<endl;	
 	
 	Tic();
 
-	vector<bool>	parameter_to_test_resource_ctrl = { true, false };
+	vector<bool>	parameter_to_test_resource_ctrl = { true };
 	vector<bool>	parameter_to_test_qoe_ctrl = { true, false };
 
 	vector<int>		parameter_to_test_n_services = { 6 };
-	vector<int>		parameter_to_test_n_devices = { 100, 150 };
+	vector<int>		parameter_to_test_n_devices = { 100 };
 	vector<int>		parameter_to_test_n_master = { 5 };
 
 	vector<int>		parameter_to_test_lambda = { 8 };
 	vector<int>		parameter_to_test_seed = { 1 };
 
-	vector<int>		parameter_to_test_tot_sim = { 2500 };
+	vector<int>		parameter_to_test_tot_sim = { 1500 };
 
 	for (int nts = 0; nts < parameter_to_test_tot_sim.size(); nts++) {
-		for (int rc = 0; rc < parameter_to_test_resource_ctrl.size(); rc++) {
-			// se resource è falso, qoe non può essere vero
-			
+		for (int rc = 0; rc < parameter_to_test_resource_ctrl.size(); rc++) {			
 			for (int qc = 0; qc < parameter_to_test_qoe_ctrl.size(); qc++) {
-
 				// if resource control is off -> qoe cannot be enabled
 				if (parameter_to_test_resource_ctrl[rc] == false && parameter_to_test_qoe_ctrl[qc] == true) {
 					continue;
@@ -121,14 +118,18 @@ int main() {
 										}
 
 										if (next_event.GetEventType() == "scheduler" || next_event.GetEventType() == "re-scheduler") {
+											start_master_processing = clock();
 											Toc("start ServiceProviderFiltering");
-											ServiceProviderFiltering(next_event.GetSchedulerID());
+											ServiceProviderFiltering(next_event.GetSchedulerID(), next_event.GetTimeStamp());
 											Toc("end ServiceProviderFiltering - start Orchestrator_MakeDecisions");
 
 											event_assigned = Orchestrator_MakeDecisions(next_event.GetSchedulerID());
 											Toc("end Orchestrator_MakeDecisions");
 											unsigned long end_master_processing = clock();
 											unsigned long total_master_processing = (end_master_processing - start_master_processing) / 1000;
+
+											scheduler_records[next_event.GetSchedulerID()].SetMasterTime(total_master_processing);
+
 											if (vDEBUG) {
 												if (event_assigned == 1) {
 													cout << "Event assignment: TRUE" << endl;
@@ -235,6 +236,7 @@ int main() {
 									PrintSchedulerItem();
 									PrintUserInfo();
 									PrintEstimateDeltaStateEachDevices();
+									PrintDetectedMalicious();
 
 									Toc("end");									
 									cout << "\nText files exported. Folder:" << folder_name << endl;									

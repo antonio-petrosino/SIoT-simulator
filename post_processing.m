@@ -1,3 +1,11 @@
+%% SAL: 
+% file testuali elaborati
+% -> InfoQueue.txt
+% -> DeltaState.txt
+% -> SchedInfo.txt
+% mancanti e potrebbero non servire
+% -> [UserInfo.txt, AvgRepInfo.txt]
+
 %% Inizializzazione
 clc;
 clear; 
@@ -16,7 +24,7 @@ lambda_to_find         = "8";
 tot_sim_to_find        = "2500";
 seed_to_find           = "1";
 resource_ctrl_to_find  = "1";
-qoe_ctrl_to_find       = "0";
+qoe_ctrl_to_find       = "1";
 
 for i=str2double(n_devices_to_find)
     user_info(i) = struct;
@@ -140,11 +148,12 @@ for i=1:length(files_list)
                             end
                             
                         end
-                        %% Mean Delay
-                       
+                        %% Mean Delay                       
                         if selected_simulation_files_list(j).name =="SchedInfo.txt"...
                                 && selected_simulation_files_list(j).isdir == 0 ...
                                 && selected_simulation_files_list(j).bytes > 0
+                            
+                            sim_file_name = selected_simulation_files_list(j).name;   
                             buffer_lettura = fopen(strcat(new_Path_to_explore, sim_file_name));
                                                         
                             schedule_index = 0;
@@ -155,7 +164,8 @@ for i=1:length(files_list)
                                     schedule_index = schedule_index + 1;
                                     extracted_data = strsplit(fgetl(buffer_lettura), '\t');
                                     
-                                    schedule_info(schedule_index) = struct;
+                                    %schedule_info(schedule_index) = struct;                                    
+                                    
                                     %id_action	
                                     %time_of_arrival	
                                     %service_requester	
@@ -165,8 +175,18 @@ for i=1:length(files_list)
                                     %end_timestamp	
                                     %number_of_reschedule	
                                     
+                                    schedule_info(schedule_index).id_action                 = str2num(string(extracted_data(1)));
+                                    schedule_info(schedule_index).time_of_arrival           = str2num(string(extracted_data(2)));
+                                    schedule_info(schedule_index).service_requester         = str2num(string(extracted_data(3)));
+                                    schedule_info(schedule_index).requested_service         = str2num(string(extracted_data(4)));
+                                    schedule_info(schedule_index).handling_master_node      = str2num(string(extracted_data(5)));
+                                    schedule_info(schedule_index).choosen_service_provider	= str2num(string(extracted_data(6)));
+                                    schedule_info(schedule_index).end_timestamp             = str2num(string(extracted_data(7)));
+                                    schedule_info(schedule_index).number_of_reschedule      = str2num(string(extracted_data(8)));
+                                    avg_delay(schedule_index) =                      schedule_info(schedule_index).end_timestamp - schedule_info(schedule_index).time_of_arrival;
                                     
-                                else if
+                                    
+                                %else if
                                 end
                             end
                             
@@ -184,6 +204,7 @@ end
 %% PLOT1: code
 figure(1);
 plot(time_queue, info_queue);
+%plot(info_queue);
 ylabel('Number of requests [#]');
 xlabel('Simulation time [s]');
 xline(str2num(tot_sim_to_find));
@@ -231,8 +252,11 @@ xline(str2num(tot_sim_to_find));
 legend(legend_string);
 
 %% PLOT3
+figure(3);
+ecdf(avg_delay);
+title('ECDF Delay');
+avg_delay = mean(avg_delay);
 
 %% end procedure
-
 disp("End.");
 fclose('all');

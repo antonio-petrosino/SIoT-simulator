@@ -20,6 +20,7 @@ extern unsigned long tstart;
 extern unsigned long tend;
 extern double cutting_value;
 extern string folder_name;
+extern vector<NodesUnderThreshold> detected_potential_malicious_devices;
 
 Service *ServicesCreation(){
 
@@ -320,7 +321,7 @@ bool contains(int src, vector<Friend_Record> subjects)
 	return iter != subjects.end();
 }
 
-void ServiceProviderFiltering(int id_scheduler_record) {
+void ServiceProviderFiltering(int id_scheduler_record, double current_timestamp) {
 // Filtra in base al servizio scelto -> Master node -> provider registrati -> filtro solo su un servizio
 		
 		int id_handling_master = scheduler_records[id_scheduler_record].GetMaster();
@@ -438,7 +439,14 @@ void ServiceProviderFiltering(int id_scheduler_record) {
 										Trust_list.push_back(trust_value_to_add);
 									}
 									else {
-										int kkkk = 1;
+										NodesUnderThreshold new_detected_node; 
+										new_detected_node.id_provider = trust_value_to_add.id_service_provider;
+										new_detected_node.id_requester = id_service_requester;
+										new_detected_node.id_service = id_requested_service;
+										new_detected_node.timestamp = current_timestamp;
+										new_detected_node.trust_value = trust_value_to_add.trust_value;
+										new_detected_node.type_rel = "friend";
+										detected_potential_malicious_devices.push_back(new_detected_node);
 									}
 									break;
 								}
@@ -453,7 +461,9 @@ void ServiceProviderFiltering(int id_scheduler_record) {
 				}
 
 			}
-		}else{
+		}
+
+		if(rel_info.friends == 0 || Trust_list.size() == 0){
 			// elenco degli amici del requester -> friend_of_requester
 			// per ogni amico devo ottenere un vettore di amici di amici		
 			Device temp_device_to_analyze; 
@@ -510,7 +520,8 @@ void ServiceProviderFiltering(int id_scheduler_record) {
 					trust_value_to_add.social_value = 0.3;
 				}
 				else {
-					trust_value_to_add.social_value = 0.55;
+					trust_value_to_add.social_value = 0.55; // TODO: da ripristinare
+					trust_value_to_add.social_value = 0.59;
 				}
 
 				trust_value_to_add.provider_class = friend_to_analyze.GetDeviceClass();
@@ -572,7 +583,14 @@ void ServiceProviderFiltering(int id_scheduler_record) {
 					Trust_list.push_back(trust_value_to_add);
 				}
 				else {
-					int kkkk = 1;
+					NodesUnderThreshold new_detected_node;
+					new_detected_node.id_provider = trust_value_to_add.id_service_provider;
+					new_detected_node.id_requester = id_service_requester;
+					new_detected_node.id_service = id_requested_service;
+					new_detected_node.timestamp = current_timestamp;
+					new_detected_node.trust_value = trust_value_to_add.trust_value;
+					new_detected_node.type_rel = "fof";
+					detected_potential_malicious_devices.push_back(new_detected_node);
 				}
 				
 											
@@ -819,8 +837,7 @@ void UpdateQueue(Event next_event, int event_assigned, bool empty_list) {
 	int prev_accomplished = 0;
 
 	if (info_queue.size() > 0) {
-		Queue prev_queue_variation = info_queue[info_queue.size() - 1];
-		
+		Queue prev_queue_variation = info_queue[info_queue.size() - 1];		
 		prev_total = prev_queue_variation.total_service_queued;
 		empty_prev_total = prev_queue_variation.total_empty_list;
 		prev_accomplished = prev_queue_variation.total_accomplished;
@@ -857,15 +874,13 @@ void UpdateQueue(Event next_event, int event_assigned, bool empty_list) {
 		queue_variation.total_accomplished = prev_accomplished;
 		info_queue.push_back(queue_variation);
 	}
-
-	/*
 	else {
 		queue_variation.total_service_queued = prev_total;
 		queue_variation.timestamp = next_event.GetTimeStamp();
+		queue_variation.total_empty_list = empty_prev_total;
+		queue_variation.total_accomplished = prev_accomplished;
 		info_queue.push_back(queue_variation);
 	}
-	*/
-
 
 }
 
@@ -907,7 +922,7 @@ void PrintSchedulerItem(){
 	if (myfile.is_open())
 	{
 		myfile << "id_action\t" << "time_of_arrival\t" << "service_requester\t" << "requested_service\t";
-		myfile << "handling_master_node\t" << "choosen_service_provider\t" << "end_timestamp\t" << "number_of_reschedule\t" << "\n";
+		myfile << "handling_master_node\t" << "choosen_service_provider\t" << "end_timestamp\t" << "elaboration_time\t" << "number_of_reschedule\t" << "\n";
 
 		for (unsigned int i = 0; i < scheduler_records.size(); i++) {
 			myfile << "%%%%%%%%%%%%%%%% SCHEDULER ITEM(" << i <<")%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << "\n";
@@ -918,6 +933,7 @@ void PrintSchedulerItem(){
 			myfile << scheduler_records[i].GetMaster() << "\t";
 			myfile << scheduler_records[i].GetChoosenSP() << "\t";
 			myfile << scheduler_records[i].GetEndTimestamp() << "\t";
+			myfile << scheduler_records[i].GetMasterTime() << "\t";
 			myfile << scheduler_records[i].GetRescheduleTime() << "\t\n";
 			myfile << "############## Trust list ###############" << "\n";
 			myfile << "id_service_provider\t" << "provider_class\t" << "social_value\t" << "rep_value\t" << "trust_value\t" << "\n";
@@ -1029,6 +1045,34 @@ void PrintUserInfo() {
 }
 
 
+void PrintDetectedMalicious() {
+	ofstream myfile(".\\" + folder_name + "DetectedMaliciousNodes.txt");
+	if (myfile.is_open())
+	{
+		myfile << "id_requester\t";
+		myfile << "id_provider\t";
+		myfile << "id_service\t";
+		myfile << "trust_value\t";
+		myfile << "type_rel\t";
+		myfile << "timestamp\t\n";
+
+		for (int i = 0; i < detected_potential_malicious_devices.size(); i++) {
+
+			myfile << detected_potential_malicious_devices[i].id_requester << "\t";
+			myfile << detected_potential_malicious_devices[i].id_provider << "\t";
+			myfile << detected_potential_malicious_devices[i].id_service << "\t";
+			myfile << detected_potential_malicious_devices[i].trust_value << "\t";
+			myfile << detected_potential_malicious_devices[i].type_rel << "\t";
+			myfile << detected_potential_malicious_devices[i].timestamp << "\t";
+			myfile << "\n";
+
+		}
+
+		myfile.close();
+
+	}
+	else cout << "Unable to open file";
+}
 
 void EstimateDeltaStateEachDevices(double timestamp) {
 	Master selected_master;
