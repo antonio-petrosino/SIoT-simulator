@@ -64,6 +64,13 @@ struct NodesUnderThreshold {
 	string type_rel;
 };
 
+struct ResourceMonitorTrace {
+	double totalAvailableResources;
+	double totalNetworkResources;
+	double timestamp;
+	double single_variation;
+};
+
 /*
 Device GetDeviceByID(int id_device, Device* list_of_devices, int n_devices) {
 	for (int j = 0; j < n_devices; j++) {
@@ -910,3 +917,70 @@ public:
 	}	
 };
 
+
+
+
+class ResourceMonitor {
+private:
+	double totalAvailableResources;
+	double totalNetworkResources;
+
+	vector<ResourceMonitorTrace> resource_status;
+
+public:
+	ResourceMonitor() {
+		this->totalAvailableResources = 0;
+		this->totalNetworkResources = this->totalAvailableResources;
+		resource_status = {};
+	};
+
+	ResourceMonitor(int n_devices, Device* list_of_devices) {
+		this->totalAvailableResources = 0;
+		for (int i = 0; i < n_devices; i++) {
+			this->totalAvailableResources = this->totalAvailableResources + list_of_devices[i].GetTotalPower();
+		}
+		this->totalNetworkResources = this->totalAvailableResources;
+		resource_status = {};
+	};
+
+	double GetTotalAvailRes() {
+		return this->totalAvailableResources;
+	};
+
+	double GetTotalNetworkRes() {
+		return this->totalNetworkResources;
+	};
+
+	void SetTotalAvailRes(double newres) {
+		this->totalAvailableResources = newres;
+	}
+
+	void SetTotalNetworkRes(double newres) {
+		this->totalNetworkResources = newres;
+	}
+
+	void AddTraceRecord(double timestamp, double service_requirement, string record_type) {
+		ResourceMonitorTrace new_data;
+
+		new_data.timestamp = timestamp;
+
+		if (record_type == "Allocate") {
+			new_data.totalAvailableResources = this->totalAvailableResources - service_requirement;		
+			new_data.single_variation = -service_requirement;
+		}else if(record_type == "Deallocate") {
+			new_data.totalAvailableResources = this->totalAvailableResources + service_requirement;
+			new_data.single_variation = +service_requirement;
+		}	
+		
+		this->totalAvailableResources = new_data.totalAvailableResources;
+		new_data.totalNetworkResources = this->totalNetworkResources;		
+			
+		this->resource_status.push_back(new_data);
+	}
+
+	
+	vector<ResourceMonitorTrace> GetResourceMonitor() {
+		return this->resource_status;
+	}
+
+};

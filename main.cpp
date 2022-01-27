@@ -26,6 +26,8 @@ vector<NodesUnderThreshold> detected_potential_malicious_devices;
 int n_services, n_devices, n_master, lambda, tot_sim, seed;
 double cutting_value;
 string folder_name;
+ResourceMonitor network_monitor;
+
 
 int main() {	
 	int max_resched = 99999;
@@ -34,21 +36,21 @@ int main() {
 	cout << "SSIoT Simulator"<<endl;	
 	
 	double refresh_rate = 300; // ms
-	unsigned long cmd_print_interval = clock();
+	unsigned long cmd_print_interval = clock();	
 
 	Tic();
 
-	vector<bool>	parameter_to_test_resource_ctrl = { true };
-	vector<bool>	parameter_to_test_qoe_ctrl = { true, false };
+	vector<bool>	parameter_to_test_resource_ctrl = { false, true };
+	vector<bool>	parameter_to_test_qoe_ctrl = { false };
 
 	vector<int>		parameter_to_test_n_services = { 6};
-	vector<int>		parameter_to_test_n_devices = { 500 };
+	vector<int>		parameter_to_test_n_devices = { 100 };
 	vector<int>		parameter_to_test_n_master = { 5};
 
 	vector<int>		parameter_to_test_lambda = { 8 };
 	vector<int>		parameter_to_test_seed = { 1 };
 
-	vector<int>		parameter_to_test_tot_sim = { 150 };
+	vector<int>		parameter_to_test_tot_sim = { 1000 };
 
 	int tot_number_of_simulations = GetNumberOfSim(parameter_to_test_tot_sim, parameter_to_test_resource_ctrl, parameter_to_test_qoe_ctrl, parameter_to_test_n_services, parameter_to_test_n_devices, parameter_to_test_n_master, parameter_to_test_lambda, parameter_to_test_seed);
 	int iteration_number = 0;
@@ -82,7 +84,6 @@ int main() {
 									// seed the RNG	
 									std::mt19937 rng(seed); // mt19937: Pseudo-random number generation
 
-
 									folder_name = "Sim-n_services_" + to_string(n_services) + "-n_devices_" + to_string(n_devices) + "-n_master_" + to_string(n_master) +
 										"-lambda_" + to_string(lambda) + "-tot_sim_" + to_string(tot_sim) + "-seed_" + to_string(seed) + "-resource_ctrl_"
 										+ to_string(resource_ctrl) + "-qoe_ctrl_" + to_string(qoe_ctrl) + "/";
@@ -101,6 +102,9 @@ int main() {
 									list_of_services = ServicesCreation();
 									list_of_master = MasterCreation();
 									list_of_devices = DeviceCreation();
+
+									network_monitor = ResourceMonitor(n_devices, list_of_devices);
+
 									GenerateSocialRel(n_devices, list_of_devices);
 									scheduler_records = GenerateEventsArray(tot_sim);
 
@@ -130,7 +134,7 @@ int main() {
 											ServiceProviderFiltering(next_event.GetSchedulerID(), next_event.GetTimeStamp());
 											Toc("end ServiceProviderFiltering - start Orchestrator_MakeDecisions");
 
-											event_assigned = Orchestrator_MakeDecisions(next_event.GetSchedulerID());
+											event_assigned = Orchestrator_MakeDecisions(next_event.GetSchedulerID(), next_event.GetTimeStamp());
 											Toc("end Orchestrator_MakeDecisions");
 											unsigned long end_master_processing = clock();
 											double total_master_processing = double(end_master_processing - start_master_processing) / 1000;
@@ -244,17 +248,20 @@ int main() {
 									bool tempDebug = vDEBUG;
 									vDEBUG = true;
 									Toc("end");
-
 									vDEBUG = tempDebug;
+
 									PrintInfoQueue();
 									PrintAvgReputation();
 									PrintSchedulerItem();
 									PrintUserInfo();
 									PrintEstimateDeltaStateEachDevices();
 									PrintDetectedMalicious();
+									PrintResourceMonitor();
 
-									Toc("end");									
 									cout << "\nText files exported. Folder:" << folder_name << endl;									
+									vDEBUG = true;
+									Toc("text exported");
+									vDEBUG = tempDebug;
 								}
 
 							}

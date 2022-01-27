@@ -21,6 +21,7 @@ extern unsigned long tend;
 extern double cutting_value;
 extern string folder_name;
 extern vector<NodesUnderThreshold> detected_potential_malicious_devices;
+extern ResourceMonitor network_monitor;
 
 Service *ServicesCreation(){
 
@@ -693,7 +694,7 @@ void ReleaseDeviceResources(double service_power, int device_index) {
 }
 
 
-int Orchestrator_MakeDecisions(int id_sched_event) {	
+int Orchestrator_MakeDecisions(int id_sched_event, double ts) {	
 	vector<Trust_record> providers_ranking = scheduler_records[id_sched_event].GetTrustList();
 
 	Master selected_master;
@@ -733,6 +734,9 @@ int Orchestrator_MakeDecisions(int id_sched_event) {
 
 			if (allocation_success) {
 				scheduler_records[id_sched_event].SetChoosenSP(providers_ranking[i].id_service_provider);
+
+				network_monitor.AddTraceRecord(ts, selected_service.GetPowerCost(), "Allocate");
+
 				return 1;
 			}
 		}	
@@ -743,6 +747,7 @@ int Orchestrator_MakeDecisions(int id_sched_event) {
 
 		if (allocation_success) {
 			scheduler_records[id_sched_event].SetChoosenSP(providers_ranking[0].id_service_provider);
+			network_monitor.AddTraceRecord(ts, selected_service.GetPowerCost(), "Allocate");
 			return 1;
 		}
 		else {
@@ -823,6 +828,9 @@ void EndService(int id_sched_event, double end_ts) {
 	}
 	scheduler_records[id_sched_event].SetEndTimestamp(end_ts);
 	ReleaseDeviceResources(selected_service.GetPowerCost(), selected_master.GetDeviceIndexByID(scheduler_records[id_sched_event].GetChoosenSP(), list_of_devices, n_devices));
+
+
+	network_monitor.AddTraceRecord(end_ts, selected_service.GetPowerCost(), "Deallocate");
 	// TODO: assegno ai nodi malevoli, feed negativi
 	// rilascio feedback
 	// selected_provider.GetID()
@@ -1181,3 +1189,27 @@ int GetNumberOfSim(vector<int> parameter_to_test_tot_sim, vector<bool> parameter
 
 	return totsim;
 }
+
+
+void PrintResourceMonitor() {
+
+	ofstream myfile(".\\" + folder_name + "ResourceMonitor.txt");
+
+
+	if (myfile.is_open()) {
+		myfile << "totalAvailableResources\ttotalNetworkResources\ttimestamp\tsingle_variation\n";
+
+		vector<ResourceMonitorTrace> data_to_print = network_monitor.GetResourceMonitor();
+
+		for (int i = 0; i<data_to_print.size(); i++) {
+			myfile << data_to_print[i].totalAvailableResources << "\t";
+			myfile << data_to_print[i].totalNetworkResources << "\t";
+			myfile << data_to_print[i].timestamp << "\t";
+			myfile << data_to_print[i].single_variation << "\t\n";
+		}
+		myfile.close();
+	}
+	else {
+		cout << "Unable to open file";
+	}
+};
