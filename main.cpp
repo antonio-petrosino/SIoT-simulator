@@ -38,13 +38,13 @@ int main() {
 	vector<bool>	parameter_to_test_qoe_ctrl = { true, false };
 
 	vector<int>		parameter_to_test_n_services = { 6 };
-	vector<int>		parameter_to_test_n_devices = { 100 };
+	vector<int>		parameter_to_test_n_devices = { 1000 };
 	vector<int>		parameter_to_test_n_master = { 5 };
 
 	vector<int>		parameter_to_test_lambda = { 8 };
 	vector<int>		parameter_to_test_seed = { 1 };
 
-	vector<int>		parameter_to_test_tot_sim = { 1500 };
+	vector<int>		parameter_to_test_tot_sim = { 150 };
 
 	for (int nts = 0; nts < parameter_to_test_tot_sim.size(); nts++) {
 		for (int rc = 0; rc < parameter_to_test_resource_ctrl.size(); rc++) {			
@@ -105,9 +105,9 @@ int main() {
 
 
 									while (!event_calendar.IsEmpty()) {
-										Toc("init get next event");
-										Event next_event = event_calendar.GetNextEvent();
 										unsigned long start_master_processing = clock();
+										Toc("init get next event");
+										Event next_event = event_calendar.GetNextEvent();										
 										Toc("end get next event");
 
 										int event_assigned = false;
@@ -118,7 +118,7 @@ int main() {
 										}
 
 										if (next_event.GetEventType() == "scheduler" || next_event.GetEventType() == "re-scheduler") {
-											start_master_processing = clock();
+											//start_master_processing = clock();
 											Toc("start ServiceProviderFiltering");
 											ServiceProviderFiltering(next_event.GetSchedulerID(), next_event.GetTimeStamp());
 											Toc("end ServiceProviderFiltering - start Orchestrator_MakeDecisions");
@@ -126,9 +126,9 @@ int main() {
 											event_assigned = Orchestrator_MakeDecisions(next_event.GetSchedulerID());
 											Toc("end Orchestrator_MakeDecisions");
 											unsigned long end_master_processing = clock();
-											unsigned long total_master_processing = (end_master_processing - start_master_processing) / 1000;
+											double total_master_processing = double(end_master_processing - start_master_processing) / 1000;
 
-											scheduler_records[next_event.GetSchedulerID()].SetMasterTime(total_master_processing);
+											scheduler_records[next_event.GetSchedulerID()].SetMasterTime(scheduler_records[next_event.GetSchedulerID()].GetMasterTime()+total_master_processing);
 
 											if (vDEBUG) {
 												if (event_assigned == 1) {
@@ -230,6 +230,7 @@ int main() {
 									bool tempDebug = vDEBUG;
 									vDEBUG = true;
 									Toc("end");
+
 									vDEBUG = tempDebug;
 									PrintInfoQueue();
 									PrintAvgReputation();

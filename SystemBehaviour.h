@@ -219,12 +219,12 @@ void GenerateSocialRel(int n_devices, Device *defined_devices){
 			
 			if(defined_devices[i].GetID() != defined_devices[j].GetID()){
 				if(defined_devices[i].GetIDManufacturer() == defined_devices[j].GetIDManufacturer()) {
-					new_social_rel.sociality_factor = 0.9;
+					new_social_rel.sociality_factor = 0.7; // TODO 0.9
 					new_social_rel.type_rel = "POR";
 					check_social = 1;
 				}
 				else if(defined_devices[i].GetIDOwner() == defined_devices[j].GetIDOwner()) {
-					new_social_rel.sociality_factor = 0.8;
+					new_social_rel.sociality_factor = 0.65; // TODO 0.8
 					new_social_rel.type_rel = "OOR";
 					check_social = 1;
 				}

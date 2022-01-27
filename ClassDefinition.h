@@ -439,8 +439,8 @@ class Master
 				new_rep_to_add.id_requested_service = id_requested_service;
 				new_rep_to_add.id_service_requester = id_service_requester;
 				new_rep_to_add.id_service_provider = id_service_provider;
-				new_rep_to_add.feedback = 45;
-				new_rep_to_add.num_feedback = 50;
+				new_rep_to_add.feedback = 27;
+				new_rep_to_add.num_feedback = 30;
 				new_rep_to_add.reputation_value = double(new_rep_to_add.feedback) / double(new_rep_to_add.num_feedback);
 				list_of_reputation.push_back(new_rep_to_add);
 			}
@@ -471,8 +471,8 @@ class Master
 				rep_output.id_service_provider = id_service_provider;
 				rep_output.id_service_requester = id_service_requester;
 				rep_output.id_requested_service = id_requested_service; 
-				rep_output.feedback = 45;
-				rep_output.num_feedback = 50;
+				rep_output.feedback = 27;
+				rep_output.num_feedback = 30;
 				rep_output.reputation_value = double(rep_output.feedback)/double(rep_output.num_feedback);
 				this->list_of_reputation.push_back(rep_output);				
 			}
