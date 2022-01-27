@@ -1151,3 +1151,33 @@ void PrintEstimateDeltaStateEachDevices() {
 		cout << "Unable to open file";
 	}
 };
+
+
+int GetNumberOfSim(vector<int> parameter_to_test_tot_sim, vector<bool> parameter_to_test_resource_ctrl, vector<bool> parameter_to_test_qoe_ctrl, vector<int> parameter_to_test_n_services, vector<int> parameter_to_test_n_devices, vector<int> parameter_to_test_n_master, vector<int> parameter_to_test_lambda, vector<int> parameter_to_test_seed) {
+	int totsim = 0;
+	for (int nts = 0; nts < parameter_to_test_tot_sim.size(); nts++) {
+		for (int rc = 0; rc < parameter_to_test_resource_ctrl.size(); rc++) {
+			for (int qc = 0; qc < parameter_to_test_qoe_ctrl.size(); qc++) {
+				// if resource control is off -> qoe cannot be enabled
+				if (parameter_to_test_resource_ctrl[rc] == false && parameter_to_test_qoe_ctrl[qc] == true) {
+					continue;
+				}
+
+				for (int ns = 0; ns < parameter_to_test_n_services.size(); ns++) {
+					for (int nd = 0; nd < parameter_to_test_n_devices.size(); nd++) {
+						for (int nm = 0; nm < parameter_to_test_n_master.size(); nm++) {
+
+							for (int nl = 0; nl < parameter_to_test_lambda.size(); nl++) {
+								for (int nseed = 0; nseed < parameter_to_test_seed.size(); nseed++) {
+									totsim++;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return totsim;
+}

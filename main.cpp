@@ -6,6 +6,7 @@ using namespace std;
 #include <ctime>
 #include <iomanip>
 #include <string>  
+#include <math.h>
 #include "SystemBehaviour.h"
 #include<direct.h>
 
@@ -32,19 +33,25 @@ int main() {
 	//cutting_value = 0.27;
 	cout << "SSIoT Simulator"<<endl;	
 	
+	double refresh_rate = 300; // ms
+	unsigned long cmd_print_interval = clock();
+
 	Tic();
 
 	vector<bool>	parameter_to_test_resource_ctrl = { true };
 	vector<bool>	parameter_to_test_qoe_ctrl = { true, false };
 
-	vector<int>		parameter_to_test_n_services = { 6 };
-	vector<int>		parameter_to_test_n_devices = { 1000 };
-	vector<int>		parameter_to_test_n_master = { 5 };
+	vector<int>		parameter_to_test_n_services = { 6};
+	vector<int>		parameter_to_test_n_devices = { 500 };
+	vector<int>		parameter_to_test_n_master = { 5};
 
 	vector<int>		parameter_to_test_lambda = { 8 };
 	vector<int>		parameter_to_test_seed = { 1 };
 
 	vector<int>		parameter_to_test_tot_sim = { 150 };
+
+	int tot_number_of_simulations = GetNumberOfSim(parameter_to_test_tot_sim, parameter_to_test_resource_ctrl, parameter_to_test_qoe_ctrl, parameter_to_test_n_services, parameter_to_test_n_devices, parameter_to_test_n_master, parameter_to_test_lambda, parameter_to_test_seed);
+	int iteration_number = 0;
 
 	for (int nts = 0; nts < parameter_to_test_tot_sim.size(); nts++) {
 		for (int rc = 0; rc < parameter_to_test_resource_ctrl.size(); rc++) {			
@@ -60,7 +67,7 @@ int main() {
 
 							for (int nl = 0; nl < parameter_to_test_lambda.size(); nl++) {
 								for (int nseed = 0; nseed < parameter_to_test_seed.size(); nseed++) {
-
+									iteration_number++;
 									resource_ctrl = parameter_to_test_resource_ctrl[rc];
 									qoe_ctrl = parameter_to_test_qoe_ctrl[qc];
 
@@ -188,37 +195,44 @@ int main() {
 										}
 
 										UpdateQueue(next_event, event_assigned, empty_list);
-										system("CLS");
-										cout << "SSIoT Simulator. \nScenario:" << folder_name << endl;
-										int perc_tot = (next_event.timestamp * 100) / tot_sim;
-										cout << "t: \t" << next_event.timestamp << "\t\t\t\t" << perc_tot << " % ";
-										if (info_queue.size() > 0) {
-											cout << "\t queue: \t" << info_queue.back().total_service_queued << "\t";
-										}
-										else {
-											cout << "\t queue: \t" << "0" << "\t";
-										}
-										cout << "\t \t [ ";
 
-										int perc_tracking = perc_tot / 10;
-										if (perc_tracking > 10) {
-											perc_tracking = 10;
-										}
-										for (int m = 0; m < perc_tracking; m++) {
-											cout << "|";
-										}
-										for (int m = 0; m < 10 - perc_tracking; m++) {
-											cout << "-";
-										}
+										if (clock() - cmd_print_interval > refresh_rate) {
+											system("CLS");
+											cout << "SSIoT Simulator" << "   Current iteration: "<< iteration_number << " / " << tot_number_of_simulations << endl;
+											cout << "\nScenario:\n" << folder_name << endl;
+											int perc_tot = (next_event.timestamp * 100) / tot_sim;
+											cout << "t: \t" << next_event.timestamp << "\t\t\t\t" << perc_tot << " % ";
+											if (info_queue.size() > 0) {
+												cout << "\t queue: \t" << info_queue.back().total_service_queued << "\t";
+											}
+											else {
+												cout << "\t queue: \t" << "0" << "\t";
+											}
+											cout << "\n \t \t [ ";
 
-										cout << " ]";
-										tend = clock();
-										unsigned long diff = difftime(tend, tstart) / 1000;
-										cout << "\nElapsed time: " << diff << " sec" << endl;
-										if (perc_tot > 0) {
-											cout << "\nEstimated time: " << (diff * 100 / perc_tot) << " sec" << endl;
-										}
-										//cout << "\r";
+											int perc_tracking = perc_tot / 10;
+											if (perc_tracking > 10) {
+												perc_tracking = 10;
+											}
+											for (int m = 0; m < perc_tracking; m++) {
+												cout << "|";
+											}
+											for (int m = 0; m < 10 - perc_tracking; m++) {
+												cout << "-";
+											}
+
+											cout << " ]";
+											tend = clock();
+											unsigned long diff = difftime(tend, tstart) / 1000;
+											cout << "\n\nElapsed time: " << diff << " sec   <---->";
+											if (perc_tot > 0) {
+												cout << "     Estimated time: " << (diff * 100 / perc_tot) << " sec" << endl;
+											}
+											//cout << "\r";
+
+											cout << "\nConsole refresh rate: 1 print each " << refresh_rate << " ms" << endl;
+											cmd_print_interval = clock();
+										}									
 
 										event_calendar.DeleteEvent(next_event.GetEventID());									
 
