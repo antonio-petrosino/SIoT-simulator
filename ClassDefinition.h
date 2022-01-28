@@ -11,7 +11,6 @@ struct Friend_Record {
 	double sociality_factor;
 };
 
-
 struct Reputation {
 	int id_service_provider;	 
 	int id_service_requester;
@@ -21,13 +20,12 @@ struct Reputation {
 	double reputation_value;
 };
 
-struct Queue{
-	int total_service_queued; 
+struct Queue {
+	int total_service_queued;
 	int total_empty_list;
 	int total_accomplished;
 	double timestamp;
-}
-;
+};
 
 struct Trust_record {
 	int id_service_provider;	
@@ -428,14 +426,14 @@ class Master
 			*/
 			bool rep_found = false;
 
-			for (unsigned int i = 0; i < list_of_reputation.size(); i++) {
-				if(list_of_reputation[i].id_requested_service == id_requested_service){
-					if (list_of_reputation[i].id_service_requester == id_service_requester) {
-						if (list_of_reputation[i].id_service_provider == id_service_provider) {
+			for (unsigned int i = 0; i < this->list_of_reputation.size(); i++) {
+				if(this->list_of_reputation[i].id_requested_service == id_requested_service){
+					if (this->list_of_reputation[i].id_service_requester == id_service_requester) {
+						if (this->list_of_reputation[i].id_service_provider == id_service_provider) {
 							rep_found = true;
-							list_of_reputation[i].num_feedback = list_of_reputation[i].num_feedback + 1;
-							list_of_reputation[i].feedback = list_of_reputation[i].feedback + new_feed;
-							list_of_reputation[i].reputation_value = double(list_of_reputation[i].feedback) / double(list_of_reputation[i].num_feedback);												
+							this->list_of_reputation[i].num_feedback = this->list_of_reputation[i].num_feedback + 1;
+							this->list_of_reputation[i].feedback = this->list_of_reputation[i].feedback + new_feed;
+							this->list_of_reputation[i].reputation_value = double(this->list_of_reputation[i].feedback) / double(this->list_of_reputation[i].num_feedback);
 						}
 					}
 				}
@@ -446,10 +444,10 @@ class Master
 				new_rep_to_add.id_requested_service = id_requested_service;
 				new_rep_to_add.id_service_requester = id_service_requester;
 				new_rep_to_add.id_service_provider = id_service_provider;
-				new_rep_to_add.feedback = 27;
-				new_rep_to_add.num_feedback = 30;
+				new_rep_to_add.feedback = 27 + new_feed;
+				new_rep_to_add.num_feedback = 30 + 1;
 				new_rep_to_add.reputation_value = double(new_rep_to_add.feedback) / double(new_rep_to_add.num_feedback);
-				list_of_reputation.push_back(new_rep_to_add);
+				this->list_of_reputation.push_back(new_rep_to_add);
 			}
 		}
 
@@ -493,12 +491,12 @@ class Master
 			double totRep = 0;
 
 			if (this->list_of_reputation.size() > 0) {
-				for (unsigned int i = 0; i < list_of_reputation.size(); i++) {
-					if (list_of_reputation[i].id_service_provider == id_service_provider) {
-						if (list_of_reputation[i].id_requested_service == id_requested_service) {
-							if (list_of_reputation[i].num_feedback > 100) {
+				for (unsigned int i = 0; i < this->list_of_reputation.size(); i++) {
+					if (this->list_of_reputation[i].id_service_provider == id_service_provider) {
+						if (this->list_of_reputation[i].id_requested_service == id_requested_service) {
+							if (this->list_of_reputation[i].num_feedback > 30) {
 								totRep = totRep + 1;
-								avgRep = avgRep + list_of_reputation[i].reputation_value;
+								avgRep = avgRep + this->list_of_reputation[i].reputation_value;
 							}						
 						}
 						
@@ -593,7 +591,6 @@ class Master
 		};
 	
 };
-
 
 class Scheduler
 {
@@ -835,7 +832,6 @@ bool AscTimestamp_order(const Event& a, const Event& b)
 	return a.timestamp < b.timestamp;
 };
 
-
 class Calendar {
 private: 
 	vector<Event> list_of_events;
@@ -916,9 +912,6 @@ public:
 		}
 	}	
 };
-
-
-
 
 class ResourceMonitor {
 private:

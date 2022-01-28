@@ -12,19 +12,18 @@ clear;
 close all;
 
 %cartella master simulazioni
-folder_name = 'C:\Users\anton\OneDrive - Politecnico di Bari\SSIoT\Simulazioni\';
+folder_name = 'C:\Users\anton\source\repos\SSIoT\';
 files_list = dir(folder_name);
-
 
 %variabili della simulazione da plottare
 n_services_to_find     = "6";
 n_devices_to_find      = "150";
 n_master_to_find       = "5";
 lambda_to_find         = "8";
-tot_sim_to_find        = "2500";
-seed_to_find           = "1";
+tot_sim_to_find        = "3000";
+seed_to_find           = "3";
 resource_ctrl_to_find  = "1";
-qoe_ctrl_to_find       = "1";
+qoe_ctrl_to_find       = "0";
 
 for i=str2double(n_devices_to_find)
     user_info(i) = struct;
@@ -51,7 +50,7 @@ for i=1:length(files_list)
         % 23    | qoe_ctrl        |
         % ------------------------%
         
-        if length(fname) > 1            
+        if length(fname) > 22            
             n_services_selected_sim     = string(fname(4));
             n_devices_selected_sim      = string(fname(7));
             n_masters_selected_sim      = string(fname(10));
@@ -138,6 +137,9 @@ for i=1:length(files_list)
                                             user_length_hystory = length(user_info(selected_user_ID).service(selected_service_ID).valore_storicizzato);
                                         else
                                             user_length_hystory = 0;
+                                            user_info(selected_user_ID).service(selected_service_ID).valore_storicizzato(user_length_hystory+1).delta = 0.9
+                                            user_info(selected_user_ID).service(selected_service_ID).valore_storicizzato(user_length_hystory+1).time = 0;
+                                            user_length_hystory = 1;
                                         end
                                         
                                         user_info(selected_user_ID).service(selected_service_ID).valore_storicizzato(user_length_hystory+1).delta = str2double(string(extracted_data(1)));
@@ -173,6 +175,7 @@ for i=1:length(files_list)
                                     %handling_master_node	
                                     %choosen_service_provider	
                                     %end_timestamp	
+                                    %elaboration_time
                                     %number_of_reschedule	
                                     
                                     schedule_info(schedule_index).id_action                 = str2num(string(extracted_data(1)));
@@ -182,8 +185,10 @@ for i=1:length(files_list)
                                     schedule_info(schedule_index).handling_master_node      = str2num(string(extracted_data(5)));
                                     schedule_info(schedule_index).choosen_service_provider	= str2num(string(extracted_data(6)));
                                     schedule_info(schedule_index).end_timestamp             = str2num(string(extracted_data(7)));
-                                    schedule_info(schedule_index).number_of_reschedule      = str2num(string(extracted_data(8)));
-                                    avg_delay(schedule_index) =                      schedule_info(schedule_index).end_timestamp - schedule_info(schedule_index).time_of_arrival;
+                                    schedule_info(schedule_index).elaboration_time          = str2num(string(extracted_data(8)));
+                                    schedule_info(schedule_index).number_of_reschedule      = str2num(string(extracted_data(9)));
+                                    
+                                    avg_delay(schedule_index) = schedule_info(schedule_index).end_timestamp - schedule_info(schedule_index).time_of_arrival;
                                     
                                     
                                 %else if
@@ -191,6 +196,56 @@ for i=1:length(files_list)
                             end
                             
                         end
+                        
+                        %% Resource Monitor                       
+                        if selected_simulation_files_list(j).name =="ResourceMonitor.txt"...
+                                && selected_simulation_files_list(j).isdir == 0 ...
+                                && selected_simulation_files_list(j).bytes > 0
+                            
+                            sim_file_name = selected_simulation_files_list(j).name;   
+                            buffer_lettura = fopen(strcat(new_Path_to_explore, sim_file_name));
+                            extracted_data = strsplit(fgetl(buffer_lettura), '\t');
+                            resource_monitor_index = 0;
+                            
+                            while ~feof(buffer_lettura)
+                                extracted_data = strsplit(fgetl(buffer_lettura), '\t');
+                                resource_monitor_index = resource_monitor_index +1;
+                                
+                                resource_monitor(resource_monitor_index).totalAvailableResources    = str2num(string(extracted_data(1)));
+                                resource_monitor(resource_monitor_index).totalNetworkResources      = str2num(string(extracted_data(2)));
+                                resource_monitor(resource_monitor_index).timestamp                  = str2num(string(extracted_data(3)));
+                                resource_monitor(resource_monitor_index).single_variation           = str2num(string(extracted_data(4)));
+                                
+                                avg_available_resources(resource_monitor_index)         = (resource_monitor(resource_monitor_index).totalAvailableResources / resource_monitor(resource_monitor_index).totalNetworkResources) * 100;
+                                time_avg_available_resources(resource_monitor_index)    = (resource_monitor(resource_monitor_index).timestamp);
+                            end
+                            
+                            
+                        end
+                        
+                        
+                        %% User Details                      
+                        if selected_simulation_files_list(j).name =="UserInfo.txt"...
+                                && selected_simulation_files_list(j).isdir == 0 ...
+                                && selected_simulation_files_list(j).bytes > 0
+                            
+                            sim_file_name = selected_simulation_files_list(j).name;   
+                            buffer_lettura = fopen(strcat(new_Path_to_explore, sim_file_name));
+                            extracted_data = strsplit(fgetl(buffer_lettura), '\t');
+                            resource_monitor_index = 0;
+                            
+                            while ~feof(buffer_lettura)
+                                extracted_data = strsplit(fgetl(buffer_lettura), '\t');
+                                resource_monitor_index = resource_monitor_index +1;
+                                
+                                user_id = str2num(string(extracted_data(1)));
+                                user_info(user_id).malicious_node = str2num(string(extracted_data(9)));                              
+                            end
+                            
+                            
+                        end
+                        
+                        
                     end
             end
             
@@ -205,7 +260,7 @@ end
 figure(1);
 plot(time_queue, info_queue);
 %plot(info_queue);
-ylabel('Number of requests [#]');
+ylabel('Number of queued requests [#]');
 xlabel('Simulation time [s]');
 xline(str2num(tot_sim_to_find));
 hold on;
@@ -223,27 +278,30 @@ for i=1:length(user_info)
     for j=1:length(user_info(i).service)
         user_and_service_vector_to_plot = [];
         time_uas_vector = [];
-        if length(user_info(i).service(j).valore_storicizzato) > 0
+        if ~isempty(user_info(i).service(j).valore_storicizzato)
             valid_user_plotted = valid_user_plotted +1;
             index_user_info = 0;
+            
             for k=1:length(user_info(i).service(j).valore_storicizzato)
                 index_user_info = index_user_info + 1;
                 user_and_service_vector_to_plot(index_user_info) = user_info(i).service(j).valore_storicizzato(k).delta;
                 time_uas_vector(index_user_info) = user_info(i).service(j).valore_storicizzato(k).time;
             end
+            
+            [temp, order_index] = sort(time_uas_vector);            
+            user_and_service_vector_to_plot = user_and_service_vector_to_plot(order_index);
+            time_uas_vector = time_uas_vector(order_index);
+            
             hold on;
             grid on;
-            isIncreasing = all(diff(time_uas_vector));
-            if isIncreasing == 0 && false==true
-                disp("Possibile error in user n: " + i + " service n: " + j + ".")
-                valid_user_plotted = valid_user_plotted -1;
-            else
-                
-            plot(time_uas_vector, user_and_service_vector_to_plot);
-            legend_string(valid_user_plotted) = "user n: " + i + " service n: " + j + ".";
             
+            if user_info(i).malicious_node == 1
+                plot(time_uas_vector, user_and_service_vector_to_plot,'-x','LineWidth',2);
+            else           
+                plot(time_uas_vector, user_and_service_vector_to_plot);                
             end
-
+            
+            legend_string(valid_user_plotted) = "user n: " + i + " service n: " + j + ".";
             
         end
     end
@@ -256,6 +314,14 @@ figure(3);
 ecdf(avg_delay);
 title('ECDF Delay');
 avg_delay = mean(avg_delay);
+
+%% PLOT4 Avg available resource
+figure(4);
+plot(time_avg_available_resources,avg_available_resources);
+ylabel('Available resources [%]');
+xlabel('Simulation time [s]');
+xline(str2num(tot_sim_to_find));
+ylim([80 100]);
 
 %% end procedure
 disp("End.");

@@ -29,28 +29,28 @@ string folder_name;
 ResourceMonitor network_monitor;
 
 
-int main() {	
+int main() {		
 	int max_resched = 99999;
 	cutting_value = 0.265; 	
 	//cutting_value = 0.27;
 	cout << "SSIoT Simulator"<<endl;	
 	
-	double refresh_rate = 300; // ms
+	double refresh_rate = 1000; // ms
 	unsigned long cmd_print_interval = clock();	
 
 	Tic();
 
-	vector<bool>	parameter_to_test_resource_ctrl = { false, true };
-	vector<bool>	parameter_to_test_qoe_ctrl = { false };
+	vector<bool>	parameter_to_test_resource_ctrl = { true }; // OK
+	vector<bool>	parameter_to_test_qoe_ctrl = { true, false }; // OK
 
-	vector<int>		parameter_to_test_n_services = { 6};
-	vector<int>		parameter_to_test_n_devices = { 100 };
-	vector<int>		parameter_to_test_n_master = { 5};
+	vector<int>		parameter_to_test_n_services = { 6}; // OK
+	vector<int>		parameter_to_test_n_devices = { 80, 100, 150, 300 }; // OK
+	vector<int>		parameter_to_test_n_master = { 5}; // OK
 
-	vector<int>		parameter_to_test_lambda = { 8 };
+	vector<int>		parameter_to_test_lambda = { 4, 6, 10 }; // OK
 	vector<int>		parameter_to_test_seed = { 1 };
 
-	vector<int>		parameter_to_test_tot_sim = { 1000 };
+	vector<int>		parameter_to_test_tot_sim = { 10 }; // OK
 
 	int tot_number_of_simulations = GetNumberOfSim(parameter_to_test_tot_sim, parameter_to_test_resource_ctrl, parameter_to_test_qoe_ctrl, parameter_to_test_n_services, parameter_to_test_n_devices, parameter_to_test_n_master, parameter_to_test_lambda, parameter_to_test_seed);
 	int iteration_number = 0;
@@ -70,6 +70,8 @@ int main() {
 							for (int nl = 0; nl < parameter_to_test_lambda.size(); nl++) {
 								for (int nseed = 0; nseed < parameter_to_test_seed.size(); nseed++) {
 									iteration_number++;
+									
+
 									resource_ctrl = parameter_to_test_resource_ctrl[rc];
 									qoe_ctrl = parameter_to_test_qoe_ctrl[qc];
 
@@ -81,8 +83,11 @@ int main() {
 									tot_sim = parameter_to_test_tot_sim[nts];	 // secondi
 									seed = parameter_to_test_seed[nseed];
 
+
+									srand(seed);
 									// seed the RNG	
-									std::mt19937 rng(seed); // mt19937: Pseudo-random number generation
+									// std::mt19937 rng(seed); // mt19937: Pseudo-random number generation
+									// TODO: rivedere seed
 
 									folder_name = "Sim-n_services_" + to_string(n_services) + "-n_devices_" + to_string(n_devices) + "-n_master_" + to_string(n_master) +
 										"-lambda_" + to_string(lambda) + "-tot_sim_" + to_string(tot_sim) + "-seed_" + to_string(seed) + "-resource_ctrl_"
@@ -106,15 +111,13 @@ int main() {
 									network_monitor = ResourceMonitor(n_devices, list_of_devices);
 
 									GenerateSocialRel(n_devices, list_of_devices);
-									scheduler_records = GenerateEventsArray(tot_sim);
+									scheduler_records = GenerateEventsArray(tot_sim, seed);
 
 									Toc("scheduler");
 									std::cout << std::setprecision(3) << std::fixed;
 
 									Calendar event_calendar = Calendar(scheduler_records);
-
-
-
+									
 									while (!event_calendar.IsEmpty()) {
 										unsigned long start_master_processing = clock();
 										Toc("init get next event");
@@ -212,25 +215,28 @@ int main() {
 											else {
 												cout << "\t queue: \t" << "0" << "\t";
 											}
-											cout << "\n \t \t [ ";
+											cout << "\n[ ";
 
-											int perc_tracking = perc_tot / 10;
-											if (perc_tracking > 10) {
-												perc_tracking = 10;
+											int perc_tracking = perc_tot;
+											if (perc_tracking > 100) {
+												perc_tracking = 100;
 											}
 											for (int m = 0; m < perc_tracking; m++) {
 												cout << "|";
 											}
-											for (int m = 0; m < 10 - perc_tracking; m++) {
+											for (int m = 0; m < 100 - perc_tracking; m++) {
 												cout << "-";
 											}
 
 											cout << " ]";
 											tend = clock();
 											unsigned long diff = difftime(tend, tstart) / 1000;
-											cout << "\n\nElapsed time: " << diff << " sec   <---->";
+											cout << "\n\nElapsed time: " << diff << " [sec]";
 											if (perc_tot > 0) {
-												cout << "     Estimated time: " << (diff * 100 / perc_tot) << " sec" << endl;
+												cout << " =======>     Estimated time: " << (diff * 100 / perc_tot) << " [sec]";
+											}
+											else {
+												cout << " =======>     Estimated time: TBD [sec]";
 											}
 											//cout << "\r";
 

@@ -36,7 +36,8 @@ Service *ServicesCreation(){
 
 	int choosenIndex, randomCpuReq;
 	double randomNumber;
-	
+
+	//std::mt19937 rng(seed);
 		
 	for(int i=0; i<n_services; i++){	
 		choosenIndex = rand() % length_possible;
@@ -62,7 +63,8 @@ Service *ServicesCreation(){
 }
 
 Device* DeviceCreation(){
-	
+
+	//std::mt19937 rng(seed);
 	Device* arrayOfDevice = new Device[n_devices];
 	
 
@@ -207,7 +209,6 @@ bool CompareByTrustDesc(const Trust_record& a, const Trust_record& b)
 
 }
 
-
 void GenerateSocialRel(int n_devices, Device *defined_devices){
 	
 	Friend_Record new_social_rel{};
@@ -246,6 +247,7 @@ void GenerateSocialRel(int n_devices, Device *defined_devices){
 }
 
 Master* MasterCreation(){
+	//std::mt19937 rng(seed);
 	Master* arrayOfMaster = new Master[n_master];
 	
 	for(int i=0;i<n_master;i++){ 
@@ -265,8 +267,7 @@ Master* MasterCreation(){
 	return arrayOfMaster;
 }
 
-
-vector<Scheduler> GenerateEventsArray(int sim_duration) {
+vector<Scheduler> GenerateEventsArray(int sim_duration, int seed) {
 	// seed the RNG	
 	std::mt19937 rng(seed); // mt19937: Pseudo-random number generation
 		
@@ -285,7 +286,8 @@ vector<Scheduler> GenerateEventsArray(int sim_duration) {
    int i = 0;
    while(sumArrivalTimes<= sim_duration)
 	 {
-	  newArrivalTime = exp.operator() (rng);// generates the next random number in the distribution 
+	  
+	  newArrivalTime = exp.operator() (rng);// generates the next random number in the distribution 	  
 	  sumArrivalTimes = sumArrivalTimes + newArrivalTime;
 	  //eventArray.push_back(sumArrivalTimes);
 	  Scheduler record_to_push = Scheduler();
@@ -606,7 +608,7 @@ void ServiceProviderFiltering(int id_scheduler_record, double current_timestamp)
 			}
 		}
 		if (Trust_list.size() == 0) {
-			cout << "ERRORE" << endl;
+			cout << "Empty list: define an approach to handle it!!!" << endl;
 		}
 		else {
 			std::sort(Trust_list.begin(), Trust_list.end(), CompareByTrustDesc);
@@ -662,7 +664,6 @@ void AssignFeedback(int id_master, int id_service_provider, int id_service_reque
 
 }
 
-
 bool AllocateDeviceResources(double service_power, int device_index) {
 	// return true only if the device can handle the service
 	if (service_power > 0) {
@@ -692,7 +693,6 @@ void ReleaseDeviceResources(double service_power, int device_index) {
 	}
 
 }
-
 
 int Orchestrator_MakeDecisions(int id_sched_event, double ts) {	
 	vector<Trust_record> providers_ranking = scheduler_records[id_sched_event].GetTrustList();
@@ -757,7 +757,6 @@ int Orchestrator_MakeDecisions(int id_sched_event, double ts) {
 
 	return -1;
 }
-
 
 double EstimateProcessingTime(int id_sched_event) {
 	Master selected_master;
@@ -838,17 +837,25 @@ void EndService(int id_sched_event, double end_ts) {
 	AssignFeedback(master_id, scheduler_records[id_sched_event].GetChoosenSP(), requester_id, service_id, mal_node, end_ts);
 }
 
-
 void UpdateQueue(Event next_event, int event_assigned, bool empty_list) {
-	int prev_total = 0;
-	int empty_prev_total = 0;
-	int prev_accomplished = 0;
+	int prev_total;
+	int empty_prev_total;
+	int prev_accomplished;
 
 	if (info_queue.size() > 0) {
 		Queue prev_queue_variation = info_queue[info_queue.size() - 1];		
 		prev_total = prev_queue_variation.total_service_queued;
 		empty_prev_total = prev_queue_variation.total_empty_list;
 		prev_accomplished = prev_queue_variation.total_accomplished;
+	}
+	else {
+		prev_total = 0;
+		empty_prev_total = 0;
+		prev_accomplished = 0;
+	}
+
+	if (next_event.GetTimeStamp()== 0) {
+		int aaaaa = 10;
 	}
 
 	Queue queue_variation = {};
@@ -892,7 +899,6 @@ void UpdateQueue(Event next_event, int event_assigned, bool empty_list) {
 
 }
 
-
 void Tic() {
 	//tstart = time(nullptr);
 	if (vDEBUG) {
@@ -908,7 +914,6 @@ void Toc(string event) {
 	}
 
 }
-
 
 void PrintInfoQueue() {
 	ofstream myfile(".\\"+ folder_name + "InfoQueue.txt");
@@ -1052,7 +1057,6 @@ void PrintUserInfo() {
 	else cout << "Unable to open file";
 }
 
-
 void PrintDetectedMalicious() {
 	ofstream myfile(".\\" + folder_name + "DetectedMaliciousNodes.txt");
 	if (myfile.is_open())
@@ -1113,7 +1117,6 @@ void EstimateDeltaStateEachDevices(double timestamp) {
 	}
 }
 
-
 void PrintEstimateDeltaStateEachDevices() {
 	ofstream myfile(".\\" + folder_name + "DeltaState.txt");
 
@@ -1160,7 +1163,6 @@ void PrintEstimateDeltaStateEachDevices() {
 	}
 };
 
-
 int GetNumberOfSim(vector<int> parameter_to_test_tot_sim, vector<bool> parameter_to_test_resource_ctrl, vector<bool> parameter_to_test_qoe_ctrl, vector<int> parameter_to_test_n_services, vector<int> parameter_to_test_n_devices, vector<int> parameter_to_test_n_master, vector<int> parameter_to_test_lambda, vector<int> parameter_to_test_seed) {
 	int totsim = 0;
 	for (int nts = 0; nts < parameter_to_test_tot_sim.size(); nts++) {
@@ -1189,7 +1191,6 @@ int GetNumberOfSim(vector<int> parameter_to_test_tot_sim, vector<bool> parameter
 
 	return totsim;
 }
-
 
 void PrintResourceMonitor() {
 
