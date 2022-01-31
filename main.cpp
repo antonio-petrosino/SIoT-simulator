@@ -48,9 +48,9 @@ int main() {
 	vector<int>		parameter_to_test_n_master = { 5}; // OK
 
 	vector<int>		parameter_to_test_lambda = { 4, 6, 10 }; // OK
-	vector<int>		parameter_to_test_seed = { 1 };
+	vector<int>		parameter_to_test_seed = { 6,7,8,9,10 };
 
-	vector<int>		parameter_to_test_tot_sim = { 10 }; // OK
+	vector<int>		parameter_to_test_tot_sim = { 3000 }; // OK
 
 	int tot_number_of_simulations = GetNumberOfSim(parameter_to_test_tot_sim, parameter_to_test_resource_ctrl, parameter_to_test_qoe_ctrl, parameter_to_test_n_services, parameter_to_test_n_devices, parameter_to_test_n_master, parameter_to_test_lambda, parameter_to_test_seed);
 	int iteration_number = 0;

@@ -6,28 +6,32 @@
 % mancanti e potrebbero non servire
 % -> [UserInfo.txt, AvgRepInfo.txt]
 
+%variabili della simulazione da plottare
+n_services_to_find     = "6";
+n_devices_to_find      = "100";
+n_master_to_find       = "5";
+lambda_to_find         = "4";
+tot_sim_to_find        = "3000";
+seed_to_find           = "10";
+resource_ctrl_to_find  = "1";
+qoe_ctrl_to_find       = "0";
+
+
+data_mining_mode = true;
+if data_mining_mode == true
 %% Inizializzazione
 clc;
 clear; 
 close all;
-
 %cartella master simulazioni
-folder_name = 'C:\Users\anton\source\repos\SSIoT\';
-files_list = dir(folder_name);
 
-%variabili della simulazione da plottare
-n_services_to_find     = "6";
-n_devices_to_find      = "150";
-n_master_to_find       = "5";
-lambda_to_find         = "8";
-tot_sim_to_find        = "3000";
-seed_to_find           = "3";
-resource_ctrl_to_find  = "1";
-qoe_ctrl_to_find       = "0";
+folder_name = 'C:\Users\anton\OneDrive - Politecnico di Bari\SSIoT\Definitive con seed\';
+files_list = dir(folder_name);
 
 for i=str2double(n_devices_to_find)
     user_info(i) = struct;
 end
+
 
 %% Elaborazione
 for i=1:length(files_list)
@@ -137,7 +141,7 @@ for i=1:length(files_list)
                                             user_length_hystory = length(user_info(selected_user_ID).service(selected_service_ID).valore_storicizzato);
                                         else
                                             user_length_hystory = 0;
-                                            user_info(selected_user_ID).service(selected_service_ID).valore_storicizzato(user_length_hystory+1).delta = 0.9
+                                            user_info(selected_user_ID).service(selected_service_ID).valore_storicizzato(user_length_hystory+1).delta = 0.9;
                                             user_info(selected_user_ID).service(selected_service_ID).valore_storicizzato(user_length_hystory+1).time = 0;
                                             user_length_hystory = 1;
                                         end
@@ -255,6 +259,7 @@ for i=1:length(files_list)
         
     end    
 end
+end 
 
 %% PLOT1: code
 figure(1);
