@@ -41,14 +41,14 @@ int main() {
 	Tic();
 
 	vector<bool>	parameter_to_test_resource_ctrl = { true }; // OK
-	vector<bool>	parameter_to_test_qoe_ctrl = { true, false }; // OK
+	vector<bool>	parameter_to_test_qoe_ctrl = { false, true }; // OK
 
 	vector<int>		parameter_to_test_n_services = { 6}; // OK
-	vector<int>		parameter_to_test_n_devices = { 80, 100, 150, 300 }; // OK
+	vector<int>		parameter_to_test_n_devices = {80, 100, 150, 300 }; // OK
 	vector<int>		parameter_to_test_n_master = { 5}; // OK
 
 	vector<int>		parameter_to_test_lambda = { 4, 6, 10 }; // OK
-	vector<int>		parameter_to_test_seed = { 6,7,8,9,10 };
+	vector<int>		parameter_to_test_seed = { 1,2,3,4,5 };
 
 	vector<int>		parameter_to_test_tot_sim = { 3000 }; // OK
 
@@ -71,7 +71,6 @@ int main() {
 								for (int nseed = 0; nseed < parameter_to_test_seed.size(); nseed++) {
 									iteration_number++;
 									
-
 									resource_ctrl = parameter_to_test_resource_ctrl[rc];
 									qoe_ctrl = parameter_to_test_qoe_ctrl[qc];
 
@@ -108,7 +107,10 @@ int main() {
 									list_of_master = MasterCreation();
 									list_of_devices = DeviceCreation();
 
+									info_queue = {};
+									detected_potential_malicious_devices = {};
 									network_monitor = ResourceMonitor(n_devices, list_of_devices);
+
 
 									GenerateSocialRel(n_devices, list_of_devices);
 									scheduler_records = GenerateEventsArray(tot_sim, seed);

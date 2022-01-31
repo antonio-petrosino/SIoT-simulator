@@ -847,15 +847,16 @@ void UpdateQueue(Event next_event, int event_assigned, bool empty_list) {
 		prev_total = prev_queue_variation.total_service_queued;
 		empty_prev_total = prev_queue_variation.total_empty_list;
 		prev_accomplished = prev_queue_variation.total_accomplished;
+
+		if (next_event.GetTimeStamp() < prev_queue_variation.timestamp) {
+			cout << "WARNING: info_queue logical error." << endl;
+			system("pause");
+		}
 	}
 	else {
 		prev_total = 0;
 		empty_prev_total = 0;
 		prev_accomplished = 0;
-	}
-
-	if (next_event.GetTimeStamp()== 0) {
-		int aaaaa = 10;
 	}
 
 	Queue queue_variation = {};
@@ -1037,7 +1038,7 @@ void PrintUserInfo() {
 			myfile << list_of_devices[i].GetMalicious() << "\t";
 			vector<int> service_of_user = list_of_devices[i].GetServiceIDList();
 			myfile << "[ ";
-			for (unsigned int j = 0; j < service_of_user.size(); j++) {
+			for (int j = 0; j < service_of_user.size(); j++) {
 				if (service_of_user.size() != (j + 1)) {
 					myfile << service_of_user[j] << ", ";
 				}

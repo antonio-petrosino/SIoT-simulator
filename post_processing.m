@@ -8,28 +8,42 @@
 
 %variabili della simulazione da plottare
 n_services_to_find     = "6";
-n_devices_to_find      = "100";
+n_devices_to_find      = "80";
 n_master_to_find       = "5";
-lambda_to_find         = "4";
+lambda_to_find         = "10";
 tot_sim_to_find        = "3000";
-seed_to_find           = "10";
+vect_seed_to_find      = ["1", "2", "3", "4", "5"];
 resource_ctrl_to_find  = "1";
 qoe_ctrl_to_find       = "0";
 
 
 data_mining_mode = true;
+close all;
+seed_scenario = struct();
+
+for seed_index=1:length(vect_seed_to_find)
+   seed_to_find = vect_seed_to_find(seed_index);
+
+
 if data_mining_mode == true
 %% Inizializzazione
 clc;
-clear; 
-close all;
+clearvars -except n_services_to_find n_devices_to_find n_master_to_find lambda_to_find...
+    tot_sim_to_find seed_to_find resource_ctrl_to_find qoe_ctrl_to_find data_mining_mode...
+    seed_index vect_seed_to_find seed_scenario; 
+
 %cartella master simulazioni
 
-folder_name = 'C:\Users\anton\OneDrive - Politecnico di Bari\SSIoT\Definitive con seed\';
+folder_name = 'C:\Users\anton\source\repos\SSIoT\';
 files_list = dir(folder_name);
 
-for i=str2double(n_devices_to_find)
-    user_info(i) = struct;
+% seed_scenario(seed_index) = struct('user_info', [], 'info_queue', [], 'total_empty_list', []...
+%     , 'total_accomplished', [], 'time_queue', [], 'avg_available_resources', [], 'avg_delay', []...
+%     ,'avg_available_resources_movmean', []);
+
+
+for i=1:str2double(n_devices_to_find)
+    seed_scenario(seed_index).user_info(i) = struct();    
 end
 
 
@@ -92,10 +106,10 @@ for i=1:length(files_list)
                             while ~feof(buffer_lettura)
                                 k = k +1;
                                 extracted_data = strsplit(fgetl(buffer_lettura), '\t');
-                                info_queue(k) = str2num(string(extracted_data(1)));
-                                total_empty_list(k) = str2num(string(extracted_data(2)));
-                                total_accomplished(k) = str2num(string(extracted_data(3)));
-                                time_queue(k) = str2num(string(extracted_data(4)));
+                                seed_scenario(seed_index).info_queue(k) = str2num(string(extracted_data(1)));
+                                seed_scenario(seed_index).total_empty_list(k) = str2num(string(extracted_data(2)));
+                                seed_scenario(seed_index).total_accomplished(k) = str2num(string(extracted_data(3)));
+                                seed_scenario(seed_index).time_queue(k) = str2num(string(extracted_data(4)));
                             end
                             
                         end
@@ -130,24 +144,24 @@ for i=1:length(files_list)
                                 else
                                     if selected_user_ID>0 && selected_service_ID > 0 && get_avg_value_enabled == true     
                                         
-%                                         if isfield(user_info(selected_user_ID), 'service')
-%                                             service_length = length(user_info(selected_user_ID).service);
+%                                         if isfield(seed_scenario(seed_index).user_info(selected_user_ID), 'service')
+%                                             service_length = length(seed_scenario(seed_index).user_info(selected_user_ID).service);
 %                                         else
 %                                             service_length = 0;
 %                                         end
-                                        user_info(selected_user_ID).service(selected_service_ID).name = selected_service_ID;
+                                        seed_scenario(seed_index).user_info(selected_user_ID).service(selected_service_ID).name = selected_service_ID;
                                         
-                                        if isfield(user_info(selected_user_ID).service(selected_service_ID), 'valore_storicizzato')
-                                            user_length_hystory = length(user_info(selected_user_ID).service(selected_service_ID).valore_storicizzato);
+                                        if isfield(seed_scenario(seed_index).user_info(selected_user_ID).service(selected_service_ID), 'valore_storicizzato')
+                                            user_length_hystory = length(seed_scenario(seed_index).user_info(selected_user_ID).service(selected_service_ID).valore_storicizzato);
                                         else
                                             user_length_hystory = 0;
-                                            user_info(selected_user_ID).service(selected_service_ID).valore_storicizzato(user_length_hystory+1).delta = 0.9;
-                                            user_info(selected_user_ID).service(selected_service_ID).valore_storicizzato(user_length_hystory+1).time = 0;
+                                            seed_scenario(seed_index).user_info(selected_user_ID).service(selected_service_ID).valore_storicizzato(user_length_hystory+1).delta = 0.9;
+                                            seed_scenario(seed_index).user_info(selected_user_ID).service(selected_service_ID).valore_storicizzato(user_length_hystory+1).time = 0;
                                             user_length_hystory = 1;
                                         end
                                         
-                                        user_info(selected_user_ID).service(selected_service_ID).valore_storicizzato(user_length_hystory+1).delta = str2double(string(extracted_data(1)));
-                                        user_info(selected_user_ID).service(selected_service_ID).valore_storicizzato(user_length_hystory+1).time = str2double(string(extracted_data(2)));
+                                        seed_scenario(seed_index).user_info(selected_user_ID).service(selected_service_ID).valore_storicizzato(user_length_hystory+1).delta = str2double(string(extracted_data(1)));
+                                        seed_scenario(seed_index).user_info(selected_user_ID).service(selected_service_ID).valore_storicizzato(user_length_hystory+1).time = str2double(string(extracted_data(2)));
                                     end
                                     
                                 end
@@ -192,7 +206,7 @@ for i=1:length(files_list)
                                     schedule_info(schedule_index).elaboration_time          = str2num(string(extracted_data(8)));
                                     schedule_info(schedule_index).number_of_reschedule      = str2num(string(extracted_data(9)));
                                     
-                                    avg_delay(schedule_index) = schedule_info(schedule_index).end_timestamp - schedule_info(schedule_index).time_of_arrival;
+                                    seed_scenario(seed_index).avg_delay(schedule_index) = schedule_info(schedule_index).end_timestamp - schedule_info(schedule_index).time_of_arrival;
                                     
                                     
                                 %else if
@@ -220,8 +234,8 @@ for i=1:length(files_list)
                                 resource_monitor(resource_monitor_index).timestamp                  = str2num(string(extracted_data(3)));
                                 resource_monitor(resource_monitor_index).single_variation           = str2num(string(extracted_data(4)));
                                 
-                                avg_available_resources(resource_monitor_index)         = (resource_monitor(resource_monitor_index).totalAvailableResources / resource_monitor(resource_monitor_index).totalNetworkResources) * 100;
-                                time_avg_available_resources(resource_monitor_index)    = (resource_monitor(resource_monitor_index).timestamp);
+                                seed_scenario(seed_index).avg_available_resources(resource_monitor_index)         = (resource_monitor(resource_monitor_index).totalAvailableResources / resource_monitor(resource_monitor_index).totalNetworkResources) * 100;
+                                seed_scenario(seed_index).time_avg_available_resources(resource_monitor_index)    = (resource_monitor(resource_monitor_index).timestamp);
                             end
                             
                             
@@ -243,7 +257,7 @@ for i=1:length(files_list)
                                 resource_monitor_index = resource_monitor_index +1;
                                 
                                 user_id = str2num(string(extracted_data(1)));
-                                user_info(user_id).malicious_node = str2num(string(extracted_data(9)));                              
+                                seed_scenario(seed_index).user_info(user_id).malicious_node = str2num(string(extracted_data(9)));                              
                             end
                             
                             
@@ -263,7 +277,8 @@ end
 
 %% PLOT1: code
 figure(1);
-plot(time_queue, info_queue);
+hold on;
+plot(seed_scenario(seed_index).time_queue, seed_scenario(seed_index).info_queue);
 %plot(info_queue);
 ylabel('Number of queued requests [#]');
 xlabel('Simulation time [s]');
@@ -278,19 +293,19 @@ grid on;
 figure(2);
 %legend_string = "";
 valid_user_plotted = 0;
-for i=1:length(user_info)
-    %%if length(user_info(i).service) > 0
-    for j=1:length(user_info(i).service)
+for i=1:length(seed_scenario(seed_index).user_info)
+    %%if length(seed_scenario(seed_index).user_info(i).service) > 0
+    for j=1:length(seed_scenario(seed_index).user_info(i).service)
         user_and_service_vector_to_plot = [];
         time_uas_vector = [];
-        if ~isempty(user_info(i).service(j).valore_storicizzato)
+        if ~isempty(seed_scenario(seed_index).user_info(i).service(j).valore_storicizzato)
             valid_user_plotted = valid_user_plotted +1;
             index_user_info = 0;
             
-            for k=1:length(user_info(i).service(j).valore_storicizzato)
+            for k=1:length(seed_scenario(seed_index).user_info(i).service(j).valore_storicizzato)
                 index_user_info = index_user_info + 1;
-                user_and_service_vector_to_plot(index_user_info) = user_info(i).service(j).valore_storicizzato(k).delta;
-                time_uas_vector(index_user_info) = user_info(i).service(j).valore_storicizzato(k).time;
+                user_and_service_vector_to_plot(index_user_info) = seed_scenario(seed_index).user_info(i).service(j).valore_storicizzato(k).delta;
+                time_uas_vector(index_user_info) = seed_scenario(seed_index).user_info(i).service(j).valore_storicizzato(k).time;
             end
             
             [temp, order_index] = sort(time_uas_vector);            
@@ -300,7 +315,7 @@ for i=1:length(user_info)
             hold on;
             grid on;
             
-            if user_info(i).malicious_node == 1
+            if seed_scenario(seed_index).user_info(i).malicious_node == 1
                 plot(time_uas_vector, user_and_service_vector_to_plot,'-x','LineWidth',2);
             else           
                 plot(time_uas_vector, user_and_service_vector_to_plot);                
@@ -316,18 +331,86 @@ legend(legend_string);
 
 %% PLOT3
 figure(3);
-ecdf(avg_delay);
+tot_avg_delay = [];
+for i=1:length(seed_scenario)
+    tot_avg_delay = [tot_avg_delay seed_scenario(i).avg_delay];
+end 
+ecdf(tot_avg_delay);
+hold on;
+%ecdf(seed_scenario(seed_index).avg_delay);
 title('ECDF Delay');
-avg_delay = mean(avg_delay);
+seed_scenario(seed_index).avg_delay = mean(seed_scenario(seed_index).avg_delay);
 
 %% PLOT4 Avg available resource
 figure(4);
-plot(time_avg_available_resources,avg_available_resources);
+hold on;
+%media mobile implementata
+seed_scenario(seed_index).avg_available_resources_movmean = movmean(seed_scenario(seed_index).avg_available_resources, 250);
+
+plot(seed_scenario(seed_index).time_avg_available_resources, seed_scenario(seed_index).avg_available_resources_movmean);
 ylabel('Available resources [%]');
 xlabel('Simulation time [s]');
 xline(str2num(tot_sim_to_find));
-ylim([80 100]);
+ylim([50 100]);
 
 %% end procedure
-disp("End.");
+disp("End. seed:" + seed_to_find);
 fclose('all');
+end
+%% PLOT 1 - CODE - mediato su tutti i seed
+time_limit = zeros(length(seed_scenario), 1);
+for i=1:length(seed_scenario)
+time_limit(i) = max(seed_scenario(i).time_queue);
+end
+max_time_limit = ceil(max(time_limit));
+
+final_time_vector = [];
+final_queue_vector = [];
+for time=(1):max_time_limit    
+    values_slotted = [];
+    for i=1:length(seed_scenario)        
+        index_to_consider = find(seed_scenario(i).time_queue < time & seed_scenario(i).time_queue >= (time-1) );        
+        value_to_consider = seed_scenario(i).info_queue(index_to_consider);        
+        values_slotted = [values_slotted value_to_consider];
+    end    
+    final_time_vector = [final_time_vector (time-1)];    
+    if length(values_slotted)>0
+        final_queue_vector = [final_queue_vector mean(values_slotted)];    
+    else
+        final_queue_vector = [final_queue_vector final_queue_vector(length(final_queue_vector)-1)];
+    end    
+end
+
+figure(1);
+hold on;
+final_queue_vector = movmean(final_queue_vector, 25);
+plot(final_time_vector, final_queue_vector,'LineWidth',2)
+
+%% PLOT 4
+time_limit = zeros(length(seed_scenario), 1);
+for i=1:length(seed_scenario)
+time_limit(i) = max(seed_scenario(i).time_avg_available_resources);
+end
+max_time_limit = ceil(max(time_limit));
+
+final_time_vector = [];
+final_queue_vector = [];
+for time=(1):max_time_limit    
+    values_slotted = [];
+    for i=1:length(seed_scenario)        
+        index_to_consider = find(seed_scenario(i).time_avg_available_resources < time & seed_scenario(i).time_avg_available_resources >= (time-1) );        
+        value_to_consider = seed_scenario(i).avg_available_resources(index_to_consider);        
+        values_slotted = [values_slotted value_to_consider];
+    end    
+    final_time_vector = [final_time_vector (time-1)];    
+    if length(values_slotted)>0
+        final_queue_vector = [final_queue_vector mean(values_slotted)];    
+    else
+        final_queue_vector = [final_queue_vector final_queue_vector(length(final_queue_vector)-1)];
+    end    
+end
+
+figure(4);
+hold on;
+final_queue_vector = movmean(final_queue_vector, 25);
+plot(final_time_vector, final_queue_vector,'LineWidth',2)
