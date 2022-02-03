@@ -48,7 +48,7 @@ int main() {
 	vector<int>		parameter_to_test_n_master = { 5}; // OK
 
 	vector<int>		parameter_to_test_lambda = { 4, 6, 10 }; // OK
-	vector<int>		parameter_to_test_seed = { 1,2,3,4,5 };
+	vector<int>		parameter_to_test_seed = { 11,12,13,14,15,16,17,18,19,20 };
 
 	vector<int>		parameter_to_test_tot_sim = { 3000 }; // OK
 
