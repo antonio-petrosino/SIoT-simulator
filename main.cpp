@@ -29,7 +29,8 @@ string folder_name;
 ResourceMonitor network_monitor;
 
 
-int main() {		
+int main() {	
+	unsigned long iteration_tstart;
 	int max_resched = 99999;
 	cutting_value = 0.265; 	
 	//cutting_value = 0.27;
@@ -70,7 +71,7 @@ int main() {
 							for (int nl = 0; nl < parameter_to_test_lambda.size(); nl++) {
 								for (int nseed = 0; nseed < parameter_to_test_seed.size(); nseed++) {
 									iteration_number++;
-									
+									iteration_tstart = clock();
 									resource_ctrl = parameter_to_test_resource_ctrl[rc];
 									qoe_ctrl = parameter_to_test_qoe_ctrl[qc];
 
@@ -232,7 +233,7 @@ int main() {
 
 											cout << " ]";
 											tend = clock();
-											unsigned long diff = difftime(tend, tstart) / 1000;
+											unsigned long diff = difftime(tend, iteration_tstart) / 1000;
 											cout << "\n\nElapsed time: " << diff << " [sec]";
 											if (perc_tot > 0) {
 												cout << " =======>     Estimated time: " << (diff * 100 / perc_tot) << " [sec]";
