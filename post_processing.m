@@ -9,21 +9,27 @@ close all; clc; clear;
 folder_name = 'C:\Users\anton\source\repos\SSIoT\';
 %variabili della simulazione da plottare
 n_services_to_find = "6";
-vect_n_devices_to_find = ["300"]; % [80, 150, 300]
+vect_n_devices_to_find = ["100"]; % [80, 100, 150, 300]
 n_master_to_find = "5";
-vect_lambda_to_find = ["10"]; %[4 - 6 - 10]
-vect_resource_ctrl_to_find = ["1"];
+vect_lambda_to_find = ["4"]; %[4 - 6 - 10]
+vect_resource_ctrl_to_find = ["0","1"];
 tot_sim_to_find = "3000";
 vect_qoe_ctrl_to_find = ["0", "1"];%[0 - 10]
 vect_seed_to_find = ["1", "2", "3", "4", "5", ...
-                     "6", "7", "8", "9", "10"]; %[1-10]
+                     "6", "7", "8", "9", "10", ...
+                     "11", "12", "13", "14", "15", ...
+                     "16", "17", "18", "19", "20"]; %[1-20]
 
 sim_legend_string = [];
-                
+plotting_info = struct();                
 for nd = 1:length(vect_n_devices_to_find)
     for nl = 1:length(vect_lambda_to_find)
         for nrc = 1:length(vect_resource_ctrl_to_find)
             for nqoe = 1:length(vect_qoe_ctrl_to_find)
+                
+                if vect_resource_ctrl_to_find(nrc)=="0" && vect_qoe_ctrl_to_find(nqoe)=="1"
+                    continue;
+                end
              
                 n_devices_to_find = vect_n_devices_to_find(nd);
                 lambda_to_find = vect_lambda_to_find(nl);
@@ -36,7 +42,7 @@ for nd = 1:length(vect_n_devices_to_find)
               sim_legend_string = [sim_legend_string sim_name_for_legend];
               %sim_legend_string(length(sim_legend_string)+1) = sim_name_for_legend;
                 %sim_legend_string = sim_legend_string + sim_name_for_legend;
-             disp(sim_legend_string);
+             %disp(sim_legend_string);
                 data_mining_mode = true;
                 %close all;
                 seed_scenario = struct();
@@ -47,12 +53,14 @@ for nd = 1:length(vect_n_devices_to_find)
                     if data_mining_mode == true
                         %% Inizializzazione
                         clc;
+                        
                         clearvars -except n_services_to_find n_devices_to_find n_master_to_find lambda_to_find...
                         tot_sim_to_find seed_to_find resource_ctrl_to_find qoe_ctrl_to_find data_mining_mode...
                         seed_index vect_seed_to_find seed_scenario sim_name_for_legend sim_legend_string ...
                         folder_name nd nl nrc nqoe...
                         n_services_to_find vect_n_devices_to_find n_master_to_find vect_lambda_to_find ...
-                        vect_resource_ctrl_to_find tot_sim_to_find vect_qoe_ctrl_to_find vect_seed_to_find ;
+                        vect_resource_ctrl_to_find tot_sim_to_find vect_qoe_ctrl_to_find vect_seed_to_find ...
+                        plotting_info;
                      
                         %cartella master simulazioni                  
 
@@ -316,24 +324,20 @@ for nd = 1:length(vect_n_devices_to_find)
                     %seed_scenario(seed_index).avg_available_resources = ;
 
                     %% PLOT1: code
-                    f1 = figure(1);
-                    hold on;
-                    plot(seed_scenario(seed_index).time_queue, seed_scenario(seed_index).info_queue);
-                    %plot(info_queue);
-                    ylabel('Number of queued requests [#]');
-                    xlabel('Simulation time [s]');
-                    xline(str2num(tot_sim_to_find));
-                    hold on;
-                    %plot(time_queue, total_accomplished);
-                    grid on;
+                    %f1 = figure(1);
+                    %hold on;
+                    %plot(seed_scenario(seed_index).time_queue, seed_scenario(seed_index).info_queue);                    
+                    %ylabel('Number of queued requests [#]');
+                    %xlabel('Simulation time [s]');
+                    %xline(str2num(tot_sim_to_find));
+                    %hold on;                    
+                    %grid on;
                     %legend('Queued', 'Accomplished');
                  
                     %% PLOT2: delta value per il riconoscimento malevoli
-                    f2 = figure(2);
-                    %legend_string = "";
+                    %f2 = figure(2);                    
                     valid_user_plotted = 0;
-                    for i = 1:length(seed_scenario(seed_index).user_info)
-                        %%if length(seed_scenario(seed_index).user_info(i).service) > 0
+                    for i = 1:length(seed_scenario(seed_index).user_info)                        
                         for j = 1:length(seed_scenario(seed_index).user_info(i).service)
                             user_and_service_vector_to_plot = [];
                             time_uas_vector = [];
@@ -351,51 +355,226 @@ for nd = 1:length(vect_n_devices_to_find)
                                 user_and_service_vector_to_plot = user_and_service_vector_to_plot(order_index);
                                 time_uas_vector = time_uas_vector(order_index);
                              
-                                hold on;
-                                grid on;
+                                %hold on;
+                                %grid on;
                              
                                 if seed_scenario(seed_index).user_info(i).malicious_node == 1
-                                    plot(time_uas_vector, user_and_service_vector_to_plot, '-x', 'LineWidth', 2);
+                                    %plot(time_uas_vector, user_and_service_vector_to_plot, '-x', 'LineWidth', 2);
                                 else
-                                    plot(time_uas_vector, user_and_service_vector_to_plot);
+                                    %plot(time_uas_vector, user_and_service_vector_to_plot);
                                 end
                              
-                                legend_string(valid_user_plotted) = "user n: " + i + " service n: " + j + ".";
+                                %legend_string(valid_user_plotted) = "user n: " + i + " service n: " + j + ".";
                              
                             end
                         end
                     end
-                    xline(str2num(tot_sim_to_find));
-                    legend(legend_string);
+                    %xline(str2num(tot_sim_to_find));
+                    %legend(legend_string);
                  
                     %% PLOT3
-                    f3 = figure(3);
+                    %f3 = figure(3);
                     tot_avg_delay = [];
                     for i = 1:length(seed_scenario)
                         tot_avg_delay = [tot_avg_delay seed_scenario(i).avg_delay];
                     end
-                    ecdf(tot_avg_delay);
-                    hold on;
-                    %ecdf(seed_scenario(seed_index).avg_delay);
-                    title('ECDF Delay');
+                    %ecdf(tot_avg_delay);
+                    %hold on;                    
+                    %title('ECDF Delay');
                     seed_scenario(seed_index).avg_delay = mean(seed_scenario(seed_index).avg_delay);
                  
                     %% PLOT4 Avg available resource
-                    f4 = figure(4);
-                    hold on;
+                    %f4 = figure(4);
+                    %hold on;
                     %media mobile implementata
                     seed_scenario(seed_index).avg_available_resources_movmean = movmean(seed_scenario(seed_index).avg_available_resources, 250);
                  
-                    plot(seed_scenario(seed_index).time_avg_available_resources, seed_scenario(seed_index).avg_available_resources_movmean);
-                    ylabel('Available resources [%]');
-                    xlabel('Simulation time [s]');
-                    xline(str2num(tot_sim_to_find));
-                    ylim([50 100]);
+                    %plot(seed_scenario(seed_index).time_avg_available_resources, seed_scenario(seed_index).avg_available_resources_movmean);
+                    %ylabel('Available resources [%]');
+                    %xlabel('Simulation time [s]');
+                    %xline(str2num(tot_sim_to_find));
+                    %ylim([50 100]);
                  
+                    
+                    seed_scenario(seed_index).master_processing_time = abs(mean([schedule_info.elaboration_time]));
                     %% end procedure
                     disp("End. seed:" + seed_to_find);
                     fclose('all');
+                    
                 end
+                
+                
+                %% Sezione per mediare sul seed-> tempi di processing e avg delay
+                avg_delay_to_extract = mean([seed_scenario.avg_delay]);
+                avg_processing_time_to_extract = mean([seed_scenario.master_processing_time])*1000;
+                
+                if vect_n_devices_to_find(nd) == "80"                    
+                    if vect_lambda_to_find(nl) == "4"
+                        if vect_resource_ctrl_to_find(nrc) == "0"
+                            plotting_info.n_device80_lambda4_resource0_qoe_0_avg_delay = avg_delay_to_extract;
+                            plotting_info.n_device80_lambda4_resource0_qoe_0_processing = avg_processing_time_to_extract;
+                        elseif vect_resource_ctrl_to_find(nrc) == "1"
+                            if vect_qoe_ctrl_to_find(nqoe) == "0"
+                                plotting_info.n_device80_lambda4_resource1_qoe_0_avg_delay = avg_delay_to_extract;
+                                plotting_info.n_device80_lambda4_resource1_qoe_0_processing = avg_processing_time_to_extract;
+                            elseif vect_qoe_ctrl_to_find(nqoe) == "1"
+                                plotting_info.n_device80_lambda4_resource1_qoe_1_avg_delay = avg_delay_to_extract;
+                                plotting_info.n_device80_lambda4_resource1_qoe_1_processing = avg_processing_time_to_extract;
+                            end
+                        end
+                    elseif vect_lambda_to_find(nl) == "6"                    
+                        if vect_resource_ctrl_to_find(nrc) == "0"
+                            plotting_info.n_device80_lambda6_resource0_qoe_0_avg_delay = avg_delay_to_extract;
+                            plotting_info.n_device80_lambda6_resource0_qoe_0_processing = avg_processing_time_to_extract;
+                        elseif vect_resource_ctrl_to_find(nrc) == "1"
+                            if vect_qoe_ctrl_to_find(nqoe) == "0"
+                                plotting_info.n_device80_lambda6_resource1_qoe_0_avg_delay = avg_delay_to_extract;
+                                plotting_info.n_device80_lambda6_resource1_qoe_0_processing = avg_processing_time_to_extract;
+                            elseif vect_qoe_ctrl_to_find(nqoe) == "1"
+                                plotting_info.n_device80_lambda6_resource1_qoe_1_avg_delay = avg_delay_to_extract;
+                                plotting_info.n_device80_lambda6_resource1_qoe_1_processing = avg_processing_time_to_extract;
+                            end
+                        end
+                    elseif vect_lambda_to_find(nl) == "10"                   
+                        if vect_resource_ctrl_to_find(nrc) == "0"
+                            plotting_info.n_device80_lambda10_resource0_qoe_0_avg_delay = avg_delay_to_extract;
+                            plotting_info.n_device80_lambda10_resource0_qoe_0_processing = avg_processing_time_to_extract;
+                        elseif vect_resource_ctrl_to_find(nrc) == "1"
+                            if vect_qoe_ctrl_to_find(nqoe) == "0"
+                                plotting_info.n_device80_lambda10_resource1_qoe_0_avg_delay = avg_delay_to_extract;
+                                plotting_info.n_device80_lambda10_resource1_qoe_0_processing = avg_processing_time_to_extract;
+                            elseif vect_qoe_ctrl_to_find(nqoe) == "1"
+                                plotting_info.n_device80_lambda10_resource1_qoe_1_avg_delay = avg_delay_to_extract;
+                                plotting_info.n_device80_lambda10_resource1_qoe_1_processing = avg_processing_time_to_extract;
+                            end
+                        end
+                    end
+                    
+                elseif vect_n_devices_to_find(nd) == "100"
+                   if vect_lambda_to_find(nl) == "4"
+                        if vect_resource_ctrl_to_find(nrc) == "0"
+                            plotting_info.n_device100_lambda4_resource0_qoe_0_avg_delay = avg_delay_to_extract;
+                            plotting_info.n_device100_lambda4_resource0_qoe_0_processing = avg_processing_time_to_extract;
+                        elseif vect_resource_ctrl_to_find(nrc) == "1"
+                            if vect_qoe_ctrl_to_find(nqoe) == "0"
+                                plotting_info.n_device100_lambda4_resource1_qoe_0_avg_delay = avg_delay_to_extract;
+                                plotting_info.n_device100_lambda4_resource1_qoe_0_processing = avg_processing_time_to_extract;
+                            elseif vect_qoe_ctrl_to_find(nqoe) == "1"
+                                plotting_info.n_device100_lambda4_resource1_qoe_1_avg_delay = avg_delay_to_extract;
+                                plotting_info.n_device100_lambda4_resource1_qoe_1_processing = avg_processing_time_to_extract;
+                            end
+                        end
+                    elseif vect_lambda_to_find(nl) == "6"                    
+                        if vect_resource_ctrl_to_find(nrc) == "0"
+                            plotting_info.n_device100_lambda6_resource0_qoe_0_avg_delay = avg_delay_to_extract;
+                            plotting_info.n_device100_lambda6_resource0_qoe_0_processing = avg_processing_time_to_extract;
+                        elseif vect_resource_ctrl_to_find(nrc) == "1"
+                            if vect_qoe_ctrl_to_find(nqoe) == "0"
+                                plotting_info.n_device100_lambda6_resource1_qoe_0_avg_delay = avg_delay_to_extract;
+                                plotting_info.n_device100_lambda6_resource1_qoe_0_processing = avg_processing_time_to_extract;
+                            elseif vect_qoe_ctrl_to_find(nqoe) == "1"
+                                plotting_info.n_device100_lambda6_resource1_qoe_1_avg_delay = avg_delay_to_extract;
+                                plotting_info.n_device100_lambda6_resource1_qoe_1_processing = avg_processing_time_to_extract;
+                            end
+                        end
+                    elseif vect_lambda_to_find(nl) == "10"                   
+                        if vect_resource_ctrl_to_find(nrc) == "0"
+                            plotting_info.n_device100_lambda10_resource0_qoe_0_avg_delay = avg_delay_to_extract;
+                            plotting_info.n_device100_lambda10_resource0_qoe_0_processing = avg_processing_time_to_extract;
+                        elseif vect_resource_ctrl_to_find(nrc) == "1"
+                            if vect_qoe_ctrl_to_find(nqoe) == "0"
+                                plotting_info.n_device100_lambda10_resource1_qoe_0_avg_delay = avg_delay_to_extract;
+                                plotting_info.n_device100_lambda10_resource1_qoe_0_processing = avg_processing_time_to_extract;
+                            elseif vect_qoe_ctrl_to_find(nqoe) == "1"
+                                plotting_info.n_device100_lambda10_resource1_qoe_1_avg_delay = avg_delay_to_extract;
+                                plotting_info.n_device100_lambda10_resource1_qoe_1_processing = avg_processing_time_to_extract;
+                            end
+                        end
+                    end
+                elseif vect_n_devices_to_find(nd) == "150"
+                  if vect_lambda_to_find(nl) == "4"
+                        if vect_resource_ctrl_to_find(nrc) == "0"
+                            plotting_info.n_device150_lambda4_resource0_qoe_0_avg_delay = avg_delay_to_extract;
+                            plotting_info.n_device150_lambda4_resource0_qoe_0_processing = avg_processing_time_to_extract;
+                        elseif vect_resource_ctrl_to_find(nrc) == "1"
+                            if vect_qoe_ctrl_to_find(nqoe) == "0"
+                                plotting_info.n_device150_lambda4_resource1_qoe_0_avg_delay = avg_delay_to_extract;
+                                plotting_info.n_device150_lambda4_resource1_qoe_0_processing = avg_processing_time_to_extract;
+                            elseif vect_qoe_ctrl_to_find(nqoe) == "1"
+                                plotting_info.n_device150_lambda4_resource1_qoe_1_avg_delay = avg_delay_to_extract;
+                                plotting_info.n_device150_lambda4_resource1_qoe_1_processing = avg_processing_time_to_extract;
+                            end
+                        end
+                    elseif vect_lambda_to_find(nl) == "6"                    
+                        if vect_resource_ctrl_to_find(nrc) == "0"
+                            plotting_info.n_device150_lambda6_resource0_qoe_0_avg_delay = avg_delay_to_extract;
+                            plotting_info.n_device150_lambda6_resource0_qoe_0_processing = avg_processing_time_to_extract;
+                        elseif vect_resource_ctrl_to_find(nrc) == "1"
+                            if vect_qoe_ctrl_to_find(nqoe) == "0"
+                                plotting_info.n_device150_lambda6_resource1_qoe_0_avg_delay = avg_delay_to_extract;
+                                plotting_info.n_device150_lambda6_resource1_qoe_0_processing = avg_processing_time_to_extract;
+                            elseif vect_qoe_ctrl_to_find(nqoe) == "1"
+                                plotting_info.n_device150_lambda6_resource1_qoe_1_avg_delay = avg_delay_to_extract;
+                                plotting_info.n_device150_lambda6_resource1_qoe_1_processing = avg_processing_time_to_extract;
+                            end
+                        end
+                    elseif vect_lambda_to_find(nl) == "10"                   
+                        if vect_resource_ctrl_to_find(nrc) == "0"
+                            plotting_info.n_device150_lambda10_resource0_qoe_0_avg_delay = avg_delay_to_extract;
+                            plotting_info.n_device150_lambda10_resource0_qoe_0_processing = avg_processing_time_to_extract;
+                        elseif vect_resource_ctrl_to_find(nrc) == "1"
+                            if vect_qoe_ctrl_to_find(nqoe) == "0"
+                                plotting_info.n_device150_lambda10_resource1_qoe_0_avg_delay = avg_delay_to_extract;
+                                plotting_info.n_device150_lambda10_resource1_qoe_0_processing = avg_processing_time_to_extract;
+                            elseif vect_qoe_ctrl_to_find(nqoe) == "1"
+                                plotting_info.n_device150_lambda10_resource1_qoe_1_avg_delay = avg_delay_to_extract;
+                                plotting_info.n_device150_lambda10_resource1_qoe_1_processing = avg_processing_time_to_extract;
+                            end
+                        end
+                    end       
+                elseif vect_n_devices_to_find(nd) == "300"
+                  if vect_lambda_to_find(nl) == "4"
+                        if vect_resource_ctrl_to_find(nrc) == "0"
+                            plotting_info.n_device300_lambda4_resource0_qoe_0_avg_delay = avg_delay_to_extract;
+                            plotting_info.n_device300_lambda4_resource0_qoe_0_processing = avg_processing_time_to_extract;
+                        elseif vect_resource_ctrl_to_find(nrc) == "1"
+                            if vect_qoe_ctrl_to_find(nqoe) == "0"
+                                plotting_info.n_device300_lambda4_resource1_qoe_0_avg_delay = avg_delay_to_extract;
+                                plotting_info.n_device300_lambda4_resource1_qoe_0_processing = avg_processing_time_to_extract;
+                            elseif vect_qoe_ctrl_to_find(nqoe) == "1"
+                                plotting_info.n_device300_lambda4_resource1_qoe_1_avg_delay = avg_delay_to_extract;
+                                plotting_info.n_device300_lambda4_resource1_qoe_1_processing = avg_processing_time_to_extract;
+                            end
+                        end
+                    elseif vect_lambda_to_find(nl) == "6"                    
+                        if vect_resource_ctrl_to_find(nrc) == "0"
+                            plotting_info.n_device300_lambda6_resource0_qoe_0_avg_delay = avg_delay_to_extract;
+                            plotting_info.n_device300_lambda6_resource0_qoe_0_processing = avg_processing_time_to_extract;
+                        elseif vect_resource_ctrl_to_find(nrc) == "1"
+                            if vect_qoe_ctrl_to_find(nqoe) == "0"
+                                plotting_info.n_device300_lambda6_resource1_qoe_0_avg_delay = avg_delay_to_extract;
+                                plotting_info.n_device300_lambda6_resource1_qoe_0_processing = avg_processing_time_to_extract;
+                            elseif vect_qoe_ctrl_to_find(nqoe) == "1"
+                                plotting_info.n_device300_lambda6_resource1_qoe_1_avg_delay = avg_delay_to_extract;
+                                plotting_info.n_device300_lambda6_resource1_qoe_1_processing = avg_processing_time_to_extract;
+                            end
+                        end
+                    elseif vect_lambda_to_find(nl) == "10"                   
+                        if vect_resource_ctrl_to_find(nrc) == "0"
+                            plotting_info.n_device300_lambda10_resource0_qoe_0_avg_delay = avg_delay_to_extract;
+                            plotting_info.n_device300_lambda10_resource0_qoe_0_processing = avg_processing_time_to_extract;
+                        elseif vect_resource_ctrl_to_find(nrc) == "1"
+                            if vect_qoe_ctrl_to_find(nqoe) == "0"
+                                plotting_info.n_device300_lambda10_resource1_qoe_0_avg_delay = avg_delay_to_extract;
+                                plotting_info.n_device300_lambda10_resource1_qoe_0_processing = avg_processing_time_to_extract;
+                            elseif vect_qoe_ctrl_to_find(nqoe) == "1"
+                                plotting_info.n_device300_lambda10_resource1_qoe_1_avg_delay = avg_delay_to_extract;
+                                plotting_info.n_device300_lambda10_resource1_qoe_1_processing = avg_processing_time_to_extract;
+                            end
+                        end
+                  end                    
+                end
+            
              
                 %% PLOT 1 - CODE - mediato su tutti i seed
                 time_limit = zeros(length(seed_scenario), 1);
@@ -414,7 +593,7 @@ for nd = 1:length(vect_n_devices_to_find)
                         values_slotted = [values_slotted value_to_consider];
                     end
                     final_time_vector = [final_time_vector (time - 1)];
-                    if length(values_slotted) > 0
+                    if ~isempty(values_slotted)
                         final_queue_vector = [final_queue_vector mean(values_slotted)];
                     else
                         final_queue_vector = [final_queue_vector final_queue_vector(length(final_queue_vector) - 1)];
@@ -424,7 +603,8 @@ for nd = 1:length(vect_n_devices_to_find)
                 figure(101);
                 hold on;
                 final_queue_vector = movmean(final_queue_vector, 25);
-                plot(final_time_vector, final_queue_vector, 'LineWidth', 2);
+                %plot(final_time_vector, final_queue_vector, 'LineWidth', 2);
+                semilogy(final_time_vector, final_queue_vector, 'LineWidth', 2);
              
                 %% PLOT 2
              
@@ -455,7 +635,7 @@ for nd = 1:length(vect_n_devices_to_find)
                         values_slotted = [values_slotted value_to_consider];
                     end
                     final_time_vector = [final_time_vector (time - 1)];
-                    if length(values_slotted) > 0
+                    if ~isempty(values_slotted)
                         final_queue_vector = [final_queue_vector mean(values_slotted)];
                     else
                         final_queue_vector = [final_queue_vector final_queue_vector(length(final_queue_vector) - 1)];
@@ -473,10 +653,10 @@ for nd = 1:length(vect_n_devices_to_find)
     end
  
 end
-close(f1);
-close(f2);
-close(f3);
-close(f4);
+%close(f1);
+%close(f2);
+%close(f3);
+%close(f4);
 
 figure(101);
 hold on;                
