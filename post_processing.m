@@ -10,12 +10,12 @@ folder_name = 'C:\Users\anton\source\repos\SSIoT\';
 folder_name = 'C:\Users\anton\OneDrive - Politecnico di Bari\SSIoT\Definitive con seed\';
 %variabili della simulazione da plottare
 n_services_to_find = "6";
-vect_n_devices_to_find = ["300"]; % ["80", "100", "150", "300"]
+vect_n_devices_to_find = ["80", "100", "150", "300"]; % ["80", "100", "150", "300"]
 n_master_to_find = "5";
-vect_lambda_to_find = ["10"]; %[4 - 6 - 10]
+vect_lambda_to_find = ["4", "6", "10"]; %["4", "6", "10"]
 vect_resource_ctrl_to_find = ["0","1"];
 tot_sim_to_find = "3000";
-vect_qoe_ctrl_to_find = ["0", "1"];%[0 - 10]
+vect_qoe_ctrl_to_find = ["0", "1"];%["0", "1"]
 vect_seed_to_find = ["1", "2", "3", "4", "5", ...
                      "6", "7", "8", "9", "10", ...
                      "11", "12", "13", "14", "15", ...
@@ -31,6 +31,13 @@ for nd = 1:length(vect_n_devices_to_find)
                 if vect_resource_ctrl_to_find(nrc)=="0" && vect_qoe_ctrl_to_find(nqoe)=="1"
                     continue;
                 end
+                
+                clc;
+                clearvars -except n_services_to_find n_master_to_find tot_sim_to_find ...
+                vect_seed_to_find sim_legend_string folder_name nd nl nrc nqoe...
+                n_services_to_find vect_n_devices_to_find n_master_to_find vect_lambda_to_find ...
+                vect_resource_ctrl_to_find tot_sim_to_find vect_qoe_ctrl_to_find vect_seed_to_find ...
+                plotting_info;
              
                 n_devices_to_find = vect_n_devices_to_find(nd);
                 lambda_to_find = vect_lambda_to_find(nl);
@@ -39,31 +46,33 @@ for nd = 1:length(vect_n_devices_to_find)
              
                 sim_name_for_legend = "n devices " + n_devices_to_find + " lambda " + lambda_to_find + " resource ctrl " + ...
                   resource_ctrl_to_find + " QoE " + qoe_ctrl_to_find;
-
+                disp(sim_name_for_legend);
                 sim_legend_string = [sim_legend_string sim_name_for_legend];
                 %sim_legend_string(length(sim_legend_string)+1) = sim_name_for_legend;
                 %sim_legend_string = sim_legend_string + sim_name_for_legend;
                 %disp(sim_legend_string);
                 data_mining_mode = true;
                 %close all;
+                
                 seed_scenario = struct();
                 
-                number_of_valid_sim = 0;
-             
                 parfor seed_index = 1:length(vect_seed_to_find)
                     seed_to_find = vect_seed_to_find(seed_index);
+                    
+                    seed_scenario(seed_index) = struct();
+                    seed_scenario(seed_index).number_of_valid_sim = 0;
                  
                     if data_mining_mode == true
                         %% Inizializzazione
-                        clc;
-                        
-                        clearvars -except n_services_to_find n_devices_to_find n_master_to_find lambda_to_find...
-                        tot_sim_to_find seed_to_find resource_ctrl_to_find qoe_ctrl_to_find data_mining_mode...
-                        seed_index vect_seed_to_find seed_scenario sim_name_for_legend sim_legend_string ...
-                        folder_name nd nl nrc nqoe...
-                        n_services_to_find vect_n_devices_to_find n_master_to_find vect_lambda_to_find ...
-                        vect_resource_ctrl_to_find tot_sim_to_find vect_qoe_ctrl_to_find vect_seed_to_find ...
-                        plotting_info number_of_valid_sim;
+%                         clc;
+%                         
+%                         clearvars -except n_services_to_find n_devices_to_find n_master_to_find lambda_to_find...
+%                         tot_sim_to_find seed_to_find resource_ctrl_to_find qoe_ctrl_to_find data_mining_mode...
+%                         seed_index vect_seed_to_find seed_scenario sim_name_for_legend sim_legend_string ...
+%                         folder_name nd nl nrc nqoe...
+%                         n_services_to_find vect_n_devices_to_find n_master_to_find vect_lambda_to_find ...
+%                         vect_resource_ctrl_to_find tot_sim_to_find vect_qoe_ctrl_to_find vect_seed_to_find ...
+%                         plotting_info number_of_valid_sim;
                      
                         %cartella master simulazioni                  
 
@@ -120,7 +129,7 @@ for nd = 1:length(vect_n_devices_to_find)
                                         new_Path_to_explore = folder_name + string(files_list(i).name) + '\';
                                         selected_simulation_files_list = dir(new_Path_to_explore);
                                      
-                                        number_of_valid_sim = number_of_valid_sim + 1;  
+                                        seed_scenario(seed_index).number_of_valid_sim = 1;  
                                        
                                         for j = 1:length(selected_simulation_files_list)
                                             %trovo tutti i file testuali presenti nella master
@@ -132,14 +141,14 @@ for nd = 1:length(vect_n_devices_to_find)
                                                 buffer_lettura = fopen(strcat(new_Path_to_explore, sim_file_name));
                                                 read_row = fgetl(buffer_lettura); % leggo la riga dell'intestazione
                                              
-                                                k = 0;
+                                                seed_scenario(seed_index).k = 0;
                                                 while ~ feof(buffer_lettura)
-                                                    k = k + 1;
+                                                    seed_scenario(seed_index).k = seed_scenario(seed_index).k + 1;
                                                     extracted_data = strsplit(fgetl(buffer_lettura), '\t');
-                                                    seed_scenario(seed_index).info_queue(k) = str2num(string(extracted_data(1)));
-                                                    seed_scenario(seed_index).total_empty_list(k) = str2num(string(extracted_data(2)));
-                                                    seed_scenario(seed_index).total_accomplished(k) = str2num(string(extracted_data(3)));
-                                                    seed_scenario(seed_index).time_queue(k) = str2num(string(extracted_data(4)));
+                                                    seed_scenario(seed_index).info_queue(seed_scenario(seed_index).k) = str2double(string(extracted_data(1)));
+                                                    seed_scenario(seed_index).total_empty_list(seed_scenario(seed_index).k) = str2double(string(extracted_data(2)));
+                                                    seed_scenario(seed_index).total_accomplished(seed_scenario(seed_index).k) = str2double(string(extracted_data(3)));
+                                                    seed_scenario(seed_index).time_queue(seed_scenario(seed_index).k) = str2double(string(extracted_data(4)));
                                                 end
                                              
                                             end
@@ -226,17 +235,17 @@ for nd = 1:length(vect_n_devices_to_find)
                                                         %elaboration_time
                                                         %number_of_reschedule
                                                      
-                                                        schedule_info(schedule_index).id_action = str2num(string(extracted_data(1)));
-                                                        schedule_info(schedule_index).time_of_arrival = str2num(string(extracted_data(2)));
-                                                        schedule_info(schedule_index).service_requester = str2num(string(extracted_data(3)));
-                                                        schedule_info(schedule_index).requested_service = str2num(string(extracted_data(4)));
-                                                        schedule_info(schedule_index).handling_master_node = str2num(string(extracted_data(5)));
-                                                        schedule_info(schedule_index).choosen_service_provider = str2num(string(extracted_data(6)));
-                                                        schedule_info(schedule_index).end_timestamp = str2num(string(extracted_data(7)));
-                                                        schedule_info(schedule_index).elaboration_time = str2num(string(extracted_data(8)));
-                                                        schedule_info(schedule_index).number_of_reschedule = str2num(string(extracted_data(9)));
+                                                        seed_scenario(seed_index).schedule_info(schedule_index).id_action = str2double(string(extracted_data(1)));
+                                                        seed_scenario(seed_index).schedule_info(schedule_index).time_of_arrival = str2double(string(extracted_data(2)));
+                                                        seed_scenario(seed_index).schedule_info(schedule_index).service_requester = str2double(string(extracted_data(3)));
+                                                        seed_scenario(seed_index).schedule_info(schedule_index).requested_service = str2double(string(extracted_data(4)));
+                                                        seed_scenario(seed_index).schedule_info(schedule_index).handling_master_node = str2double(string(extracted_data(5)));
+                                                        seed_scenario(seed_index).schedule_info(schedule_index).choosen_service_provider = str2double(string(extracted_data(6)));
+                                                        seed_scenario(seed_index).schedule_info(schedule_index).end_timestamp = str2double(string(extracted_data(7)));
+                                                        seed_scenario(seed_index).schedule_info(schedule_index).elaboration_time = str2double(string(extracted_data(8)));
+                                                        seed_scenario(seed_index).schedule_info(schedule_index).number_of_reschedule = str2double(string(extracted_data(9)));
                                                      
-                                                        seed_scenario(seed_index).avg_delay(schedule_index) = schedule_info(schedule_index).end_timestamp - schedule_info(schedule_index).time_of_arrival;
+                                                        seed_scenario(seed_index).avg_delay(schedule_index) = seed_scenario(seed_index).schedule_info(schedule_index).end_timestamp - seed_scenario(seed_index).schedule_info(schedule_index).time_of_arrival;
                                                      
                                                         %else if
                                                     end
@@ -258,9 +267,9 @@ for nd = 1:length(vect_n_devices_to_find)
                                                     extracted_data = strsplit(fgetl(buffer_lettura), '\t');
                                                     resource_monitor_index = resource_monitor_index + 1;
                                                  
-                                                    user_id = str2num(string(extracted_data(1)));
-                                                    seed_scenario(seed_index).user_info(user_id).malicious_node = str2num(string(extracted_data(9)));
-                                                    seed_scenario(seed_index).user_info(user_id).total_power = str2num(string(extracted_data(7)));
+                                                    user_id = str2double(string(extracted_data(1)));
+                                                    seed_scenario(seed_index).user_info(user_id).malicious_node = str2double(string(extracted_data(9)));
+                                                    seed_scenario(seed_index).user_info(user_id).total_power = str2double(string(extracted_data(7)));
                                                 end
                                              
                                             end
@@ -279,10 +288,10 @@ for nd = 1:length(vect_n_devices_to_find)
                                                     extracted_data = strsplit(fgetl(buffer_lettura), '\t');
                                                     resource_monitor_index = resource_monitor_index + 1;
                                                  
-                                                    resource_monitor(resource_monitor_index).totalAvailableResources = str2num(string(extracted_data(1)));
-                                                    resource_monitor(resource_monitor_index).totalNetworkResources = str2num(string(extracted_data(2)));
-                                                    resource_monitor(resource_monitor_index).timestamp = str2num(string(extracted_data(3)));
-                                                    resource_monitor(resource_monitor_index).single_variation = str2num(string(extracted_data(4)));
+                                                    seed_scenario(seed_index).resource_monitor(resource_monitor_index).totalAvailableResources = str2double(string(extracted_data(1)));
+                                                    seed_scenario(seed_index).resource_monitor(resource_monitor_index).totalNetworkResources = str2double(string(extracted_data(2)));
+                                                    seed_scenario(seed_index).resource_monitor(resource_monitor_index).timestamp = str2double(string(extracted_data(3)));
+                                                    seed_scenario(seed_index).resource_monitor(resource_monitor_index).single_variation = str2double(string(extracted_data(4)));
                                                  
                                                     % da cambiare se vuoi
                                                     % il total e non
@@ -292,8 +301,8 @@ for nd = 1:length(vect_n_devices_to_find)
                                                     %seed_scenario(seed_index).avg_available_resources(resource_monitor_index) = ...
                                                     %    (resource_monitor(resource_monitor_index).totalAvailableResources / resource_monitor(resource_monitor_index).active_node_total_resources) * 100;
                                                     
-                                                    seed_scenario(seed_index).busy_resources(resource_monitor_index) = resource_monitor(resource_monitor_index).totalNetworkResources - resource_monitor(resource_monitor_index).totalAvailableResources;
-                                                    seed_scenario(seed_index).time_avg_available_resources(resource_monitor_index) = (resource_monitor(resource_monitor_index).timestamp);
+                                                    seed_scenario(seed_index).busy_resources(resource_monitor_index) = seed_scenario(seed_index).resource_monitor(resource_monitor_index).totalNetworkResources - seed_scenario(seed_index).resource_monitor(resource_monitor_index).totalAvailableResources;
+                                                    seed_scenario(seed_index).time_avg_available_resources(resource_monitor_index) = (seed_scenario(seed_index).resource_monitor(resource_monitor_index).timestamp);
                                                 end
                                              
                                             end
@@ -315,7 +324,7 @@ for nd = 1:length(vect_n_devices_to_find)
 %                     end                    
 %                     seed_scenario(seed_index).unique_choosen_provider = unique(seed_scenario(seed_index).unique_choosen_provider);
 
-                    if number_of_valid_sim == 0
+                    if sum([seed_scenario(seed_index).number_of_valid_sim]) == 0
                         continue
                     end
 
@@ -338,7 +347,7 @@ for nd = 1:length(vect_n_devices_to_find)
                     %plot(seed_scenario(seed_index).time_queue, seed_scenario(seed_index).info_queue);                    
                     %ylabel('Number of queued requests [#]');
                     %xlabel('Simulation time [s]');
-                    %xline(str2num(tot_sim_to_find));
+                    %xline(str2double(tot_sim_to_find));
                     %hold on;                    
                     %grid on;
                     %legend('Queued', 'Accomplished');
@@ -378,20 +387,22 @@ for nd = 1:length(vect_n_devices_to_find)
                             end
                         end
                     end
-                    %xline(str2num(tot_sim_to_find));
+                    %xline(str2double(tot_sim_to_find));
                     %legend(legend_string);
-                 
                     %% PLOT3
-                    %f3 = figure(3);
-                    tot_avg_delay = [];
-                    for i = 1:length(seed_scenario)
-                        tot_avg_delay = [tot_avg_delay seed_scenario(i).avg_delay];
-                    end
+                    %f3 = figure(3);                   
+
+    %                 tot_avg_delay = [];
+    %                 for i = 1:length(seed_scenario)
+    %                     tot_avg_delay = [tot_avg_delay seed_scenario(i).avg_delay];
+    %                 end                  
+
                     %ecdf(tot_avg_delay);
                     %hold on;                    
                     %title('ECDF Delay');
-                    seed_scenario(seed_index).avg_delay = mean(seed_scenario(seed_index).avg_delay);
-                 
+
+                    %seed_scenario(seed_index).avg_delay = mean(seed_scenario(seed_index).avg_delay);
+                                 
                     %% PLOT4 Avg available resource
                     %f4 = figure(4);
                     %hold on;
@@ -401,20 +412,21 @@ for nd = 1:length(vect_n_devices_to_find)
                     %plot(seed_scenario(seed_index).time_avg_available_resources, seed_scenario(seed_index).avg_available_resources_movmean);
                     %ylabel('Available resources [%]');
                     %xlabel('Simulation time [s]');
-                    %xline(str2num(tot_sim_to_find));
+                    %xline(str2double(tot_sim_to_find));
                     %ylim([50 100]);
                  
                     
-                    seed_scenario(seed_index).master_processing_time = abs(mean([schedule_info.elaboration_time]));
+                    seed_scenario(seed_index).master_processing_time = abs(mean([seed_scenario(seed_index).schedule_info.elaboration_time]));
                     %% end procedure
                     disp("End. seed:" + seed_to_find);
                     fclose('all');
                     
                 end
                 
-                if number_of_valid_sim == 0
-                   continue
+                if sum([seed_scenario.number_of_valid_sim]) == 0
+                    continue
                 end
+                
                 %% Sezione per mediare sul seed-> tempi di processing e avg delay
                 avg_delay_to_extract = mean([seed_scenario.avg_delay]);
                 avg_processing_time_to_extract = mean([seed_scenario.master_processing_time])*1000;
@@ -624,7 +636,7 @@ for nd = 1:length(vect_n_devices_to_find)
                 hold on;
                 tot_avg_delay = [];
                 for i = 1:length(seed_scenario)
-                    tot_avg_delay = [tot_avg_delay seed_scenario(i).avg_delay];
+                    tot_avg_delay = [tot_avg_delay abs(seed_scenario(i).avg_delay)];
                 end
                 ecdf(tot_avg_delay);
 
@@ -659,6 +671,7 @@ for nd = 1:length(vect_n_devices_to_find)
                 hold on;                
                 plot(final_time_vector, final_queue_vector, 'LineWidth', 2);                
              
+                pause(0);
             end
         end
     end
@@ -674,25 +687,28 @@ hold on;
 %plot(info_queue);
 ylabel('Number of queued requests [#]');
 xlabel('Simulation time [s]');
-%xline(str2num(tot_sim_to_find));
-xlim([0 str2num(tot_sim_to_find)]);
+%xline(str2double(tot_sim_to_find));
+xlim([0 str2double(tot_sim_to_find)]);
 %plot(time_queue, total_accomplished);
 grid on;
 %legend('Queued', 'Accomplished');
 legend(sim_legend_string);
+xlim([0 2900]);
 
 figure(103);
 hold on;
 %ecdf(seed_scenario(seed_index).avg_delay);
 title('ECDF Delay');
-%xlim([0 str2num(tot_sim_to_find)]);
+%xlim([0 str2double(tot_sim_to_find)]);
 legend(sim_legend_string);
+xlim([0 200]);
 
 figure(104);
 hold on;
 ylabel('Available resources [%]');
 xlabel('Simulation time [s]');
-%xline(str2num(tot_sim_to_find));
+%xline(str2double(tot_sim_to_find));
 ylim([70 100]);
-xlim([0 str2num(tot_sim_to_find)]);
+xlim([0 str2double(tot_sim_to_find)]);
 legend(sim_legend_string);
+xlim([0 2900]);
