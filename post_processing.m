@@ -7,11 +7,12 @@
 % -> [UserInfo.txt, AvgRepInfo.txt]
 close all; clc; clear;                 
 folder_name = 'C:\Users\anton\source\repos\SSIoT\';
+folder_name = 'C:\Users\anton\OneDrive - Politecnico di Bari\SSIoT\Definitive con seed\';
 %variabili della simulazione da plottare
 n_services_to_find = "6";
-vect_n_devices_to_find = ["100"]; % [80, 100, 150, 300]
+vect_n_devices_to_find = ["300"]; % ["80", "100", "150", "300"]
 n_master_to_find = "5";
-vect_lambda_to_find = ["4"]; %[4 - 6 - 10]
+vect_lambda_to_find = ["10"]; %[4 - 6 - 10]
 vect_resource_ctrl_to_find = ["0","1"];
 tot_sim_to_find = "3000";
 vect_qoe_ctrl_to_find = ["0", "1"];%[0 - 10]
@@ -39,15 +40,17 @@ for nd = 1:length(vect_n_devices_to_find)
                 sim_name_for_legend = "n devices " + n_devices_to_find + " lambda " + lambda_to_find + " resource ctrl " + ...
                   resource_ctrl_to_find + " QoE " + qoe_ctrl_to_find;
 
-              sim_legend_string = [sim_legend_string sim_name_for_legend];
-              %sim_legend_string(length(sim_legend_string)+1) = sim_name_for_legend;
+                sim_legend_string = [sim_legend_string sim_name_for_legend];
+                %sim_legend_string(length(sim_legend_string)+1) = sim_name_for_legend;
                 %sim_legend_string = sim_legend_string + sim_name_for_legend;
-             %disp(sim_legend_string);
+                %disp(sim_legend_string);
                 data_mining_mode = true;
                 %close all;
                 seed_scenario = struct();
+                
+                number_of_valid_sim = 0;
              
-                for seed_index = 1:length(vect_seed_to_find)
+                parfor seed_index = 1:length(vect_seed_to_find)
                     seed_to_find = vect_seed_to_find(seed_index);
                  
                     if data_mining_mode == true
@@ -60,7 +63,7 @@ for nd = 1:length(vect_n_devices_to_find)
                         folder_name nd nl nrc nqoe...
                         n_services_to_find vect_n_devices_to_find n_master_to_find vect_lambda_to_find ...
                         vect_resource_ctrl_to_find tot_sim_to_find vect_qoe_ctrl_to_find vect_seed_to_find ...
-                        plotting_info;
+                        plotting_info number_of_valid_sim;
                      
                         %cartella master simulazioni                  
 
@@ -117,6 +120,8 @@ for nd = 1:length(vect_n_devices_to_find)
                                         new_Path_to_explore = folder_name + string(files_list(i).name) + '\';
                                         selected_simulation_files_list = dir(new_Path_to_explore);
                                      
+                                        number_of_valid_sim = number_of_valid_sim + 1;  
+                                       
                                         for j = 1:length(selected_simulation_files_list)
                                             %trovo tutti i file testuali presenti nella master
                                             %% Code
@@ -310,6 +315,10 @@ for nd = 1:length(vect_n_devices_to_find)
 %                     end                    
 %                     seed_scenario(seed_index).unique_choosen_provider = unique(seed_scenario(seed_index).unique_choosen_provider);
 
+                    if number_of_valid_sim == 0
+                        continue
+                    end
+
                     seed_scenario(seed_index).active_node_total_resources = 0;
                     %for ucp = 1:length(seed_scenario(seed_index).unique_choosen_provider)                        
                     for ucp = 1:length(seed_scenario(seed_index).user_info)                        
@@ -403,7 +412,9 @@ for nd = 1:length(vect_n_devices_to_find)
                     
                 end
                 
-                
+                if number_of_valid_sim == 0
+                   continue
+                end
                 %% Sezione per mediare sul seed-> tempi di processing e avg delay
                 avg_delay_to_extract = mean([seed_scenario.avg_delay]);
                 avg_processing_time_to_extract = mean([seed_scenario.master_processing_time])*1000;
