@@ -5,15 +5,18 @@
 % -> SchedInfo.txt
 % mancanti e potrebbero non servire
 % -> [UserInfo.txt, AvgRepInfo.txt]
-close all; clc; clear;                 
+close all; 
+clc; 
+clear;       
+
 folder_name = 'C:\Users\anton\source\repos\SSIoT\';
-folder_name = 'C:\Users\anton\OneDrive - Politecnico di Bari\SSIoT\Definitive con seed\';
+folder_name = 'C:\Users\anton\OneDrive - Politecnico di Bari\SSIoT\Definitive con seed\Validate\';
 %variabili della simulazione da plottare
 n_services_to_find = "6";
-vect_n_devices_to_find = ["80", "100", "150", "300"]; % ["80", "100", "150", "300"]
+vect_n_devices_to_find = ["300"]; % ["80", "100", "150", "300"]
 n_master_to_find = "5";
-vect_lambda_to_find = ["4", "6", "10"]; %["4", "6", "10"]
-vect_resource_ctrl_to_find = ["0","1"];
+vect_lambda_to_find = ["10"]; %["4", "6", "10"]
+vect_resource_ctrl_to_find = ["0","1"]; % ["0","1"]
 tot_sim_to_find = "3000";
 vect_qoe_ctrl_to_find = ["0", "1"];%["0", "1"]
 vect_seed_to_find = ["1", "2", "3", "4", "5", ...
@@ -21,6 +24,7 @@ vect_seed_to_find = ["1", "2", "3", "4", "5", ...
                      "11", "12", "13", "14", "15", ...
                      "16", "17", "18", "19", "20"]; %[1-20]
 
+total_sim_numbder_acquired = 0;
 sim_legend_string = [];
 plotting_info = struct();                
 for nd = 1:length(vect_n_devices_to_find)
@@ -32,12 +36,13 @@ for nd = 1:length(vect_n_devices_to_find)
                     continue;
                 end
                 
+                total_sim_numbder_acquired = total_sim_numbder_acquired +1;
                 clc;
                 clearvars -except n_services_to_find n_master_to_find tot_sim_to_find ...
                 vect_seed_to_find sim_legend_string folder_name nd nl nrc nqoe...
                 n_services_to_find vect_n_devices_to_find n_master_to_find vect_lambda_to_find ...
                 vect_resource_ctrl_to_find tot_sim_to_find vect_qoe_ctrl_to_find vect_seed_to_find ...
-                plotting_info;
+                plotting_info total_sim_numbder_acquired avg_info;
              
                 n_devices_to_find = vect_n_devices_to_find(nd);
                 lambda_to_find = vect_lambda_to_find(nl);
@@ -328,6 +333,12 @@ for nd = 1:length(vect_n_devices_to_find)
                         continue
                     end
 
+                    
+                    if ~isfield(seed_scenario(seed_index), 'k')
+                        seed_scenario(seed_index).number_of_valid_sim = 0;
+                        continue
+                    end
+                    
                     seed_scenario(seed_index).active_node_total_resources = 0;
                     %for ucp = 1:length(seed_scenario(seed_index).unique_choosen_provider)                        
                     for ucp = 1:length(seed_scenario(seed_index).user_info)                        
@@ -426,10 +437,14 @@ for nd = 1:length(vect_n_devices_to_find)
                 if sum([seed_scenario.number_of_valid_sim]) == 0
                     continue
                 end
-                
+                                
                 %% Sezione per mediare sul seed-> tempi di processing e avg delay
+                
                 avg_delay_to_extract = mean([seed_scenario.avg_delay]);
                 avg_processing_time_to_extract = mean([seed_scenario.master_processing_time])*1000;
+                
+                avg_info(total_sim_numbder_acquired).sim_name = sim_name_for_legend;
+                avg_info(total_sim_numbder_acquired).delay_array = [seed_scenario.avg_delay];
                 
                 if vect_n_devices_to_find(nd) == "80"                    
                     if vect_lambda_to_find(nl) == "4"
@@ -598,7 +613,12 @@ for nd = 1:length(vect_n_devices_to_find)
                   end                    
                 end
             
-             
+                idx = [seed_scenario.k] > 0;
+                seed_scenario = seed_scenario(idx);
+                
+                idx = [seed_scenario.k] > 0;
+                seed_scenario = seed_scenario(idx);
+                
                 %% PLOT 1 - CODE - mediato su tutti i seed
                 time_limit = zeros(length(seed_scenario), 1);
                 for i = 1:length(seed_scenario)
@@ -697,6 +717,7 @@ xlim([0 2900]);
 
 figure(103);
 hold on;
+grid on;
 %ecdf(seed_scenario(seed_index).avg_delay);
 title('ECDF Delay');
 %xlim([0 str2double(tot_sim_to_find)]);
@@ -705,6 +726,7 @@ xlim([0 200]);
 
 figure(104);
 hold on;
+grid on;
 ylabel('Available resources [%]');
 xlabel('Simulation time [s]');
 %xline(str2double(tot_sim_to_find));
