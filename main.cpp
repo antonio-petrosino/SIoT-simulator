@@ -41,15 +41,15 @@ int main() {
 
 	Tic();
 
-	vector<bool>	parameter_to_test_resource_ctrl = { false }; // OK
+	vector<bool>	parameter_to_test_resource_ctrl = { true }; // OK
 	vector<bool>	parameter_to_test_qoe_ctrl = { false }; // OK
 
 	vector<int>		parameter_to_test_n_services = { 6}; // OK
 	vector<int>		parameter_to_test_n_devices = { 200 }; // OK
 	vector<int>		parameter_to_test_n_master = { 5}; // OK
 
-	vector<int>		parameter_to_test_lambda = { 4, 6, 10 }; // OK
-	vector<int>		parameter_to_test_seed = {13,14,15,16,17,18,19,20};
+	vector<int>		parameter_to_test_lambda = { 6 }; // OK
+	vector<int>		parameter_to_test_seed = {1};
 
 	vector<int>		parameter_to_test_tot_sim = { 3000 }; // OK
 

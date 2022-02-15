@@ -28,19 +28,22 @@ Service *ServicesCreation(){
 	vector<double> possible_power_cost = {0.1,0.1,0.1,0.2,0.2,0.2,0.3,0.3};
 	//vector<double> possible_power_cost = { 0.3,0.2,0.3,0.1,0.2,0.2,0.1,0.1 };
 	
-	vector<int> possible_cpu_req      = {6, 6, 6, 10, 10, 10, 14, 14};
+	vector<int> possible_cpu_req      = {6*1000, 6 * 1000, 6 * 1000, 10 * 1000, 10 * 1000, 10 * 1000, 14 * 1000, 14 * 1000 };
     
     Service* arrayOfServices = new Service[n_services];    
     
-    int length_possible = sizeof(possible_power_cost)/ sizeof(double);
+    int length_possible = 8;
 
 	int choosenIndex, randomCpuReq;
 	double randomNumber;
-
+	int choosenRND;
 	//std::mt19937 rng(seed);
 		
 	for(int i=0; i<n_services; i++){	
-		choosenIndex = rand() % length_possible;
+
+		choosenRND = rand();
+
+		choosenIndex = choosenRND % length_possible;
 		
 		randomNumber = possible_power_cost[choosenIndex];
 		randomCpuReq = possible_cpu_req[choosenIndex];
@@ -73,7 +76,7 @@ Device* DeviceCreation(){
 
 	const int possible_class[] = {1,2,2,3};	
 
-	const int possible_clock_speed[]={400, 1000, 1000, 2000};
+	const int possible_clock_speed[]={400*1000, 1000 * 1000, 1000 * 1000, 2000 * 1000 }; // megacycles
 
 	const int possible_malicious[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 };
 	int length_pos_malicious = sizeof(possible_malicious) / sizeof(int);
@@ -796,7 +799,7 @@ double EstimateProcessingTime(int id_sched_event) {
 		int bitperservice = selected_service.GetCpuReq();
 
 
-		double time = (1000 * double(bitperservice)) / (cyclespersec);
+		double time = (1000 * double(bitperservice)) / ((cyclespersec));
 
 		return time;
 }
