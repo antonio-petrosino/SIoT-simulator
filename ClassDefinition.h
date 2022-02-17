@@ -616,7 +616,7 @@ public:
 		handling_master_node = -1;
 		choosen_service_provider = -1;
 		number_of_reschedule = 0;
-		master_elaboration_time = -0.01;
+		master_elaboration_time = 0;
 		end_timestamp = -0.01;
 	};
 

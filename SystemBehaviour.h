@@ -5,7 +5,6 @@
 #include "ClassDefinition.h"
 #include <fstream>
 
-
 #define INIT_FEED = 0.5;
 
 /* DEFINE GLOBAL VARIABLE */
@@ -71,21 +70,21 @@ Device* DeviceCreation(){
 	Device* arrayOfDevice = new Device[n_devices];
 	
 
-	const double possible_total_power[] = {0.2,0.4,0.6,0.8};
+	double possible_total_power[] = {0.2, 0.4, 0.6, 0.8};
 	int length_pos_total_p = sizeof(possible_total_power) / sizeof(double);
 
-	const int possible_class[] = {1,2,2,3};	
+	int possible_class[] = {1, 2, 2, 3};	
 
-	const int possible_clock_speed[]={400*1000, 1000 * 1000, 1000 * 1000, 2000 * 1000 }; // megacycles
+	int possible_clock_speed[]={400*1000, 1000 * 1000, 1000 * 1000, 2000 * 1000 }; // megacycles
 
-	const int possible_malicious[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 };
+	int possible_malicious[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 };
 	int length_pos_malicious = sizeof(possible_malicious) / sizeof(int);
 
 
-	const int possible_owner[] = { 1,2,3,4,5,6,7,8,9,10 };
+	int possible_owner[] = { 1,2,3,4,5,6,7,8,9,10 };
 	int length_pos_owner = sizeof(possible_owner) / sizeof(int);
 	
-	const int length_pos_loc = n_master;	
+	int length_pos_loc = n_master;	
 	
 	vector<int> possible_location(length_pos_loc);
 	
@@ -131,7 +130,7 @@ Device* DeviceCreation(){
 		arrayOfDevice[i].GenerateDevice(i+1,total_power, id_owner, id_man, loc, d_class, clock_s);
 	
 		// SetServicesList
-		const int possible_num_service_class[] = {1,1,1,1,1,1,1,1,1,2};	// 90% - 1 -- 10% - 2
+		int possible_num_service_class[] = {1,1,1,1,1,1,1,1,1,2};	// 90% - 1 -- 10% - 2
 		int length_possible_num_service_class = sizeof(possible_num_service_class)/ sizeof(int);	
 		choosenIndex = rand() % length_possible_num_service_class;
 					
@@ -627,8 +626,8 @@ void ServiceProviderFiltering(int id_scheduler_record, double current_timestamp)
 
 void AssignFeedback(int id_master, int id_service_provider, int id_service_requester, int id_requested_service, bool mal_behaviour, double timestamp) {
 
-	const int possible_mal_feedback[] = { 0,0,0,0,0,1,1,1,1,1 }; // mal 50%
-	const int possible_feedback[] = { 1,1,1,1,1,1,1,1,1,0 }; // ben 90%
+	int possible_mal_feedback[] = { 0,0,0,0,0,1,1,1,1,1 }; // mal 50%
+	int possible_feedback[] = { 1,1,1,1,1,1,1,1,1,0 }; // ben 90%
 	int len_possible_feedback = sizeof(possible_feedback) / sizeof(int);
 	int choosenFeedback = rand() % len_possible_feedback;
 	int selected_master_id;
@@ -1217,4 +1216,26 @@ void PrintResourceMonitor() {
 	else {
 		cout << "Unable to open file";
 	}
+};
+
+void PrintProcessingTime(double overall_processing_time, vector<double> processing_time_vector) {
+
+	ofstream myfile(".\\" + folder_name + "ProcessingTime.txt");
+
+	double mean_processing_time = overall_processing_time / processing_time_vector.size();
+	cout << "\nText files exported. Folder:" << folder_name << endl;
+
+	if (myfile.is_open()) {
+		myfile << "Average delay:\t" << mean_processing_time << "\tTotal spent time for the processing: \t" << overall_processing_time;
+		myfile << "\n------------------single processing time ---------------------\n";
+
+		for (int i = 0; i < processing_time_vector.size(); i++) {
+			myfile << processing_time_vector[i] << "\t";
+		}
+		myfile << "\n END";
+	}
+	else {
+		cout << "Unable to open file";
+	}
+
 };

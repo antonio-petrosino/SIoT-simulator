@@ -31,7 +31,7 @@ ResourceMonitor network_monitor;
 
 int main() {	
 	unsigned long iteration_tstart;
-	int max_resched = 99;
+	int max_resched = 999;
 	cutting_value = 0.265; 	
 	//cutting_value = 0.27;
 	cout << "SSIoT Simulator"<<endl;	
@@ -42,16 +42,19 @@ int main() {
 	Tic();
 
 	vector<bool>	parameter_to_test_resource_ctrl = { true }; // OK
-	vector<bool>	parameter_to_test_qoe_ctrl = { false }; // OK
+	vector<bool>	parameter_to_test_qoe_ctrl = { false, true }; // OK
 
-	vector<int>		parameter_to_test_n_services = { 6}; // OK
+	vector<int>		parameter_to_test_n_services = { 6 }; // OK
 	vector<int>		parameter_to_test_n_devices = { 200 }; // OK
 	vector<int>		parameter_to_test_n_master = { 5}; // OK
 
-	vector<int>		parameter_to_test_lambda = { 6 }; // OK
-	vector<int>		parameter_to_test_seed = {1};
+	vector<int>		parameter_to_test_lambda = { 10 }; // OK
+	vector<int>		parameter_to_test_seed = { 2 };
 
 	vector<int>		parameter_to_test_tot_sim = { 3000 }; // OK
+
+	vector<double>  processing_time_vector = {};
+	double overall_processing_time = 0;
 
 	int tot_number_of_simulations = GetNumberOfSim(parameter_to_test_tot_sim, parameter_to_test_resource_ctrl, parameter_to_test_qoe_ctrl, parameter_to_test_n_services, parameter_to_test_n_devices, parameter_to_test_n_master, parameter_to_test_lambda, parameter_to_test_seed);
 	int iteration_number = 0;
@@ -83,7 +86,9 @@ int main() {
 									tot_sim = parameter_to_test_tot_sim[nts];	 // secondi
 									seed = parameter_to_test_seed[nseed];
 
-
+									processing_time_vector = {};
+									overall_processing_time = 0;
+									
 									srand(seed);
 									// seed the RNG	
 									// std::mt19937 rng(seed); // mt19937: Pseudo-random number generation
@@ -144,6 +149,10 @@ int main() {
 											Toc("end Orchestrator_MakeDecisions");
 											unsigned long end_master_processing = clock();
 											double total_master_processing = double(end_master_processing - start_master_processing) / 1000;
+
+											processing_time_vector.push_back(total_master_processing);
+											overall_processing_time = overall_processing_time + total_master_processing;										
+												
 
 											scheduler_records[next_event.GetSchedulerID()].SetMasterTime(scheduler_records[next_event.GetSchedulerID()].GetMasterTime()+total_master_processing);
 
@@ -266,8 +275,7 @@ int main() {
 									PrintEstimateDeltaStateEachDevices();
 									PrintDetectedMalicious();
 									PrintResourceMonitor();
-
-									cout << "\nText files exported. Folder:" << folder_name << endl;									
+									PrintProcessingTime(overall_processing_time, processing_time_vector);
 									vDEBUG = true;
 									Toc("text exported");
 									vDEBUG = tempDebug;
