@@ -11,9 +11,6 @@ using namespace std;
 #include<direct.h>
 
 bool vDEBUG = false;
-double alpha = 0.5;
-double beta = 0.3;
-double gamma = 0.2;
 bool resource_ctrl;
 bool qoe_ctrl;
 unsigned long tstart, tend;
@@ -24,7 +21,7 @@ vector<Scheduler>  scheduler_records;
 vector<Queue> info_queue;
 vector<NodesUnderThreshold> detected_potential_malicious_devices;
 int n_services, n_devices, n_master, lambda, tot_sim, seed;
-double cutting_value;
+
 string folder_name;
 ResourceMonitor network_monitor;
 
@@ -32,7 +29,7 @@ ResourceMonitor network_monitor;
 int main() {	
 	unsigned long iteration_tstart;
 	int max_resched = 999;
-	cutting_value = 0.265; 	
+	//cutting_value = 0.265; 	
 	//cutting_value = 0.27;
 	cout << "SSIoT Simulator"<<endl;	
 	
@@ -44,7 +41,7 @@ int main() {
 	vector<bool>	parameter_to_test_qoe_ctrl = {true, false }; // OK
 
 	vector<int>		parameter_to_test_n_services = { 10 }; // OK
-	vector<int>		parameter_to_test_n_devices = { 100 }; // OK
+	vector<int>		parameter_to_test_n_devices = { 3000 }; // OK
 	vector<int>		parameter_to_test_n_master = { 5 }; // OK
 
 	vector<int>		parameter_to_test_lambda = { 6 }; // OK

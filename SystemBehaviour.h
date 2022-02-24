@@ -8,7 +8,7 @@
 
 
 /* DEFINE GLOBAL VARIABLE */
-extern double alpha, beta, gamma;
+//extern double alpha, beta, gamma;
 extern Service* list_of_services;
 extern Master* list_of_master;
 extern Device* list_of_devices;
@@ -17,7 +17,7 @@ extern int n_services, n_devices, n_master, lambda, tot_sim, seed;
 extern vector<Queue> info_queue;
 extern unsigned long tstart;
 extern unsigned long tend;
-extern double cutting_value;
+//extern double cutting_value;
 extern string folder_name;
 extern vector<NodesUnderThreshold> detected_potential_malicious_devices;
 extern ResourceMonitor network_monitor;
@@ -398,7 +398,7 @@ void ServiceProviderFiltering(int id_scheduler_record, double current_timestamp)
 					vector<int> selected_services = selected_provider.GetServiceIDList();
 
 					for (unsigned int k = 0; k < selected_services.size(); k++) {
-						if (selected_services[k] == id_requested_service) {
+ 						if (selected_services[k] == id_requested_service) {
 
 							// TODO1: se è vuota??
 
