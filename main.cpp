@@ -8,12 +8,15 @@ using namespace std;
 #include <string>  
 #include <math.h>
 #include "SystemBehaviour.h"
-#include<direct.h>
+#include <direct.h>
 
 bool vDEBUG = false;
 bool resource_ctrl;
 bool qoe_ctrl;
 unsigned long tstart, tend;
+
+//TODO: https://riptutorial.com/cplusplus/example/7270/using-a-sorted-vector-for-fast-element-lookup
+
 Service* list_of_services;
 Master* list_of_master;
 Device* list_of_devices;
