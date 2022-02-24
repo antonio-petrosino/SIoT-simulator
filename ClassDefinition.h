@@ -3,6 +3,10 @@ extern bool qoe_ctrl;
 extern bool resource_ctrl;
 #include <algorithm>
 
+//#define INIT_FEED = 0.5;
+const int INIT_NUM_FEEDBACK = 30;
+const int INIT_STARTING_POINT = 27;
+double refresh_rate = 1000; // ms
 
 // Struct SECTION
 struct Friend_Record {
@@ -444,8 +448,8 @@ class Master
 				new_rep_to_add.id_requested_service = id_requested_service;
 				new_rep_to_add.id_service_requester = id_service_requester;
 				new_rep_to_add.id_service_provider = id_service_provider;
-				new_rep_to_add.feedback = 27 + new_feed;
-				new_rep_to_add.num_feedback = 30 + 1;
+				new_rep_to_add.feedback = INIT_STARTING_POINT + new_feed;
+				new_rep_to_add.num_feedback = INIT_NUM_FEEDBACK + 1;
 				new_rep_to_add.reputation_value = double(new_rep_to_add.feedback) / double(new_rep_to_add.num_feedback);
 				this->list_of_reputation.push_back(new_rep_to_add);
 			}
@@ -476,8 +480,8 @@ class Master
 				rep_output.id_service_provider = id_service_provider;
 				rep_output.id_service_requester = id_service_requester;
 				rep_output.id_requested_service = id_requested_service; 
-				rep_output.feedback = 27;
-				rep_output.num_feedback = 30;
+				rep_output.feedback = INIT_STARTING_POINT;
+				rep_output.num_feedback = INIT_NUM_FEEDBACK;
 				rep_output.reputation_value = double(rep_output.feedback)/double(rep_output.num_feedback);
 				this->list_of_reputation.push_back(rep_output);				
 			}
@@ -494,7 +498,7 @@ class Master
 				for (unsigned int i = 0; i < this->list_of_reputation.size(); i++) {
 					if (this->list_of_reputation[i].id_service_provider == id_service_provider) {
 						if (this->list_of_reputation[i].id_requested_service == id_requested_service) {
-							if (this->list_of_reputation[i].num_feedback > 30) {
+							if (this->list_of_reputation[i].num_feedback > INIT_NUM_FEEDBACK) {
 								totRep = totRep + 1;
 								avgRep = avgRep + this->list_of_reputation[i].reputation_value;
 							}						

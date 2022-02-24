@@ -6,7 +6,6 @@
 #include <fstream>
 
 
-#define INIT_FEED = 0.5;
 
 /* DEFINE GLOBAL VARIABLE */
 extern double alpha, beta, gamma;
@@ -22,6 +21,23 @@ extern double cutting_value;
 extern string folder_name;
 extern vector<NodesUnderThreshold> detected_potential_malicious_devices;
 extern ResourceMonitor network_monitor;
+
+void Tic() {
+	//tstart = time(nullptr);
+	if (vDEBUG) {
+		tstart = clock();
+	}
+}
+
+void Toc(string event) {
+	if (vDEBUG) {
+		tend = clock();
+		unsigned long diff = difftime(tend, tstart);
+		cout << "Until " << event << ": " << diff << " millisecond(s) or " << diff / 1000 << " second(s)." << endl;
+	}
+
+}
+
 
 Service *ServicesCreation(){
 
@@ -367,6 +383,7 @@ void ServiceProviderFiltering(int id_scheduler_record, double current_timestamp)
 		RelationshipInformationNumber rel_info = selected_master.GetRelationshipInformationNumber(selected_service_requester.GetID(), id_requested_service, list_of_devices, n_devices);
 		
 		// no amici? ->
+		Toc("start rel_info.friends");
 		if (rel_info.friends != 0) {
 			for (unsigned int j = 0; j < master_registered_devices_ids.size(); j++) {
 				for (int k = 0; k < n_devices; k++) {
@@ -383,9 +400,7 @@ void ServiceProviderFiltering(int id_scheduler_record, double current_timestamp)
 					for (unsigned int k = 0; k < selected_services.size(); k++) {
 						if (selected_services[k] == id_requested_service) {
 
-							// TODO1: manca calcolo punteggio amici di amici	
-							// 
-							// TODO2: se è vuota??
+							// TODO1: se è vuota??
 
 							for (unsigned int i = 0; i < friend_of_requester.size(); i++) {
 								if (friend_of_requester[i].friend_device_id == selected_provider.GetID()) {
@@ -406,7 +421,7 @@ void ServiceProviderFiltering(int id_scheduler_record, double current_timestamp)
 									for (unsigned int k = 0; k < rel_info.list_of_friend_indexes.size(); k++) {
 										Reputation friend_rep_inspection{};
 										friend_rep_inspection = selected_master.GetReputation(rel_info.list_of_friend_indexes[k], selected_provider.GetID(), id_requested_service);
-										if (friend_rep_inspection.feedback > 100) {
+										if (friend_rep_inspection.feedback > INIT_NUM_FEEDBACK) {
 											sum_of_friend_rep = sum_of_friend_rep + friend_rep_inspection.reputation_value;
 											number_of_friend_updated++;
 										}
@@ -419,7 +434,7 @@ void ServiceProviderFiltering(int id_scheduler_record, double current_timestamp)
 									for (unsigned int k = 0; k < rel_info.list_of_non_friend_indexes.size(); k++) {
 										Reputation friend_rep_inspection{};
 										friend_rep_inspection = selected_master.GetReputation(rel_info.list_of_non_friend_indexes[k], selected_provider.GetID(), id_requested_service);
-										if (friend_rep_inspection.num_feedback > 100) {
+										if (friend_rep_inspection.num_feedback > INIT_NUM_FEEDBACK) {
 											sum_of_non_friend_rep = sum_of_non_friend_rep + friend_rep_inspection.reputation_value;
 											number_of_non_friend_updated++;
 										}
@@ -468,6 +483,7 @@ void ServiceProviderFiltering(int id_scheduler_record, double current_timestamp)
 
 			}
 		}
+		Toc("end rel_info.friends");
 
 		if(rel_info.friends == 0 || Trust_list.size() == 0){
 			// elenco degli amici del requester -> friend_of_requester
@@ -550,7 +566,7 @@ void ServiceProviderFiltering(int id_scheduler_record, double current_timestamp)
 				for (unsigned int k = 0; k < rel_info.list_of_friend_indexes.size(); k++) {
 					Reputation friend_rep_inspection{};
 					friend_rep_inspection = selected_master.GetReputation(rel_info.list_of_friend_indexes[k], friend_to_analyze.GetID(), id_requested_service);
-					if (friend_rep_inspection.feedback > 100) {
+					if (friend_rep_inspection.feedback > INIT_NUM_FEEDBACK) {
 						sum_of_friend_rep = sum_of_friend_rep + friend_rep_inspection.reputation_value;
 						number_of_friend_updated++;
 					}
@@ -563,7 +579,7 @@ void ServiceProviderFiltering(int id_scheduler_record, double current_timestamp)
 				for (unsigned int k = 0; k < rel_info.list_of_non_friend_indexes.size(); k++) {
 					Reputation friend_rep_inspection{};
 					friend_rep_inspection = selected_master.GetReputation(rel_info.list_of_non_friend_indexes[k], friend_to_analyze.GetID(), id_requested_service);
-					if (friend_rep_inspection.num_feedback > 100) {
+					if (friend_rep_inspection.num_feedback > INIT_NUM_FEEDBACK) {
 						sum_of_non_friend_rep = sum_of_non_friend_rep + friend_rep_inspection.reputation_value;
 						number_of_non_friend_updated++;
 					}
@@ -618,7 +634,7 @@ void ServiceProviderFiltering(int id_scheduler_record, double current_timestamp)
 			//QoE ordino solo dopo il cut
 			scheduler_records[id_scheduler_record].SetTrustList(Trust_list);
 		}
-		
+		Toc("end rel_info.fof-friends");
 
 		
 		
@@ -903,21 +919,7 @@ void UpdateQueue(Event next_event, int event_assigned, bool empty_list) {
 
 }
 
-void Tic() {
-	//tstart = time(nullptr);
-	if (vDEBUG) {
-		tstart = clock();
-	}
-}
 
-void Toc(string event) {
-	if (vDEBUG) {
-		tend = clock();
-		unsigned long diff = difftime(tend, tstart);
-		cout << "Until " << event << ": " << diff << " millisecond(s) or " << diff / 1000 << " second(s)." << endl;
-	}
-
-}
 
 void PrintInfoQueue() {
 	ofstream myfile(".\\"+ folder_name + "InfoQueue.txt");
