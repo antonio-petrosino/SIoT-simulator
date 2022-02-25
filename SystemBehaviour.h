@@ -1220,3 +1220,24 @@ void PrintResourceMonitor() {
 		cout << "Unable to open file";
 	}
 };
+
+void PrintProcessingTime(double overall_processing_time, vector<double> processing_time_vector) {
+
+	ofstream myfile(".\\" + folder_name + "ProcessingTime.txt");
+
+	double mean_processing_time = overall_processing_time / processing_time_vector.size();
+	cout << "\nText files exported. Folder:" << folder_name << endl;
+
+	if (myfile.is_open()) {
+		myfile << "Average delay:\t" << mean_processing_time << "\tTotal spent time for the processing: \t" << overall_processing_time;
+		myfile << "\n------------------single processing time ---------------------\n";
+
+		for (int i = 0; i < processing_time_vector.size(); i++) {
+			myfile << processing_time_vector[i] << "\t";
+		}
+		myfile << "\n END";
+	}
+	else {
+		cout << "Unable to open file";
+	}
+}

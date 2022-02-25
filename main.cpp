@@ -40,20 +40,23 @@ int main() {
 
 	Tic();
 
-	vector<bool>	parameter_to_test_resource_ctrl = {  true }; // OK
-	vector<bool>	parameter_to_test_qoe_ctrl = {true, false }; // OK
+	vector<bool>	parameter_to_test_resource_ctrl = { true, false }; // OK
+	vector<bool>	parameter_to_test_qoe_ctrl = { false, true }; // OK
 
-	vector<int>		parameter_to_test_n_services = { 10 }; // OK
-	vector<int>		parameter_to_test_n_devices = { 3000 }; // OK
+	vector<int>		parameter_to_test_n_services = { 6 }; // OK
+	vector<int>		parameter_to_test_n_devices = { 150, 200,250, 300 }; // OK
 	vector<int>		parameter_to_test_n_master = { 5 }; // OK
 
-	vector<int>		parameter_to_test_lambda = { 6 }; // OK
+	vector<int>		parameter_to_test_lambda = { 4,6,10 }; // OK
 	vector<int>		parameter_to_test_seed = { 1 };
 
-	vector<int>		parameter_to_test_tot_sim = { 3000 }; // OK
+	vector<int>		parameter_to_test_tot_sim = { 3 }; // OK
 
 	int tot_number_of_simulations = GetNumberOfSim(parameter_to_test_tot_sim, parameter_to_test_resource_ctrl, parameter_to_test_qoe_ctrl, parameter_to_test_n_services, parameter_to_test_n_devices, parameter_to_test_n_master, parameter_to_test_lambda, parameter_to_test_seed);
 	int iteration_number = 0;
+
+	vector<double>  processing_time_vector = {};
+	double overall_processing_time = 0;
 
 	for (int nts = 0; nts < parameter_to_test_tot_sim.size(); nts++) {
 		for (int rc = 0; rc < parameter_to_test_resource_ctrl.size(); rc++) {			
@@ -82,6 +85,8 @@ int main() {
 									tot_sim = parameter_to_test_tot_sim[nts];	 // secondi
 									seed = parameter_to_test_seed[nseed];
 
+									processing_time_vector = {};
+									overall_processing_time = 0;
 
 									srand(seed);
 									// seed the RNG	
@@ -145,6 +150,9 @@ int main() {
 											double total_master_processing = double(end_master_processing - start_master_processing) / 1000;
 
 											scheduler_records[next_event.GetSchedulerID()].SetMasterTime(scheduler_records[next_event.GetSchedulerID()].GetMasterTime()+total_master_processing);
+
+											processing_time_vector.push_back(total_master_processing);
+											overall_processing_time = overall_processing_time + total_master_processing;
 
 											if (vDEBUG) {
 												if (event_assigned == 1) {
@@ -265,6 +273,7 @@ int main() {
 									PrintEstimateDeltaStateEachDevices();
 									PrintDetectedMalicious();
 									PrintResourceMonitor();
+									PrintProcessingTime(overall_processing_time, processing_time_vector);
 
 									cout << "\nText files exported. Folder:" << folder_name << endl;									
 									vDEBUG = true;
