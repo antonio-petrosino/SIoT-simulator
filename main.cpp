@@ -15,8 +15,8 @@ bool resource_ctrl;
 bool qoe_ctrl;
 unsigned long tstart, tend;
 
-//TODO: https://riptutorial.com/cplusplus/example/7270/using-a-sorted-vector-for-fast-element-lookup
 
+//LAUNCHER: C:\Users\anton\source\repos\TestLibrerie
 Service* list_of_services;
 Master* list_of_master;
 Device* list_of_devices;
@@ -29,34 +29,63 @@ string folder_name;
 ResourceMonitor network_monitor;
 
 
-int main() {	
+int main(int argc, char* argv[]) {
 	unsigned long iteration_tstart;
 	int max_resched = 999;
 	//cutting_value = 0.265; 	
 	//cutting_value = 0.27;
 	cout << "SSIoT Simulator"<<endl;	
+
+	// parse argv
+	if (argc < 8) {
+		cout << "ERROR: Not enough argument !" << endl;
+		cout << "Args <- " << argv << " -> End args" << endl;
+		return -1;
+	}
+
+	if (stoi(argv[1]) == 0) {
+		resource_ctrl = false;
+	}
+	else {
+		resource_ctrl = true;
+	}
+	//resource_ctrl = (bool) argv[1];
+	if (stoi(argv[2]) == 0) {
+		qoe_ctrl = false;
+	}
+	else {
+		qoe_ctrl = true;
+	}
 	
+	n_services = stoi(argv[3]);
+	n_devices = stoi(argv[4]);
+	n_master = stoi(argv[5]);
+	lambda = stoi(argv[6]);
+	seed = stoi(argv[7]);
+	tot_sim = stoi(argv[8]);
+
 	unsigned long cmd_print_interval = clock();	
 
 	Tic();
-
+	vector<double>  processing_time_vector = {};
+	double overall_processing_time = 0;
+	int iteration_number = 0;
+	int tot_number_of_simulations = 1;
+	/*
 	vector<bool>	parameter_to_test_resource_ctrl = { true, false }; // OK
 	vector<bool>	parameter_to_test_qoe_ctrl = { false, true }; // OK
 
 	vector<int>		parameter_to_test_n_services = { 6 }; // OK
-	vector<int>		parameter_to_test_n_devices = { 150, 200,250, 300 }; // OK
+	vector<int>		parameter_to_test_n_devices = { 200 }; // OK
 	vector<int>		parameter_to_test_n_master = { 5 }; // OK
 
-	vector<int>		parameter_to_test_lambda = { 4,6,10 }; // OK
+	vector<int>		parameter_to_test_lambda = { 15 }; // OK
 	vector<int>		parameter_to_test_seed = { 1 };
 
-	vector<int>		parameter_to_test_tot_sim = { 3 }; // OK
+	vector<int>		parameter_to_test_tot_sim = { 3000 }; // OK
 
 	int tot_number_of_simulations = GetNumberOfSim(parameter_to_test_tot_sim, parameter_to_test_resource_ctrl, parameter_to_test_qoe_ctrl, parameter_to_test_n_services, parameter_to_test_n_devices, parameter_to_test_n_master, parameter_to_test_lambda, parameter_to_test_seed);
 	int iteration_number = 0;
-
-	vector<double>  processing_time_vector = {};
-	double overall_processing_time = 0;
 
 	for (int nts = 0; nts < parameter_to_test_tot_sim.size(); nts++) {
 		for (int rc = 0; rc < parameter_to_test_resource_ctrl.size(); rc++) {			
@@ -72,8 +101,8 @@ int main() {
 
 							for (int nl = 0; nl < parameter_to_test_lambda.size(); nl++) {
 								for (int nseed = 0; nseed < parameter_to_test_seed.size(); nseed++) {
-									iteration_number++;
-									iteration_tstart = clock();
+*/
+									/*
 									resource_ctrl = parameter_to_test_resource_ctrl[rc];
 									qoe_ctrl = parameter_to_test_qoe_ctrl[qc];
 
@@ -84,7 +113,9 @@ int main() {
 									lambda = parameter_to_test_lambda[nl];
 									tot_sim = parameter_to_test_tot_sim[nts];	 // secondi
 									seed = parameter_to_test_seed[nseed];
-
+									*/
+									iteration_number++;
+									iteration_tstart = clock();
 									processing_time_vector = {};
 									overall_processing_time = 0;
 
@@ -279,6 +310,7 @@ int main() {
 									vDEBUG = true;
 									Toc("text exported");
 									vDEBUG = tempDebug;
+/*
 								}
 
 							}
@@ -288,7 +320,7 @@ int main() {
 			}
 		}
 	}
-	
-  	system("pause");
+	*/
+  	//system("pause");
     return 0;
 }
