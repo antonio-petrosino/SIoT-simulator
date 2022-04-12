@@ -131,6 +131,7 @@ int main(int argc, char* argv[]) {
 									const char* folder_name_char = folder_name.c_str();
 									if (_mkdir(folder_name_char) == -1) {
 										cout << "Folder exists." << endl;
+										return -1;
 									}
 									else {
 										cout << "Folder created." << endl;

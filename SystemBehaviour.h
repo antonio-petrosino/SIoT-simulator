@@ -41,23 +41,24 @@ void Toc(string event) {
 
 Service *ServicesCreation(){
 
-	vector<double> possible_power_cost = {0.1,0.1,0.1,0.2,0.2,0.2,0.3,0.3};
-	//vector<double> possible_power_cost = { 0.3,0.2,0.3,0.1,0.2,0.2,0.1,0.1 };
+	vector<double> possible_power_cost = {0.1, 0.1, 0.2, 0.2, 0.3, 0.3};
+	//vector<double> possible_power_cost = { 0.1, 0.1, 0.1, 0.2, 0.2, 0.2, 0.3, 0.3 };
 	
-	vector<int> possible_cpu_req      = {6*1000, 6 * 1000, 6 * 1000, 10 * 1000, 10 * 1000, 10 * 1000, 14 * 1000, 14 * 1000 };
+	//vector<int> possible_cpu_req      = {600, 600, 600, 1000, 1000, 1000, 1400 , 1400 };
+	vector<int> possible_cpu_req = { 600, 600, 1000, 1000, 1400 , 1400 };
     
     Service* arrayOfServices = new Service[n_services];    
     
-    int length_possible = 8;
-
+    int length_possible = 6;
 	int choosenIndex, randomCpuReq;
 	double randomNumber;
 	int choosenRND;
+
 	//std::mt19937 rng(seed);
 		
 	for(int i=0; i<n_services; i++){	
 
-		choosenRND = rand();
+		choosenRND = i;
 
 		choosenIndex = choosenRND % length_possible;
 		
@@ -92,15 +93,25 @@ Device* DeviceCreation(){
 
 	int possible_class[] = {1,2,2,3};	
 
-	int possible_clock_speed[]={400*1000, 1000 * 1000, 1000 * 1000, 2000 * 1000 }; // megacycles
+	//int possible_clock_speed[]={400*1000, 1000 * 1000, 1000 * 1000, 2000 * 1000 }; // megacycles
+	int possible_clock_speed[] = { 40 * 1000, 1000 * 1000, 1000 * 1000, 2000 * 1000 }; // megacycles
 
 	int possible_malicious[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 };
 	int length_pos_malicious = sizeof(possible_malicious) / sizeof(int);
 
+	int possible_man[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+	int length_pos_man = sizeof(possible_man) / sizeof(int);
 
-	int possible_owner[] = { 1,2,3,4,5,6,7,8,9,10 };
-	int length_pos_owner = sizeof(possible_owner) / sizeof(int);
-	
+	//int possible_owner[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 };
+	vector<int> possible_owner;
+	int perc_of_owner = ceil(n_devices * 16 / 100);
+
+	for (int x = 0; x <= perc_of_owner; x++)
+		possible_owner.push_back(x+1);
+
+	//int length_pos_owner = sizeof(possible_owner) / sizeof(int);
+	int length_pos_owner = possible_owner.size();
+
 	int length_pos_loc = n_master;	
 	
 	vector<int> possible_location(length_pos_loc);
@@ -138,8 +149,8 @@ Device* DeviceCreation(){
 		choosenIndex = rand() % length_pos_owner;
 		id_owner = possible_owner[choosenIndex];
 		
-		choosenIndex = rand() % length_pos_owner;
-		id_man = possible_owner[choosenIndex];
+		choosenIndex = rand() % length_pos_man;
+		id_man = possible_man[choosenIndex];
 		
 		choosenIndex = rand() % length_pos_loc;
 		loc = possible_location[choosenIndex];
@@ -1016,7 +1027,7 @@ void PrintAvgReputation() {
 }
 
 void PrintUserInfo() {
-	ofstream myfile(".\\" + folder_name + "UserInfo.txt");
+	ofstream myfile(".\\" + folder_name + "1.UserInfo.txt");
 	if (myfile.is_open())
 	{
 		myfile << "device_id\t";
