@@ -183,8 +183,10 @@ int main(int argc, char* argv[]) {
 
 											scheduler_records[next_event.GetSchedulerID()].SetMasterTime(scheduler_records[next_event.GetSchedulerID()].GetMasterTime()+total_master_processing);
 
-											processing_time_vector.push_back(total_master_processing);
-											overall_processing_time = overall_processing_time + total_master_processing;
+											//if (total_master_processing > 0){
+												processing_time_vector.push_back(total_master_processing);
+												overall_processing_time = overall_processing_time + total_master_processing;
+											//}
 
 											if (vDEBUG) {
 												if (event_assigned == 1) {

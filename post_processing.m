@@ -348,10 +348,21 @@ for nd = 1:length(vect_n_devices_to_find)
                                             sim_file_name = selected_simulation_files_list(j).name;
                                             buffer_lettura = fopen(strcat(new_Path_to_explore, sim_file_name));
                                             
-                                            extracted_data = strsplit(fgetl(buffer_lettura), '\t');
-                                            
+                                            extracted_data = strsplit(fgetl(buffer_lettura), '\t');                                           
                                             seed_scenario(seed_index).processing_time = str2double(extracted_data(2));
                                             
+                                            extracted_data = strsplit(fgetl(buffer_lettura), '\t'); % riga di intestazione
+                                            extracted_data = strsplit(fgetl(buffer_lettura), '\t'); % vettore del processing
+                                            
+                                            processing_vector_not_zero = [];
+                                            
+                                            for idx_processing_not_zero = 1:length(extracted_data)
+                                                processing_vector_not_zero = [processing_vector_not_zero str2double(extracted_data(idx_processing_not_zero))];;
+                                            end
+                
+                                            idx_not_zero = find(processing_vector_not_zero > 0);
+                                            seed_scenario(seed_index).processing_vector_not_zero = processing_vector_not_zero(idx_not_zero); 
+                                            seed_scenario(seed_index).processing_vector_not_zero_mean = mean(seed_scenario(seed_index).processing_vector_not_zero);
                                         end
                                         
                                         %% DetectedMaliciousNodes
@@ -598,6 +609,7 @@ for nd = 1:length(vect_n_devices_to_find)
                 final_malicious_vector = movmean(final_malicious_vector, 5);
                 avg_info(total_sim_number_acquired).final_malicious_vector = final_malicious_vector;
                 avg_info(total_sim_number_acquired).final_time_vector_4_malicious = final_time_vector_4_malicious;
+                avg_info(total_sim_number_acquired).processing_time_not_zero = mean([seed_scenario.processing_vector_not_zero_mean]);
                 %% TODO: [GIANCARLO] SOMMARE ELEMENTI VETTORE per fare una somma e non un rate al secondo;
                 
                 if vect_n_devices_to_find(nd) == "80"
@@ -624,38 +636,38 @@ for nd = 1:length(vect_n_devices_to_find)
                         if vect_resource_ctrl_to_find(nrc) == "0"
                             plotting_info.n_device80_lambda6_resource0_qoe_0_avg_delay = avg_delay_to_extract;
                             plotting_info.n_device80_lambda6_resource0_qoe_0_processing = avg_processing_time_to_extract;
-                            plotting_info.qoeindexmean_n_device80_lambda6_resource0_qoe_0 =   [ seed_scenario.QoeIndex];
-                            plotting_info.qoemean_n_device80_lambda6_resource0_qoe_0 =   [ seed_scenario.QoEfairness];
+                            plotting_info.qoeindexmean_n_device80_lambda6_resource0_qoe_0 =   [seed_scenario.QoeIndex];
+                            plotting_info.qoemean_n_device80_lambda6_resource0_qoe_0 =   [seed_scenario.QoEfairness];
                         elseif vect_resource_ctrl_to_find(nrc) == "1"
                             if vect_qoe_ctrl_to_find(nqoe) == "0"
                                 plotting_info.n_device80_lambda6_resource1_qoe_0_avg_delay = avg_delay_to_extract;
                                 plotting_info.n_device80_lambda6_resource1_qoe_0_processing = avg_processing_time_to_extract;
-                                plotting_info.qoeindexmean_n_device80_lambda6_resource1_qoe_0 =   [ seed_scenario.QoeIndex];
-                                plotting_info.qoemean_n_device80_lambda6_resource1_qoe_0 =   [ seed_scenario.QoEfairness];
+                                plotting_info.qoeindexmean_n_device80_lambda6_resource1_qoe_0 =   [seed_scenario.QoeIndex];
+                                plotting_info.qoemean_n_device80_lambda6_resource1_qoe_0 =   [seed_scenario.QoEfairness];
                             elseif vect_qoe_ctrl_to_find(nqoe) == "1"
                                 plotting_info.n_device80_lambda6_resource1_qoe_1_avg_delay = avg_delay_to_extract;
                                 plotting_info.n_device80_lambda6_resource1_qoe_1_processing = avg_processing_time_to_extract;
-                                plotting_info.qoeindexmean_n_device80_lambda6_resource1_qoe_1 =   [ seed_scenario.QoeIndex];
-                                plotting_info.qoemean_n_device80_lambda6_resource1_qoe_1 =   [ seed_scenario.QoEfairness];
+                                plotting_info.qoeindexmean_n_device80_lambda6_resource1_qoe_1 =   [seed_scenario.QoeIndex];
+                                plotting_info.qoemean_n_device80_lambda6_resource1_qoe_1 =   [seed_scenario.QoEfairness];
                             end
                         end
                     elseif vect_lambda_to_find(nl) == "10"
                         if vect_resource_ctrl_to_find(nrc) == "0"
                             plotting_info.n_device80_lambda10_resource0_qoe_0_avg_delay = avg_delay_to_extract;
                             plotting_info.n_device80_lambda10_resource0_qoe_0_processing = avg_processing_time_to_extract;
-                            plotting_info.qoeindexmean_n_device80_lambda10_resource0_qoe_0 =   [ seed_scenario.QoeIndex];
-                            plotting_info.qoemean_n_device80_lambda10_resource0_qoe_0 =   [ seed_scenario.QoEfairness];
+                            plotting_info.qoeindexmean_n_device80_lambda10_resource0_qoe_0 =   [seed_scenario.QoeIndex];
+                            plotting_info.qoemean_n_device80_lambda10_resource0_qoe_0 =   [seed_scenario.QoEfairness];
                         elseif vect_resource_ctrl_to_find(nrc) == "1"
                             if vect_qoe_ctrl_to_find(nqoe) == "0"
                                 plotting_info.n_device80_lambda10_resource1_qoe_0_avg_delay = avg_delay_to_extract;
                                 plotting_info.n_device80_lambda10_resource1_qoe_0_processing = avg_processing_time_to_extract;
-                                plotting_info.qoeindexmean_n_device80_lambda10_resource1_qoe_0 =   [ seed_scenario.QoeIndex];
-                                plotting_info.qoemean_n_device80_lambda10_resource1_qoe_0 =   [ seed_scenario.QoEfairness];
+                                plotting_info.qoeindexmean_n_device80_lambda10_resource1_qoe_0 =   [seed_scenario.QoeIndex];
+                                plotting_info.qoemean_n_device80_lambda10_resource1_qoe_0 =   [seed_scenario.QoEfairness];
                             elseif vect_qoe_ctrl_to_find(nqoe) == "1"
                                 plotting_info.n_device80_lambda10_resource1_qoe_1_avg_delay = avg_delay_to_extract;
                                 plotting_info.n_device80_lambda10_resource1_qoe_1_processing = avg_processing_time_to_extract;
-                                plotting_info.qoeindexmean_n_device80_lambda10_resource1_qoe_1 =   [ seed_scenario.QoeIndex];
-                                plotting_info.qoemean_n_device80_lambda10_resource1_qoe_1 =   [ seed_scenario.QoEfairness];
+                                plotting_info.qoeindexmean_n_device80_lambda10_resource1_qoe_1 =   [seed_scenario.QoeIndex];
+                                plotting_info.qoemean_n_device80_lambda10_resource1_qoe_1 =   [seed_scenario.QoEfairness];
                             end
                         end
                     end
