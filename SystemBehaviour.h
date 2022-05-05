@@ -106,8 +106,12 @@ Device* DeviceCreation(){
 	vector<int> possible_owner;
 	int perc_of_owner = ceil(n_devices * 16 / 100);
 
-	for (int x = 0; x <= perc_of_owner; x++)
-		possible_owner.push_back(x+1);
+	//for (int x = 0; x <= perc_of_owner; x++)
+	//	possible_owner.push_back(x+1);
+
+	//CAMARDA
+	for (int x = 0; x < 20; x++)
+		possible_owner.push_back(x + 1);
 
 	//int length_pos_owner = sizeof(possible_owner) / sizeof(int);
 	int length_pos_owner = possible_owner.size();
@@ -126,6 +130,9 @@ Device* DeviceCreation(){
 	for(int i=0; i<n_devices; i++){
 
 		choosenIndex = rand() % length_pos_total_p;
+		
+		//CAMARDA
+		choosenIndex = (i % length_pos_total_p);
 		total_power = possible_total_power[choosenIndex];
 		
 		if (total_power > 0.5) 
@@ -154,6 +161,11 @@ Device* DeviceCreation(){
 		
 		choosenIndex = rand() % length_pos_loc;
 		loc = possible_location[choosenIndex];
+
+		//CAMARDA PER PROBABILITA DI PERDITA
+		id_owner = (i % length_pos_owner) + 1;
+		id_man= (i % (length_pos_owner/2)) + 1;
+		loc = (i % (length_pos_owner / 4)) + 1;
 		
 		arrayOfDevice[i].GenerateDevice(i+1,total_power, id_owner, id_man, loc, d_class, clock_s);
 	
@@ -323,7 +335,9 @@ vector<Scheduler> GenerateEventsArray(int sim_duration, int seed) {
 	  Scheduler record_to_push = Scheduler();
 	  record_to_push.SetId(i);
 	  record_to_push.SetTOA(sumArrivalTimes);
-	  int selected_req_service = rand()% n_services;
+	  //int selected_req_service = rand()% n_services;
+	  //CAMARDA
+	  int selected_req_service = 1;
 	  record_to_push.SetReqServ(list_of_services[selected_req_service].GetServiceId()); // random su tutti i servizi
 	  int selected_service_requester = rand() % n_devices;
 	  record_to_push.SetSR(list_of_devices[selected_service_requester].GetID()); // random su tutti gli utenti

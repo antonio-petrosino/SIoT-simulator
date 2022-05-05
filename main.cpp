@@ -17,6 +17,10 @@ unsigned long tstart, tend;
 
 
 //LAUNCHER: C:\Users\anton\source\repos\TestLibrerie
+// 0 0 6 100 5 4 1 3000
+// resource_ctrl, qoe_ctrl, n_services, n_devices,	n_master, lambda, seed,	tot_sim 
+// 1 1 5 200 5 4 1 1000
+
 Service* list_of_services;
 Master* list_of_master;
 Device* list_of_devices;
@@ -218,9 +222,10 @@ int main(int argc, char* argv[]) {
 												if (scheduler_records[next_event.GetSchedulerID()].GetRescheduleTime() < max_resched) {
 													scheduler_records[next_event.GetSchedulerID()].SetRescheduleTime(scheduler_records[next_event.GetSchedulerID()].GetRescheduleTime() + 1);
 
-													Toc("start add event");
-													event_calendar.AddEvent(next_event.GetSchedulerID(), new_timestamp, "re-scheduler");
-													Toc("end add event");
+													//CAMARDA COMMENTATO PER PROBABILITA DI PERDITA
+													//Toc("start add event");
+													//event_calendar.AddEvent(next_event.GetSchedulerID(), new_timestamp, "re-scheduler");
+													//Toc("end add event");
 
 													if (vDEBUG) {
 														cout << "Event: re-scheduler." << endl;
