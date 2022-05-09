@@ -21,6 +21,8 @@ unsigned long tstart, tend;
 // resource_ctrl, qoe_ctrl, n_services, n_devices,	n_master, lambda, seed,	tot_sim 
 // 1 1 5 200 5 4 1 1000
 
+// 1 1 5 150 5 1000 1 1000
+
 Service* list_of_services;
 Master* list_of_master;
 Device* list_of_devices;
@@ -135,7 +137,7 @@ int main(int argc, char* argv[]) {
 									const char* folder_name_char = folder_name.c_str();
 									if (_mkdir(folder_name_char) == -1) {
 										cout << "Folder exists." << endl;
-										return -1;
+										//return -1;
 									}
 									else {
 										cout << "Folder created." << endl;
@@ -160,6 +162,49 @@ int main(int argc, char* argv[]) {
 									std::cout << std::setprecision(3) << std::fixed;
 
 									Calendar event_calendar = Calendar(scheduler_records);
+
+
+									// CAMARDA CHECK
+									for (int counter = 0; counter < n_devices; counter++) {
+										vector<Friend_Record> friend_count_check = list_of_devices[counter].GetAllFriends();
+
+										std::cout << "Devices number: " << counter + 1;
+										std::cout << " friends list length" << friend_count_check.size() << endl;
+										int classe_uno = 0, classe_due = 0, classe_tre = 0, classe_unk = 0;
+										
+										for (int f_counter = 0; f_counter < friend_count_check.size(); f_counter++) {
+											//cout << "------------------------\t Device ID \t";
+											//cout << friend_count_check[f_counter].friend_device_id;
+
+											Device device_to_return = Device();
+											for (int v = 0; v < n_devices; v++) {
+												if (list_of_devices[v].GetID() == friend_count_check[f_counter].friend_device_id) {
+													//device_to_return =  list_of_devices[v];
+													device_to_return = list_of_devices[v];
+													break;
+												}
+											}
+											//cout << " Device Class\t";
+											//cout << device_to_return.GetDeviceClass() << endl; 
+											if (device_to_return.GetDeviceClass() == 1)
+											{
+												classe_uno++;
+											}
+											else if (device_to_return.GetDeviceClass() == 2) {
+												classe_due++;
+											}
+											else if (device_to_return.GetDeviceClass() == 3) {
+												classe_tre++;
+											}
+											else {
+												classe_unk++;
+											}											
+										}
+										cout << "-------- classe uno " << classe_uno << "\tclasse due " << classe_due << "\tclasse tre " << classe_tre << "\tclasse unk " << classe_unk << endl;
+	
+									}
+
+									system("pause");
 									
 									while (!event_calendar.IsEmpty()) {
 										unsigned long start_master_processing = clock();
@@ -259,10 +304,10 @@ int main(int argc, char* argv[]) {
 											int perc_tot = (next_event.timestamp * 100) / tot_sim;
 											cout << "t: \t" << next_event.timestamp << "\t\t\t\t" << perc_tot << " % ";
 											if (info_queue.size() > 0) {
-												cout << "\t queue: \t" << info_queue.back().total_service_queued << "\t";
+												cout << "\t perdita: \t" << info_queue.back().totale_perdita << "\t";
 											}
 											else {
-												cout << "\t queue: \t" << "0" << "\t";
+												cout << "\t perdita: \t" << "0" << "\t";
 											}
 											cout << "\n[ ";
 

@@ -65,6 +65,10 @@ Service *ServicesCreation(){
 		randomNumber = possible_power_cost[choosenIndex];
 		randomCpuReq = possible_cpu_req[choosenIndex];
 		
+		// CAMARDA
+		randomNumber = possible_power_cost[5];
+		randomCpuReq = possible_cpu_req[5];
+
 		arrayOfServices[i].SetService(i+1,randomNumber,randomCpuReq);
 	}	
 	
@@ -89,13 +93,18 @@ Device* DeviceCreation(){
 	
 
 	double possible_total_power[] = {0.2,0.4,0.6,0.8};
+	
+	
 	int length_pos_total_p = sizeof(possible_total_power) / sizeof(double);
 
 	int possible_class[] = {1,2,2,3};	
+	
+	
 
 	//int possible_clock_speed[]={400*1000, 1000 * 1000, 1000 * 1000, 2000 * 1000 }; // megacycles
 	int possible_clock_speed[] = { 40 * 1000, 1000 * 1000, 1000 * 1000, 2000 * 1000 }; // megacycles
-
+	
+	
 	int possible_malicious[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 };
 	int length_pos_malicious = sizeof(possible_malicious) / sizeof(int);
 
@@ -165,8 +174,11 @@ Device* DeviceCreation(){
 		//CAMARDA PER PROBABILITA DI PERDITA
 		id_owner = (i % length_pos_owner) + 1;
 		id_man= (i % (length_pos_owner/2)) + 1;
-		loc = (i % (length_pos_owner / 4)) + 1;
+		//loc = (i % (length_pos_owner / 4)) + 1;
+		loc = 1;
 		
+		//CAMARDA check location
+
 		arrayOfDevice[i].GenerateDevice(i+1,total_power, id_owner, id_man, loc, d_class, clock_s);
 	
 		// SetServicesList
@@ -274,8 +286,9 @@ void GenerateSocialRel(int n_devices, Device *defined_devices){
 				}
 				else if(defined_devices[i].GetLocation() == defined_devices[j].GetLocation()) {
 					new_social_rel.sociality_factor = 0.6;
+					new_social_rel.sociality_factor = 0.0; // CAMARDA
 					new_social_rel.type_rel = "C-LOR";
-					check_social = 1;			 						
+					check_social = -1;			 						
 				}
 			}
 			
@@ -337,7 +350,7 @@ vector<Scheduler> GenerateEventsArray(int sim_duration, int seed) {
 	  record_to_push.SetTOA(sumArrivalTimes);
 	  //int selected_req_service = rand()% n_services;
 	  //CAMARDA
-	  int selected_req_service = 1;
+	  int selected_req_service = 0;
 	  record_to_push.SetReqServ(list_of_services[selected_req_service].GetServiceId()); // random su tutti i servizi
 	  int selected_service_requester = rand() % n_devices;
 	  record_to_push.SetSR(list_of_devices[selected_service_requester].GetID()); // random su tutti gli utenti
@@ -682,6 +695,7 @@ void AssignFeedback(int id_master, int id_service_provider, int id_service_reque
 		new_feed = possible_feedback[choosenFeedback];
 	}
 
+	new_feed = 1;
 
 	for (int i = 0; i < n_master; i++) {
 		if (list_of_master[i].GetID() == id_master) {
@@ -885,12 +899,14 @@ void UpdateQueue(Event next_event, int event_assigned, bool empty_list) {
 	int prev_total;
 	int empty_prev_total;
 	int prev_accomplished;
+	int prev_perdita;
 
 	if (info_queue.size() > 0) {
 		Queue prev_queue_variation = info_queue[info_queue.size() - 1];		
 		prev_total = prev_queue_variation.total_service_queued;
 		empty_prev_total = prev_queue_variation.total_empty_list;
 		prev_accomplished = prev_queue_variation.total_accomplished;
+		prev_perdita = prev_queue_variation.totale_perdita; // CAMARDA
 
 		if (next_event.GetTimeStamp() < prev_queue_variation.timestamp) {
 			cout << "WARNING: info_queue logical error." << endl;
@@ -901,6 +917,7 @@ void UpdateQueue(Event next_event, int event_assigned, bool empty_list) {
 		prev_total = 0;
 		empty_prev_total = 0;
 		prev_accomplished = 0;
+		prev_perdita = 0; // CAMARDA
 	}
 
 	Queue queue_variation = {};
@@ -910,6 +927,7 @@ void UpdateQueue(Event next_event, int event_assigned, bool empty_list) {
 		queue_variation.timestamp = next_event.GetTimeStamp();
 		queue_variation.total_empty_list = empty_prev_total;
 		queue_variation.total_accomplished = prev_accomplished;
+		queue_variation.totale_perdita = prev_perdita;
 		info_queue.push_back(queue_variation);
 	}
 	else if (next_event.GetEventType() == "scheduler" && event_assigned == -1)
@@ -918,6 +936,7 @@ void UpdateQueue(Event next_event, int event_assigned, bool empty_list) {
 		queue_variation.timestamp = next_event.GetTimeStamp();
 		queue_variation.total_empty_list = empty_prev_total;
 		queue_variation.total_accomplished = prev_accomplished;
+		queue_variation.totale_perdita = prev_perdita + 1; // CAMARDA
 		info_queue.push_back(queue_variation);
 	}
 	else if (next_event.GetEventType() == "end_service") {
@@ -925,6 +944,7 @@ void UpdateQueue(Event next_event, int event_assigned, bool empty_list) {
 		queue_variation.timestamp = next_event.GetTimeStamp();
 		queue_variation.total_empty_list = empty_prev_total;
 		queue_variation.total_accomplished = prev_accomplished + 1;
+		queue_variation.totale_perdita = prev_perdita; // CAMARDA
 		info_queue.push_back(queue_variation);
 	}
 	else if (empty_list) {
@@ -932,6 +952,7 @@ void UpdateQueue(Event next_event, int event_assigned, bool empty_list) {
 		queue_variation.timestamp = next_event.GetTimeStamp();
 		queue_variation.total_empty_list = empty_prev_total + 1;
 		queue_variation.total_accomplished = prev_accomplished;
+		queue_variation.totale_perdita = prev_perdita; // CAMARDA
 		info_queue.push_back(queue_variation);
 	}
 	else {
@@ -939,6 +960,7 @@ void UpdateQueue(Event next_event, int event_assigned, bool empty_list) {
 		queue_variation.timestamp = next_event.GetTimeStamp();
 		queue_variation.total_empty_list = empty_prev_total;
 		queue_variation.total_accomplished = prev_accomplished;
+		queue_variation.totale_perdita = prev_perdita; // CAMARDA
 		info_queue.push_back(queue_variation);
 	}
 
@@ -950,10 +972,10 @@ void PrintInfoQueue() {
 	ofstream myfile(".\\"+ folder_name + "InfoQueue.txt");
 	if (myfile.is_open())
 	{
-		myfile << "total_service_queued" << "\t" << "total_empty_list" << "\t" << "total_accomplished" << "\t" << "timestamp" << "\n";
+		myfile << "total_service_queued" << "\t" << "total_empty_list" << "\t" << "total_accomplished" << "\t" << "totale_perdita\t" << "timestamp" << "\n";
 
 		for (unsigned int i = 0; i < info_queue.size(); i++) {
-			myfile << info_queue[i].total_service_queued << "\t" << info_queue[i].total_empty_list << "\t" << info_queue[i].total_accomplished << "\t" << info_queue[i].timestamp << "\n";
+			myfile << info_queue[i].total_service_queued << "\t" << info_queue[i].total_empty_list << "\t" << info_queue[i].total_accomplished << "\t" << info_queue[i].totale_perdita << "\t" << info_queue[i].timestamp << "\n";
 		}
 
 		myfile.close();

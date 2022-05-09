@@ -6,7 +6,7 @@ extern bool resource_ctrl;
 //#define INIT_FEED = 0.5;
 const int INIT_NUM_FEEDBACK = 30;
 const int INIT_STARTING_POINT = 27;
-const double refresh_rate = 11000; // ms
+const double refresh_rate = 500; // ms
 const double alpha = 0.5;
 const double beta = 0.3;
 const double gamma = 0.2;
@@ -32,6 +32,7 @@ struct Queue {
 	int total_service_queued;
 	int total_empty_list;
 	int total_accomplished;
+	int totale_perdita; // CAMARDA
 	double timestamp;
 };
 
