@@ -120,7 +120,7 @@ Device* DeviceCreation(){
 	//	possible_owner.push_back(x+1);
 
 	//CAMARDA
-	for (int x = 0; x < 20; x++)
+	for (int x = 0; x < 2; x++)
 		possible_owner.push_back(x + 1);
 
 	//int length_pos_owner = sizeof(possible_owner) / sizeof(int);

@@ -35,6 +35,12 @@ int n_services, n_devices, n_master, lambda, tot_sim, seed;
 string folder_name;
 ResourceMonitor network_monitor;
 
+vector<int> conta_utenti_cl_uno;
+vector<int> conta_utenti_cl_due;
+vector<int> conta_utenti_cl_tre;
+
+double media_utenti;
+
 
 int main(int argc, char* argv[]) {
 	unsigned long iteration_tstart;
@@ -205,8 +211,30 @@ int main(int argc, char* argv[]) {
 											}											
 										}
 										cout << "-------- classe uno " << classe_uno << "\tclasse due " << classe_due << "\tclasse tre " << classe_tre << "\tclasse unk " << classe_unk << endl;
-	
+										//CAMARDA
+										conta_utenti_cl_uno.push_back(classe_uno);
+										conta_utenti_cl_due.push_back(classe_due);
+										conta_utenti_cl_tre.push_back(classe_tre);
 									}
+
+									media_utenti = 0;
+									for (int i = 0; i < conta_utenti_cl_uno.size(); i++) {
+										media_utenti = media_utenti + conta_utenti_cl_uno[i];
+									}
+									media_utenti = media_utenti / conta_utenti_cl_uno.size();
+									cout << "Media utenti amici classe uno " << media_utenti << endl;
+									media_utenti = 0;
+									for (int i = 0; i < conta_utenti_cl_due.size(); i++) {
+										media_utenti = media_utenti + conta_utenti_cl_due[i];
+									}
+									media_utenti = media_utenti / conta_utenti_cl_due.size();
+									cout << "Media utenti amici classe due " << media_utenti << endl;
+									media_utenti = 0;
+									for (int i = 0; i < conta_utenti_cl_tre.size(); i++) {
+										media_utenti = media_utenti + conta_utenti_cl_tre[i];
+									}
+									media_utenti = media_utenti / conta_utenti_cl_tre.size();
+									cout << "Media utenti amici classe tre " << media_utenti << endl;
 
 									system("pause");
 									
