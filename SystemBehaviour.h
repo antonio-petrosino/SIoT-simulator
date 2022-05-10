@@ -92,18 +92,19 @@ Device* DeviceCreation(){
 	Device* arrayOfDevice = new Device[n_devices];
 	
 
-	double possible_total_power[] = {0.2,0.4,0.6,0.8};
+	//double possible_total_power[] = {0.2,0.4,0.6,0.8};
+	double possible_total_power[] = { 0.6,0.8 };
 	
 	
 	int length_pos_total_p = sizeof(possible_total_power) / sizeof(double);
 
-	int possible_class[] = {1,2,2,3};	
-	
+	//int possible_class[] = {1,2,2,3};	
+	int possible_class[] = { 2,3 };
 	
 
 	//int possible_clock_speed[]={400*1000, 1000 * 1000, 1000 * 1000, 2000 * 1000 }; // megacycles
-	int possible_clock_speed[] = { 40 * 1000, 1000 * 1000, 1000 * 1000, 2000 * 1000 }; // megacycles
-	
+	//int possible_clock_speed[] = { 40 * 1000, 1000 * 1000, 1000 * 1000, 2000 * 1000 }; // megacycles
+	int possible_clock_speed[] = { 1000 * 1000, 2000 * 1000 }; // megacycles
 	
 	int possible_malicious[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 };
 	int length_pos_malicious = sizeof(possible_malicious) / sizeof(int);
