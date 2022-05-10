@@ -22,6 +22,7 @@ unsigned long tstart, tend;
 // 1 1 5 200 5 4 1 1000
 
 // 1 1 5 150 5 1000 1 1000
+// 1 1 1 100 1 20 1 200
 
 Service* list_of_services;
 Master* list_of_master;
@@ -77,6 +78,9 @@ int main(int argc, char* argv[]) {
 	double overall_processing_time = 0;
 	int iteration_number = 0;
 	int tot_number_of_simulations = 1;
+
+	int numbero_di_perdite = 0;
+
 	/*
 	vector<bool>	parameter_to_test_resource_ctrl = { true, false }; // OK
 	vector<bool>	parameter_to_test_qoe_ctrl = { false, true }; // OK
@@ -263,7 +267,7 @@ int main(int argc, char* argv[]) {
 												// new service scheduling			
 												double backoff = rand() % 35;
 												double new_timestamp = next_event.GetTimeStamp() + backoff + total_master_processing;
-
+												numbero_di_perdite++;
 												if (scheduler_records[next_event.GetSchedulerID()].GetRescheduleTime() < max_resched) {
 													scheduler_records[next_event.GetSchedulerID()].SetRescheduleTime(scheduler_records[next_event.GetSchedulerID()].GetRescheduleTime() + 1);
 
@@ -274,7 +278,9 @@ int main(int argc, char* argv[]) {
 
 													if (vDEBUG) {
 														cout << "Event: re-scheduler." << endl;
+
 													}
+
 												}
 
 											}
@@ -304,10 +310,10 @@ int main(int argc, char* argv[]) {
 											int perc_tot = (next_event.timestamp * 100) / tot_sim;
 											cout << "t: \t" << next_event.timestamp << "\t\t\t\t" << perc_tot << " % ";
 											if (info_queue.size() > 0) {
-												cout << "\t perdita: \t" << info_queue.back().totale_perdita << "\t";
+												cout << "\t perdita: \t" << numbero_di_perdite << "\t";
 											}
 											else {
-												cout << "\t perdita: \t" << "0" << "\t";
+												cout << "\t perdita: \t" << numbero_di_perdite << "\t";
 											}
 											cout << "\n[ ";
 

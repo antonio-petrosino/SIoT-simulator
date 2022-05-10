@@ -153,9 +153,9 @@ Device* DeviceCreation(){
 			d_class = possible_high_class[choosenIndex];
 						
 			if (d_class == 3){
-				clock_s = possible_clock_speed[3];
+				clock_s = possible_clock_speed[1];
 			}else{
-				clock_s = possible_clock_speed[2];
+				clock_s = possible_clock_speed[0];
 			}
 			
 		}else{
