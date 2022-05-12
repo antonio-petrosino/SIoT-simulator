@@ -327,6 +327,11 @@ Master* MasterCreation(){
 vector<Scheduler> GenerateEventsArray(int sim_duration, int seed) {
 	// seed the RNG	
 	std::mt19937 rng(seed); // mt19937: Pseudo-random number generation
+
+	//CAMARDA
+	//std::random_device  rand_dev;
+	std::mt19937 generator(seed);
+	std::uniform_int_distribution<int>  distr(0, n_devices);
 		
 	//double lambda = static_cast<double>(1)/ averageArrival;
 
@@ -351,7 +356,11 @@ vector<Scheduler> GenerateEventsArray(int sim_duration, int seed) {
 	  record_to_push.SetId(i);
 	  record_to_push.SetTOA(sumArrivalTimes);
 	  // int selected_req_service = rand()% n_services;
-	  int selected_service_requester = rand() % n_devices;	   
+	  // 
+	  // CAMARDA
+	  //int selected_service_requester = rand() % n_devices ;
+	  int selected_service_requester = distr(generator) % n_devices;
+	 // cout << "Selected service requester per verifica uniformemente distr: " << selected_service_requester << endl;
 	  
 	  //CAMARDA
 	  int selected_req_service = 0;
@@ -984,6 +993,10 @@ void PrintInfoQueue() {
 			myfile << info_queue[i].total_service_queued << "\t" << info_queue[i].total_empty_list << "\t" << info_queue[i].total_accomplished << "\t" << info_queue[i].totale_perdita << "\t" << info_queue[i].timestamp << "\n";
 		}
 
+		//CAMARDA
+		int indice_print_prob_perdita = info_queue.size()-1;
+		double prob_perdita = (double)info_queue[indice_print_prob_perdita].totale_perdita / ((double)info_queue[indice_print_prob_perdita].total_accomplished + (double)info_queue[indice_print_prob_perdita].totale_perdita);
+		cout << "Prob_perdita: " <<  prob_perdita << endl;
 		myfile.close();
 	}
 	else cout << "Unable to open file";
