@@ -30,7 +30,8 @@ Device* list_of_devices;
 vector<Scheduler>  scheduler_records;
 vector<Queue> info_queue;
 vector<NodesUnderThreshold> detected_potential_malicious_devices;
-int n_services, n_devices, n_master, lambda, tot_sim, seed;
+int n_services, n_devices, n_master, tot_sim, seed;
+double lambda;
 
 string folder_name;
 ResourceMonitor network_monitor;
@@ -73,7 +74,7 @@ int main(int argc, char* argv[]) {
 	n_services = stoi(argv[3]);
 	n_devices = stoi(argv[4]);
 	n_master = stoi(argv[5]);
-	lambda = stoi(argv[6]);
+	lambda = stod(argv[6]);
 	seed = stoi(argv[7]);
 	tot_sim = stoi(argv[8]);
 

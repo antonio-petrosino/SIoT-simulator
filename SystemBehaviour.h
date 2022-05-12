@@ -13,7 +13,8 @@ extern Service* list_of_services;
 extern Master* list_of_master;
 extern Device* list_of_devices;
 extern vector<Scheduler>  scheduler_records;
-extern int n_services, n_devices, n_master, lambda, tot_sim, seed;
+extern int n_services, n_devices, n_master, tot_sim, seed;
+extern double lambda;
 extern vector<Queue> info_queue;
 extern unsigned long tstart;
 extern unsigned long tend;
@@ -349,11 +350,15 @@ vector<Scheduler> GenerateEventsArray(int sim_duration, int seed) {
 	  Scheduler record_to_push = Scheduler();
 	  record_to_push.SetId(i);
 	  record_to_push.SetTOA(sumArrivalTimes);
-	  //int selected_req_service = rand()% n_services;
+	  // int selected_req_service = rand()% n_services;
+	  int selected_service_requester = rand() % n_devices;	   
+	  
 	  //CAMARDA
 	  int selected_req_service = 0;
+	  //int selected_service_requester = 0;
+
 	  record_to_push.SetReqServ(list_of_services[selected_req_service].GetServiceId()); // random su tutti i servizi
-	  int selected_service_requester = rand() % n_devices;
+	  
 	  record_to_push.SetSR(list_of_devices[selected_service_requester].GetID()); // random su tutti gli utenti
 	  
 	  //assign master node having record_to_push.GetReqServ()
