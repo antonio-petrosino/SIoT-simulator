@@ -994,9 +994,12 @@ void PrintInfoQueue() {
 		}
 
 		//CAMARDA
-		int indice_print_prob_perdita = info_queue.size()-1;
+		int indice_print_prob_perdita = info_queue.size()-10;
 		double prob_perdita = (double)info_queue[indice_print_prob_perdita].totale_perdita / ((double)info_queue[indice_print_prob_perdita].total_accomplished + (double)info_queue[indice_print_prob_perdita].totale_perdita);
 		cout << "Prob_perdita: " <<  prob_perdita << endl;
+		//indice_print_prob_perdita = info_queue.size() - 10;
+		double traffico_perso = (double)info_queue[indice_print_prob_perdita].totale_perdita / (double)info_queue[indice_print_prob_perdita].timestamp;
+		cout << "Traffico perso: " << traffico_perso <<endl;
 		myfile.close();
 	}
 	else cout << "Unable to open file";
