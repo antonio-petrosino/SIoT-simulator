@@ -16,6 +16,8 @@ folder_name = 'E:\Validate\';
 %folder_name = 'D:\SSIoT\Sim-nuova-ver\';
 folder_name = 'E:\SSIoT\globecom2022\';
 folder_name = 'E:\SSIoT\temp_modifiche\';
+folder_name = 'C:\Users\gianc\Documents\GitHub\SSIoT\sim_isolate';
+
 %variabili della simulazione da plottare
 n_services_to_find = "6";
 vect_n_devices_to_find = ["100", "150","200", "300"]; % ["100", "150","200", "300"]
@@ -1080,4 +1082,5 @@ xlim([0 2900]);
 % save('C:\Users\anton\MATLABexport\avg_info_ws.mat', 'avg_info');
 % save('C:\Users\anton\MATLABexport\plotting_info_ws.mat', 'plotting_info');
 %
-save('C:\Users\anton\MATLABexport\___temp_ws_globecom2022.mat');
+%save('C:\Users\anton\MATLABexport\___temp_ws_globecom2022.mat');
+save('C:\Users\gianc\Documents\GitHub\SSIoT\___temp_ws_globecom2022.mat');
