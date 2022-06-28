@@ -300,7 +300,12 @@ Master* MasterCreation(){
 vector<Scheduler> GenerateEventsArray(int sim_duration, int seed) {
 	// seed the RNG	
 	std::mt19937 rng(seed); // mt19937: Pseudo-random number generation
-		
+
+	//CAMARDA distrib uniforme
+	//std:mt19937 generator(seed);
+	//std:uniform_int_distribution<int> distr(0, n_devices);
+	
+
 	//double lambda = static_cast<double>(1)/ averageArrival;
 
 	std::exponential_distribution<double> exp(lambda);
@@ -324,6 +329,8 @@ vector<Scheduler> GenerateEventsArray(int sim_duration, int seed) {
 	  record_to_push.SetId(i);
 	  record_to_push.SetTOA(sumArrivalTimes);
 	  int selected_req_service = rand()% n_services;
+	  //CAMARDA sel uniforme
+	  //int selected_req_service = distr(generator) % n_services;
 	  record_to_push.SetReqServ(list_of_services[selected_req_service].GetServiceId()); // random su tutti i servizi
 	  int selected_service_requester = rand() % n_devices;
 	  record_to_push.SetSR(list_of_devices[selected_service_requester].GetID()); // random su tutti gli utenti
@@ -871,12 +878,14 @@ void UpdateQueue(Event next_event, int event_assigned, bool empty_list) {
 	int prev_total;
 	int empty_prev_total;
 	int prev_accomplished;
+	//int prev_perdita;
 
 	if (info_queue.size() > 0) {
 		Queue prev_queue_variation = info_queue[info_queue.size() - 1];		
 		prev_total = prev_queue_variation.total_service_queued;
 		empty_prev_total = prev_queue_variation.total_empty_list;
 		prev_accomplished = prev_queue_variation.total_accomplished;
+		//prev_perdita = prev_queue_variation.totale_perdita; // CAMARDA
 
 		if (next_event.GetTimeStamp() < prev_queue_variation.timestamp) {
 			cout << "WARNING: info_queue logical error." << endl;
@@ -887,6 +896,7 @@ void UpdateQueue(Event next_event, int event_assigned, bool empty_list) {
 		prev_total = 0;
 		empty_prev_total = 0;
 		prev_accomplished = 0;
+		//prev_perdita = 0; // CAMARDA
 	}
 
 	Queue queue_variation = {};
@@ -896,6 +906,7 @@ void UpdateQueue(Event next_event, int event_assigned, bool empty_list) {
 		queue_variation.timestamp = next_event.GetTimeStamp();
 		queue_variation.total_empty_list = empty_prev_total;
 		queue_variation.total_accomplished = prev_accomplished;
+		//queue_variation.totale_perdita = prev_perdita;
 		info_queue.push_back(queue_variation);
 	}
 	else if (next_event.GetEventType() == "scheduler" && event_assigned == -1)
@@ -904,6 +915,7 @@ void UpdateQueue(Event next_event, int event_assigned, bool empty_list) {
 		queue_variation.timestamp = next_event.GetTimeStamp();
 		queue_variation.total_empty_list = empty_prev_total;
 		queue_variation.total_accomplished = prev_accomplished;
+		//queue_variation.totale_perdita = prev_perdita + 1; // CAMARDA
 		info_queue.push_back(queue_variation);
 	}
 	else if (next_event.GetEventType() == "end_service") {
@@ -911,6 +923,7 @@ void UpdateQueue(Event next_event, int event_assigned, bool empty_list) {
 		queue_variation.timestamp = next_event.GetTimeStamp();
 		queue_variation.total_empty_list = empty_prev_total;
 		queue_variation.total_accomplished = prev_accomplished + 1;
+		//queue_variation.totale_perdita = prev_perdita; // CAMARDA
 		info_queue.push_back(queue_variation);
 	}
 	else if (empty_list) {
@@ -918,6 +931,7 @@ void UpdateQueue(Event next_event, int event_assigned, bool empty_list) {
 		queue_variation.timestamp = next_event.GetTimeStamp();
 		queue_variation.total_empty_list = empty_prev_total + 1;
 		queue_variation.total_accomplished = prev_accomplished;
+		//queue_variation.totale_perdita = prev_perdita; // CAMARDA
 		info_queue.push_back(queue_variation);
 	}
 	else {
@@ -925,6 +939,7 @@ void UpdateQueue(Event next_event, int event_assigned, bool empty_list) {
 		queue_variation.timestamp = next_event.GetTimeStamp();
 		queue_variation.total_empty_list = empty_prev_total;
 		queue_variation.total_accomplished = prev_accomplished;
+		//queue_variation.totale_perdita = prev_perdita; // CAMARDA
 		info_queue.push_back(queue_variation);
 	}
 
@@ -937,10 +952,20 @@ void PrintInfoQueue() {
 	if (myfile.is_open())
 	{
 		myfile << "total_service_queued" << "\t" << "total_empty_list" << "\t" << "total_accomplished" << "\t" << "timestamp" << "\n";
+		//myfile << "total_service_queued" << "\t" << "total_empty_list" << "\t" << "total_accomplished" << "\t" << "totale_perdita\t" << "timestamp" << "\n";
 
 		for (unsigned int i = 0; i < info_queue.size(); i++) {
 			myfile << info_queue[i].total_service_queued << "\t" << info_queue[i].total_empty_list << "\t" << info_queue[i].total_accomplished << "\t" << info_queue[i].timestamp << "\n";
+			//myfile << info_queue[i].total_service_queued << "\t" << info_queue[i].total_empty_list << "\t" << info_queue[i].total_accomplished << "\t" << info_queue[i].totale_perdita << "\t" << info_queue[i].timestamp << "\n";
 		}
+
+		//CAMARDA
+		//int indice_print_prob_perdita = info_queue.size() - 10;
+		//double prob_perdita = (double)info_queue[indice_print_prob_perdita].totale_perdita / ((double)info_queue[indice_print_prob_perdita].total_accomplished + (double)info_queue[indice_print_prob_perdita].totale_perdita);
+		//cout << "Prob_perdita: " << prob_perdita << endl;
+		////indice_print_prob_perdita = info_queue.size() - 10;
+		//double traffico_perso = (double)info_queue[indice_print_prob_perdita].totale_perdita / (double)info_queue[indice_print_prob_perdita].timestamp;
+		//cout << "Traffico perso: " << traffico_perso << endl;
 
 		myfile.close();
 	}

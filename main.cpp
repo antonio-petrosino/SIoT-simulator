@@ -25,9 +25,16 @@ vector<Queue> info_queue;
 vector<NodesUnderThreshold> detected_potential_malicious_devices;
 int n_services, n_devices, n_master, lambda, tot_sim, seed;
 
+// 0 0 6 100 5 4 1 3000
+
 string folder_name;
 ResourceMonitor network_monitor;
 
+//vector<int> conta_utenti_cl_uno;
+//vector<int> conta_utenti_cl_due;
+//vector<int> conta_utenti_cl_tre;
+
+//double media_utenti;
 
 int main(int argc, char* argv[]) {
 	unsigned long iteration_tstart;
@@ -71,6 +78,8 @@ int main(int argc, char* argv[]) {
 	double overall_processing_time = 0;
 	int iteration_number = 0;
 	int tot_number_of_simulations = 1;
+	
+	//int numbero_di_perdite = 0;
 	/*
 	vector<bool>	parameter_to_test_resource_ctrl = { true, false }; // OK
 	vector<bool>	parameter_to_test_qoe_ctrl = { false, true }; // OK
@@ -156,6 +165,72 @@ int main(int argc, char* argv[]) {
 									std::cout << std::setprecision(3) << std::fixed;
 
 									Calendar event_calendar = Calendar(scheduler_records);
+
+									/*
+									// CAMARDA CHECK
+									for (int counter = 0; counter < n_devices; counter++) {
+										vector<Friend_Record> friend_count_check = list_of_devices[counter].GetAllFriends();
+
+										std::cout << "Devices number: " << counter + 1;
+										std::cout << " friends list length" << friend_count_check.size() << endl;
+										int classe_uno = 0, classe_due = 0, classe_tre = 0, classe_unk = 0;
+
+										for (int f_counter = 0; f_counter < friend_count_check.size(); f_counter++) {
+											//cout << "------------------------\t Device ID \t";
+											//cout << friend_count_check[f_counter].friend_device_id;
+
+											Device device_to_return = Device();
+											for (int v = 0; v < n_devices; v++) {
+												if (list_of_devices[v].GetID() == friend_count_check[f_counter].friend_device_id) {
+													//device_to_return =  list_of_devices[v];
+													device_to_return = list_of_devices[v];
+													break;
+												}
+											}
+											//cout << " Device Class\t";
+											//cout << device_to_return.GetDeviceClass() << endl; 
+											if (device_to_return.GetDeviceClass() == 1)
+											{
+												classe_uno++;
+											}
+											else if (device_to_return.GetDeviceClass() == 2) {
+												classe_due++;
+											}
+											else if (device_to_return.GetDeviceClass() == 3) {
+												classe_tre++;
+											}
+											else {
+												classe_unk++;
+											}											
+										}
+										cout << "-------- classe uno " << classe_uno << "\tclasse due " << classe_due << "\tclasse tre " << classe_tre << "\tclasse unk " << classe_unk << endl;
+										//CAMARDA
+										conta_utenti_cl_uno.push_back(classe_uno);
+										conta_utenti_cl_due.push_back(classe_due);
+										conta_utenti_cl_tre.push_back(classe_tre);
+									}
+
+									media_utenti = 0;
+									for (int i = 0; i < conta_utenti_cl_uno.size(); i++) {
+										media_utenti = media_utenti + conta_utenti_cl_uno[i];
+									}
+									media_utenti = media_utenti / conta_utenti_cl_uno.size();
+									cout << "Media utenti amici classe uno " << media_utenti << endl;
+									media_utenti = 0;
+									for (int i = 0; i < conta_utenti_cl_due.size(); i++) {
+										media_utenti = media_utenti + conta_utenti_cl_due[i];
+									}
+									media_utenti = media_utenti / conta_utenti_cl_due.size();
+									cout << "Media utenti amici classe due " << media_utenti << endl;
+									media_utenti = 0;
+									for (int i = 0; i < conta_utenti_cl_tre.size(); i++) {
+										media_utenti = media_utenti + conta_utenti_cl_tre[i];
+									}
+									media_utenti = media_utenti / conta_utenti_cl_tre.size();
+									cout << "Media utenti amici classe tre " << media_utenti << endl;
+
+									system("pause");
+									*/
 									
 									while (!event_calendar.IsEmpty()) {
 										unsigned long start_master_processing = clock();
@@ -215,6 +290,8 @@ int main(int argc, char* argv[]) {
 												double backoff = rand() % 35;
 												double new_timestamp = next_event.GetTimeStamp() + backoff + total_master_processing;
 
+												//numbero_di_perdite++;
+
 												if (scheduler_records[next_event.GetSchedulerID()].GetRescheduleTime() < max_resched) {
 													scheduler_records[next_event.GetSchedulerID()].SetRescheduleTime(scheduler_records[next_event.GetSchedulerID()].GetRescheduleTime() + 1);
 
@@ -255,9 +332,11 @@ int main(int argc, char* argv[]) {
 											cout << "t: \t" << next_event.timestamp << "\t\t\t\t" << perc_tot << " % ";
 											if (info_queue.size() > 0) {
 												cout << "\t queue: \t" << info_queue.back().total_service_queued << "\t";
+												//cout << "\t perdita: \t" << numbero_di_perdite << "\t";
 											}
 											else {
 												cout << "\t queue: \t" << "0" << "\t";
+												//cout << "\t perdita: \t" << numbero_di_perdite << "\t";
 											}
 											cout << "\n[ ";
 
