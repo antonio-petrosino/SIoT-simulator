@@ -1,16 +1,16 @@
-% for i=1:length(avg_info)
-%      %idx = avg_info(i).delay_array > 0;
-%      idx = find(avg_info(i).delay_array>0);
-%      avg_info(i).delay_array = avg_info(i).delay_array(idx);
-%      avg_info(i).delay_medio = mean(avg_info(i).delay_array);
-%      x = avg_info(i).delay_array;
-%      SEM = std(x)/sqrt(length(x));               % Standard Error
-%      ts = tinv([0.025  0.975],length(x)-1);      % T-Score
-%      avg_info(i).CI = mean(x) + ts*SEM;          % Confidence Intervals 
-%      avg_info(i).higherror = avg_info(i).CI(2);   
-%      avg_info(i).lowerror = avg_info(i).CI(1);   
-%      avg_info(i).delay_error = avg_info(i).CI(2) - avg_info(i).CI(1);
-% end
+for i=1:length(avg_info)
+     %idx = avg_info(i).delay_array > 0;
+     idx = find(avg_info(i).delay_array>0);
+     avg_info(i).delay_array = avg_info(i).delay_array(idx);
+     avg_info(i).delay_medio = mean(avg_info(i).delay_array);
+     x = avg_info(i).delay_array;
+     SEM = std(x)/sqrt(length(x));               % Standard Error
+     ts = tinv([0.025  0.975],length(x)-1);      % T-Score
+     avg_info(i).CI = mean(x) + ts*SEM;          % Confidence Intervals 
+     avg_info(i).higherror = avg_info(i).CI(2);   
+     avg_info(i).lowerror = avg_info(i).CI(1);   
+     avg_info(i).delay_error = avg_info(i).CI(2) - avg_info(i).CI(1);
+end
 
 %clearvars -except avg_info avg_info_backup
 

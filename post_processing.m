@@ -16,21 +16,19 @@ folder_name = 'E:\Validate\';
 %folder_name = 'D:\SSIoT\Sim-nuova-ver\';
 folder_name = 'E:\SSIoT\globecom2022\';
 folder_name = 'E:\SSIoT\temp_modifiche\';
-folder_name = 'C:\Users\gianc\Documents\GitHub\SSIoT\sim_isolate';
+folder_name = 'C:\Users\gianc\Documents\GitHub\SSIoT\sim_isolate\';
 
 %variabili della simulazione da plottare
-n_services_to_find = "6";
-vect_n_devices_to_find = ["100", "150","200", "300"]; % ["100", "150","200", "300"]
+n_services_to_find = "5";
+vect_n_devices_to_find = ["50","100","200","300"]; % ["100", "150","200", "300"]
 n_master_to_find = "5";
-vect_lambda_to_find = ["4", "6", "10"]; %["4", "6", "10"]
+vect_lambda_to_find = ["3", "10", "15"]; %["4", "6", "10"]
 vect_resource_ctrl_to_find = ["0","1"]; % ["0","1"]
-tot_sim_to_find = "3000";
+tot_sim_to_find = "2000";
 vect_qoe_ctrl_to_find = ["0", "1"];%["0", "1"]
-vect_seed_to_find = ["1", "2", "3", "4", "5", ...
-    "6", "7", "8", "9", "10", ...
-    "11", "12", "13", "14", "15", ...
-    "16", "17", "18", "19", "20"]; %[1-20]
+vect_seed_to_find = ["1", "2", "3", "4", "5"]; %[1-20]
 %vect_seed_to_find = ["1", "2", "3", "4", "5"];
+
 total_sim_number_acquired = 0;
 sim_legend_string = [];
 plotting_info = struct();
