@@ -66,9 +66,9 @@ Service *ServicesCreation(){
 		randomNumber = possible_power_cost[choosenIndex];
 		randomCpuReq = possible_cpu_req[choosenIndex];
 		
-		// CAMARDA
-		randomNumber = possible_power_cost[5];
-		randomCpuReq = possible_cpu_req[5];
+		// CAMARDA caso non generalizzato
+		//randomNumber = possible_power_cost[5];
+		//randomCpuReq = possible_cpu_req[5];
 
 		arrayOfServices[i].SetService(i+1,randomNumber,randomCpuReq);
 	}	
@@ -94,13 +94,14 @@ Device* DeviceCreation(){
 	
 
 	//double possible_total_power[] = {0.2,0.4,0.6,0.8};
-	double possible_total_power[] = { 0.6,0.8 };
+	double possible_total_power[] = { 0.6,0.8 }; //CAMARDA per isolare solo 1 servizio
 	
 	
 	int length_pos_total_p = sizeof(possible_total_power) / sizeof(double);
 
 	//int possible_class[] = {1,2,2,3};	
-	int possible_class[] = { 2,3 };
+	int possible_class[] = { 2,3 }; //CAMARDA per isolare solo 1 servizio
+	
 	
 
 	//int possible_clock_speed[]={400*1000, 1000 * 1000, 1000 * 1000, 2000 * 1000 }; // megacycles
@@ -117,12 +118,12 @@ Device* DeviceCreation(){
 	vector<int> possible_owner;
 	int perc_of_owner = ceil(n_devices * 16 / 100);
 
-	//for (int x = 0; x <= perc_of_owner; x++)
-	//	possible_owner.push_back(x+1);
+	for (int x = 0; x <= perc_of_owner; x++)
+		possible_owner.push_back(x+1);
 
 	//CAMARDA
-	for (int x = 0; x < 2; x++)
-		possible_owner.push_back(x + 1);
+	//for (int x = 0; x < 2; x++)
+	//	possible_owner.push_back(x + 1);
 
 	//int length_pos_owner = sizeof(possible_owner) / sizeof(int);
 	int length_pos_owner = possible_owner.size();
@@ -143,7 +144,7 @@ Device* DeviceCreation(){
 		choosenIndex = rand() % length_pos_total_p;
 		
 		//CAMARDA
-		choosenIndex = (i % length_pos_total_p);
+		//choosenIndex = (i % length_pos_total_p);
 		total_power = possible_total_power[choosenIndex];
 		
 		if (total_power > 0.5) 
@@ -154,8 +155,10 @@ Device* DeviceCreation(){
 			d_class = possible_high_class[choosenIndex];
 						
 			if (d_class == 3){
+				//clock_s = possible_clock_speed[3];
 				clock_s = possible_clock_speed[1];
 			}else{
+				//clock_s = possible_clock_speed[2];
 				clock_s = possible_clock_speed[0];
 			}
 			
@@ -174,10 +177,10 @@ Device* DeviceCreation(){
 		loc = possible_location[choosenIndex];
 
 		//CAMARDA PER PROBABILITA DI PERDITA
-		id_owner = (i % length_pos_owner) + 1;
-		id_man= (i % (length_pos_owner/2)) + 1;
+		//id_owner = (i % length_pos_owner) + 1;
+		//id_man= (i % (length_pos_owner/2)) + 1;
 		//loc = (i % (length_pos_owner / 4)) + 1;
-		loc = 1;
+		//loc = 1;
 		
 		//CAMARDA check location
 
@@ -290,6 +293,7 @@ void GenerateSocialRel(int n_devices, Device *defined_devices){
 					new_social_rel.sociality_factor = 0.6;
 					new_social_rel.sociality_factor = 0.0; // CAMARDA
 					new_social_rel.type_rel = "C-LOR";
+					//check_social = 1;
 					check_social = -1;			 						
 				}
 			}
@@ -710,6 +714,7 @@ void AssignFeedback(int id_master, int id_service_provider, int id_service_reque
 		new_feed = possible_feedback[choosenFeedback];
 	}
 
+	//CAMARDA se non deve avere i feed negativi per le perdite
 	new_feed = 1;
 
 	for (int i = 0; i < n_master; i++) {
