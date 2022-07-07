@@ -66,9 +66,9 @@ Service *ServicesCreation(){
 		randomNumber = possible_power_cost[choosenIndex];
 		randomCpuReq = possible_cpu_req[choosenIndex];
 		
-		// CAMARDA caso non generalizzato
-		//randomNumber = possible_power_cost[5];
-		//randomCpuReq = possible_cpu_req[5];
+		// CAMARDA caso in base al servizio
+		randomNumber = possible_power_cost[5];
+		randomCpuReq = possible_cpu_req[5];
 
 		arrayOfServices[i].SetService(i+1,randomNumber,randomCpuReq);
 	}	
@@ -144,7 +144,7 @@ Device* DeviceCreation(){
 		choosenIndex = rand() % length_pos_total_p;
 		
 		//CAMARDA
-		//choosenIndex = (i % length_pos_total_p);
+		choosenIndex = (i % length_pos_total_p);
 		total_power = possible_total_power[choosenIndex];
 		
 		if (total_power > 0.5) 
@@ -167,6 +167,7 @@ Device* DeviceCreation(){
 			clock_s = possible_clock_speed[choosenIndex];
 		}
 		
+		//fissare un seed diverso dallo scheduler?
 		choosenIndex = rand() % length_pos_owner;
 		id_owner = possible_owner[choosenIndex];
 		
@@ -180,7 +181,7 @@ Device* DeviceCreation(){
 		//id_owner = (i % length_pos_owner) + 1;
 		//id_man= (i % (length_pos_owner/2)) + 1;
 		//loc = (i % (length_pos_owner / 4)) + 1;
-		//loc = 1;
+		loc = 1;
 		
 		//CAMARDA check location
 
