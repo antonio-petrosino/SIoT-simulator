@@ -12,6 +12,8 @@ const double beta = 0.3;
 const double gamma = 0.2;
 const double cutting_value = 0.265;
 
+float** social_matrix = nullptr;
+
 // Struct SECTION
 struct Friend_Record {
 	int friend_device_id; // id_dispositivo_amico
@@ -473,7 +475,6 @@ class Master
 								rep_output = this->list_of_reputation[i];
 								rep_found = true;
 							}
-
 						}
 					}
 				}

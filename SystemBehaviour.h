@@ -88,10 +88,9 @@ Service *ServicesCreation(){
 }
 
 Device* DeviceCreation(){
-
+	
 	//std::mt19937 rng(seed);
 	Device* arrayOfDevice = new Device[n_devices];
-	
 
 	//double possible_total_power[] = {0.2,0.4,0.6,0.8};
 	double possible_total_power[] = { 0.6,0.8 }; //CAMARDA per isolare solo 1 servizio
@@ -180,9 +179,8 @@ Device* DeviceCreation(){
 		//CAMARDA PER PROBABILITA DI PERDITA
 		//id_owner = (i % length_pos_owner) + 1;
 		//id_man= (i % (length_pos_owner/2)) + 1;
-		//loc = (i % (length_pos_owner / 4)) + 1;
-		loc = 1;
-		
+		//loc = (i % (length_pos_owner / 4)) + 1;		
+		//loc = 1;		
 		//CAMARDA check location
 
 		arrayOfDevice[i].GenerateDevice(i+1,total_power, id_owner, id_man, loc, d_class, clock_s);
@@ -292,7 +290,7 @@ void GenerateSocialRel(int n_devices, Device *defined_devices){
 				}
 				else if(defined_devices[i].GetLocation() == defined_devices[j].GetLocation()) {
 					new_social_rel.sociality_factor = 0.6;
-					new_social_rel.sociality_factor = 0.0; // CAMARDA
+					//new_social_rel.sociality_factor = 0.0; // CAMARDA
 					new_social_rel.type_rel = "C-LOR";
 					//check_social = 1;
 					check_social = -1;			 						
@@ -465,7 +463,10 @@ void ServiceProviderFiltering(int id_scheduler_record, double current_timestamp)
 
 									Trust_record trust_value_to_add{};
 									trust_value_to_add.id_service_provider = friend_of_requester[i].friend_device_id;
-									trust_value_to_add.social_value = friend_of_requester[i].sociality_factor;
+									trust_value_to_add.social_value = friend_of_requester[i].sociality_factor;										
+									social_matrix[id_service_requester-1][friend_of_requester[i].friend_device_id-1] = trust_value_to_add.social_value;
+									// devo intercettare questo valore e metterlo nella matrice s
+
 									trust_value_to_add.provider_class = selected_provider.GetDeviceClass();
 									
 									Reputation rep_inspection{};
@@ -603,6 +604,9 @@ void ServiceProviderFiltering(int id_scheduler_record, double current_timestamp)
 					trust_value_to_add.social_value = 0.55; // TODO: da ripristinare
 					trust_value_to_add.social_value = 0.59;
 				}
+
+				//social_matrix[id_service_requester-1][trust_value_to_add.id_service_provider-1] = trust_value_to_add.social_value;
+				// devo intercettare questo valore e metterlo nella matrice s
 
 				trust_value_to_add.provider_class = friend_to_analyze.GetDeviceClass();
 
@@ -1010,6 +1014,24 @@ void PrintInfoQueue() {
 	}
 	else cout << "Unable to open file";
 }
+void PrintSocialMatrix() {
+	ofstream myfile(".\\" + folder_name + "SocialMatrix.txt");
+	if (myfile.is_open())
+	{
+		for (int i = 0; i < n_devices; i++) {
+			for (int j = 0; j < n_devices; j++) {
+				myfile << social_matrix[i][j] << "\t";
+			}
+			myfile << "\n";			
+		}
+	
+		
+		
+		myfile.close();
+	}
+	else cout << "Unable to open file";
+}
+
 
 void PrintSchedulerItem(){
 	ofstream myfile(".\\" + folder_name + "SchedInfo.txt");

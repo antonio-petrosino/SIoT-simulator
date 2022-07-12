@@ -18,8 +18,6 @@ bool qoe_ctrl;
 unsigned long tstart, tend;
 
 
-
-
 //LAUNCHER: C:\Users\anton\source\repos\TestLibrerie
 // 0 0 6 100 5 4 1 3000
 // resource_ctrl, qoe_ctrl, n_services, n_devices,	n_master, lambda, seed,	tot_sim 
@@ -35,6 +33,7 @@ vector<Scheduler>  scheduler_records;
 vector<Queue> info_queue;
 vector<NodesUnderThreshold> detected_potential_malicious_devices;
 int n_services, n_devices, n_master, tot_sim, seed;
+int seed_topology;
 double lambda;
 
 string folder_name;
@@ -80,6 +79,8 @@ int main(int argc, char* argv[]) {
 	n_master = stoi(argv[5]);
 	lambda = stod(argv[6]);
 	seed = stoi(argv[7]);
+	seed_topology = 3;
+	//seed_topology = seed; // per ripristinare la variabilità della topologia
 	tot_sim = stoi(argv[8]);
 
 	unsigned long cmd_print_interval = clock();	
@@ -139,8 +140,8 @@ int main(int argc, char* argv[]) {
 									iteration_tstart = clock();
 									processing_time_vector = {};
 									overall_processing_time = 0;
-
-									srand(seed);
+									
+									srand(seed); // imposto il seed
 									// seed the RNG	
 									// std::mt19937 rng(seed); // mt19937: Pseudo-random number generation
 									// TODO: rivedere seed
@@ -159,12 +160,30 @@ int main(int argc, char* argv[]) {
 									}
 
 									cout << "Start..." << endl;
-									srand(seed);
+									
+									// generazione dinamica matrice sociale
+									social_matrix = new float* [n_devices];
+									for (int i = 0; i < n_devices; i ++) {
+										social_matrix[i] = new float[n_devices];
+									}
 
+									for (int i = 0; i < n_devices; i++) {
+										for (int j = 0; j < n_devices; j++) {
+											if (i == j) {
+												social_matrix[i][j] = -1;
+											}
+											else {
+												social_matrix[i][j] = 0;
+											}	
+										}										
+									}
+
+									srand(seed_topology);
 									list_of_services = ServicesCreation();
 									list_of_master = MasterCreation();
 									list_of_devices = DeviceCreation();
-
+									srand(seed);
+									
 									info_queue = {};
 									detected_potential_malicious_devices = {};
 									network_monitor = ResourceMonitor(n_devices, list_of_devices);
@@ -180,11 +199,12 @@ int main(int argc, char* argv[]) {
 
 
 									// CAMARDA CHECK
+									// TODO STAMBA
 									for (int counter = 0; counter < n_devices; counter++) {
 										vector<Friend_Record> friend_count_check = list_of_devices[counter].GetAllFriends();
 
-										std::cout << "Devices number: " << counter + 1;
-										std::cout << " friends list length" << friend_count_check.size() << endl;
+										std::cout << "Devices number:\y" << counter + 1;
+										std::cout << " friends list length\t" << friend_count_check.size() << endl;
 										int classe_uno = 0, classe_due = 0, classe_tre = 0, classe_unk = 0;
 										
 										for (int f_counter = 0; f_counter < friend_count_check.size(); f_counter++) {
@@ -390,6 +410,7 @@ int main(int argc, char* argv[]) {
 									vDEBUG = tempDebug;
 
 									PrintInfoQueue();
+									PrintSocialMatrix();
 									PrintAvgReputation();
 									PrintSchedulerItem();
 									PrintUserInfo();
