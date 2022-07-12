@@ -1,3 +1,5 @@
+//Versione Cam 1.0
+
 using namespace std;
 #include <iostream>
 #include <random>
@@ -14,6 +16,8 @@ bool vDEBUG = false;
 bool resource_ctrl;
 bool qoe_ctrl;
 unsigned long tstart, tend;
+
+
 
 
 //LAUNCHER: C:\Users\anton\source\repos\TestLibrerie
