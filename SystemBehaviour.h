@@ -67,7 +67,8 @@ Service *ServicesCreation(){
 		randomCpuReq = possible_cpu_req[choosenIndex];
 		
 		// CAMARDA caso in base al servizio
-		randomNumber = possible_power_cost[5];
+		//randomNumber = possible_power_cost[5];
+		randomNumber = possible_power_cost[1];
 		randomCpuReq = possible_cpu_req[5];
 
 		arrayOfServices[i].SetService(i+1,randomNumber,randomCpuReq);
@@ -93,8 +94,8 @@ Device* DeviceCreation(){
 	Device* arrayOfDevice = new Device[n_devices];
 
 	//double possible_total_power[] = {0.2,0.4,0.6,0.8};
-	double possible_total_power[] = { 0.6,0.8 }; //CAMARDA per isolare solo 1 servizio
-	
+	//double possible_total_power[] = { 0.6,0.8 }; //CAMARDA per isolare solo 1 servizio
+	double possible_total_power[] = { 0.1,0.2 };  //CAMARDA per isolare solo 1 servizio
 	
 	int length_pos_total_p = sizeof(possible_total_power) / sizeof(double);
 
@@ -1003,14 +1004,26 @@ void PrintInfoQueue() {
 			myfile << info_queue[i].total_service_queued << "\t" << info_queue[i].total_empty_list << "\t" << info_queue[i].total_accomplished << "\t" << info_queue[i].totale_perdita << "\t" << info_queue[i].timestamp << "\n";
 		}
 
+		myfile.close();
+	}
+	else cout << "Unable to open file";
+
+	ofstream myfile2(".\\" + folder_name + "Traffico_perso.txt");
+	if (myfile2.is_open())
+	{
 		//CAMARDA
-		int indice_print_prob_perdita = info_queue.size()-10;
+		int indice_print_prob_perdita = info_queue.size() - 10;
 		double prob_perdita = (double)info_queue[indice_print_prob_perdita].totale_perdita / ((double)info_queue[indice_print_prob_perdita].total_accomplished + (double)info_queue[indice_print_prob_perdita].totale_perdita);
-		cout << "Prob_perdita: " <<  prob_perdita << endl;
+		cout << "Prob_perdita: " << prob_perdita << endl;
 		//indice_print_prob_perdita = info_queue.size() - 10;
 		double traffico_perso = (double)info_queue[indice_print_prob_perdita].totale_perdita / (double)info_queue[indice_print_prob_perdita].timestamp;
-		cout << "Traffico perso: " << traffico_perso <<endl;
-		myfile.close();
+		cout << "Traffico perso: " << traffico_perso << endl;
+		
+		myfile2 << "Prob_perdita: " << "\t" << "Traffico perso: " << "\n";
+		myfile2 << prob_perdita << "\t" << traffico_perso << "\n";
+		
+
+		myfile2.close();
 	}
 	else cout << "Unable to open file";
 }

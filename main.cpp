@@ -29,7 +29,7 @@ unsigned long tstart, tend;
 Service* list_of_services;
 Master* list_of_master;
 Device* list_of_devices;
-vector<Scheduler>  scheduler_records;
+vector<Scheduler> scheduler_records;
 vector<Queue> info_queue;
 vector<NodesUnderThreshold> detected_potential_malicious_devices;
 int n_services, n_devices, n_master, tot_sim, seed;
