@@ -147,9 +147,13 @@ Device* DeviceCreation(){
 		choosenIndex = (i % length_pos_total_p);
 		total_power = possible_total_power[choosenIndex];
 		
-		if (total_power > 0.5) 
+		//if (total_power > 0.5) 
+		//CAMARDA
+		if (total_power > 0.1)
 		{
-			int possible_high_class[] = {2,2,2,3,3,3,3,3,3,3};	
+			//int possible_high_class[] = {2,2,2,3,3,3,3,3,3,3};
+			//CAMARDA
+			int possible_high_class[] = { 3,3,3,3,3,3,3,3,3,3 };
 			int length_high_class = sizeof(possible_high_class)/ sizeof(int);
 			choosenIndex = rand() % length_high_class;
 			d_class = possible_high_class[choosenIndex];
@@ -194,7 +198,9 @@ Device* DeviceCreation(){
 		vector<int> suitable_services; // elenco di id
 		
 		for(int j=0;j<n_services;j++){
-			if(arrayOfDevice[i].GetTotalPower() >= (list_of_services[j].GetPowerCost() * 2))
+			// CAMARDA
+			//if(arrayOfDevice[i].GetTotalPower() >= (list_of_services[j].GetPowerCost() * 2))
+			if (arrayOfDevice[i].GetTotalPower() >= (list_of_services[j].GetPowerCost()))
 			{ 
 				suitable_services.push_back(list_of_services[j].GetServiceId());											
 			}
