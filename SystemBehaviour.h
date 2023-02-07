@@ -121,7 +121,7 @@ Device* DeviceCreation(){
 	for (int x = 0; x <= perc_of_owner; x++)
 		possible_owner.push_back(x+1);
 
-	//CAMARDA
+	//CAMARDA per omogeneizzare gli owner
 	//for (int x = 0; x < 2; x++)
 	//	possible_owner.push_back(x + 1);
 
@@ -141,10 +141,12 @@ Device* DeviceCreation(){
 	
 	for(int i=0; i<n_devices; i++){
 
-		choosenIndex = rand() % length_pos_total_p;
 		
-		//CAMARDA
-		choosenIndex = (i % length_pos_total_p);
+		choosenIndex = rand() % length_pos_total_p;
+		//CAMARDA modello omogeneo
+		//choosenIndex = (i % length_pos_total_p);
+		
+		
 		total_power = possible_total_power[choosenIndex];
 		
 		//if (total_power > 0.5) 
