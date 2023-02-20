@@ -10,7 +10,8 @@ const double refresh_rate = 500; // ms
 const double alpha = 0.5;
 const double beta = 0.3;
 const double gamma = 0.2;
-const double cutting_value = 0.265;
+//const double cutting_value = 0.265;
+const double cutting_value = 0.30; //CAMARDA
 
 float** social_matrix = nullptr;
 

@@ -95,7 +95,7 @@ Device* DeviceCreation(){
 
 	//double possible_total_power[] = {0.2,0.4,0.6,0.8};
 	//double possible_total_power[] = { 0.6,0.8 }; //CAMARDA per isolare solo 1 servizio
-	double possible_total_power[] = { 0.1,0.2 };  //CAMARDA per isolare solo 1 servizio
+	double possible_total_power[] = { 0.2,0.3 };  //CAMARDA per isolare solo 1 servizio
 	
 	int length_pos_total_p = sizeof(possible_total_power) / sizeof(double);
 
@@ -151,21 +151,22 @@ Device* DeviceCreation(){
 		
 		//if (total_power > 0.5) 
 		//CAMARDA
-		if (total_power > 0.1)
+		if (total_power > 0.2)
 		{
 			//int possible_high_class[] = {2,2,2,3,3,3,3,3,3,3};
 			//CAMARDA
 			int possible_high_class[] = { 3,3,3,3,3,3,3,3,3,3 };
+
 			int length_high_class = sizeof(possible_high_class)/ sizeof(int);
 			choosenIndex = rand() % length_high_class;
 			d_class = possible_high_class[choosenIndex];
 						
 			if (d_class == 3){
 				//clock_s = possible_clock_speed[3];
-				clock_s = possible_clock_speed[1];
+				clock_s = possible_clock_speed[1];//CAMARDA
 			}else{
 				//clock_s = possible_clock_speed[2];
-				clock_s = possible_clock_speed[0];
+				clock_s = possible_clock_speed[0];//CAMARDA
 			}
 			
 		}else{

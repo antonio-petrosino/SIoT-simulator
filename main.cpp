@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
 	n_master = stoi(argv[5]);
 	lambda = stod(argv[6]);
 	seed = stoi(argv[7]);
-	seed_topology = 3;
+	seed_topology = 10;
 	//seed_topology = seed; // per ripristinare la variabilità della topologia
 	tot_sim = stoi(argv[8]);
 
