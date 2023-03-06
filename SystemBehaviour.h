@@ -823,6 +823,10 @@ int Orchestrator_MakeDecisions(int id_sched_event, double ts) {
 
 
 
+			//CAMARDA MODIFICA RESOURCE CONTROL PER AUMENTARE LE PERDITE E RENDERLO SIMILE
+			if (i == 4)
+				break;
+
 			allocation_success = AllocateDeviceResources(selected_service.GetPowerCost(), selected_master.GetDeviceIndexByID(providers_ranking[i].id_service_provider, list_of_devices, n_devices));
 
 			if (allocation_success) {
